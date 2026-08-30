@@ -285,6 +285,119 @@ def api_products():
         return jsonify({"error": "catalogue_unavailable"}), 503
 
 
+# ── Specialist desk: warm handoff without a carrier ───────────────────────────
+#
+# The agent posts a brief here when it decides to transfer. The desk page
+# (/desk) rings, shows the brief, and on Accept joins the caller's LiveKit room
+# as a WebRTC participant — the human is just another participant, exactly as a
+# SIP dial-out would be. Single-instance in-memory queue: this service runs with
+# min-instances=1 and the queue is demo state, not a system of record.
+import threading
+import time
+
+DESK_PIN = os.environ.get("DESK_PIN", "")
+_handoffs: dict[str, dict] = {}
+_handoffs_lock = threading.Lock()
+
+
+def _desk_ok(request) -> bool:
+    return bool(DESK_PIN) and request.headers.get("X-Desk-Pin", "") == DESK_PIN
+
+
+@app.post("/api/handoffs")
+def handoff_create():
+    """Agent → desk. Body: room, department, brief{summary,next_steps,mood,urgency}, caller{}."""
+    if not _api_key_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    body = request.get_json(silent=True) or {}
+    hid = uuid.uuid4().hex[:10]
+    item = {
+        "id": hid,
+        "room": body.get("room") or "",
+        "department": body.get("department") or "the support team",
+        "brief": body.get("brief") or {},
+        "caller": body.get("caller") or {},
+        "status": "ringing",
+        "created_at": time.time(),
+    }
+    with _handoffs_lock:
+        _handoffs[hid] = item
+    app.logger.info(f"handoff {hid} ringing for room {item['room']}")
+    return jsonify(item), 201
+
+
+@app.get("/api/handoffs")
+def handoff_list():
+    """Desk polls this. Ringing first, then the last few resolved."""
+    if not _desk_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    with _handoffs_lock:
+        items = sorted(_handoffs.values(), key=lambda h: h["created_at"], reverse=True)
+    return jsonify({"handoffs": items[:20]})
+
+
+@app.get("/api/handoffs/<hid>")
+def handoff_get(hid):
+    """Agent polls this to learn whether the specialist accepted or declined."""
+    if not (_api_key_ok(request) or _desk_ok(request)):
+        return jsonify({"error": "unauthorized"}), 401
+    with _handoffs_lock:
+        item = _handoffs.get(hid)
+    return (jsonify(item), 200) if item else (jsonify({"error": "not_found"}), 404)
+
+
+@app.post("/api/handoffs/<hid>/accept")
+def handoff_accept(hid):
+    """Desk accepts: mint a token so the specialist joins the caller's room."""
+    if not _desk_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    body = request.get_json(silent=True) or {}
+    name = (body.get("name") or "Specialist").strip()[:40]
+    with _handoffs_lock:
+        item = _handoffs.get(hid)
+        if not item:
+            return jsonify({"error": "not_found"}), 404
+        item["status"] = "accepted"
+        item["specialist"] = name
+        item["resolved_at"] = time.time()
+    identity = f"specialist-{uuid.uuid4().hex[:6]}"  # the agent steps back on "specialist"
+    grant = api.VideoGrants(
+        room_join=True, room=item["room"], can_publish=True,
+        can_subscribe=True, can_publish_data=True,
+    )
+    jwt = (
+        api.AccessToken(KEY, SECRET)
+        .with_identity(identity)
+        .with_name(name)
+        .with_grants(grant)
+        .with_ttl(datetime.timedelta(minutes=30))
+        .to_jwt()
+    )
+    return jsonify({"token": jwt, "url": URL, "room": item["room"], "identity": identity})
+
+
+@app.post("/api/handoffs/<hid>/decline")
+def handoff_decline(hid):
+    if not _desk_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    body = request.get_json(silent=True) or {}
+    with _handoffs_lock:
+        item = _handoffs.get(hid)
+        if not item:
+            return jsonify({"error": "not_found"}), 404
+        item["status"] = "declined"
+        item["reason"] = (body.get("reason") or "")[:200]
+        item["resolved_at"] = time.time()
+    return jsonify(item)
+
+
+@app.get("/desk")
+def desk():
+    return Response(
+        (pathlib.Path(__file__).parent / "desk.html").read_text(), mimetype="text/html"
+    )
+
+
 @app.get("/config")
 def config():
     return jsonify(FIREBASE_WEB)

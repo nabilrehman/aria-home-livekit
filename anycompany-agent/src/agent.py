@@ -50,6 +50,10 @@ ORDERS_API_URL = os.getenv(
     "ORDERS_API_URL", "https://aug24-web-549403515075.us-central1.run.app"
 )
 ORDERS_API_KEY = os.getenv("ORDERS_API_KEY", "")
+# How long the specialist desk rings before we try the phone / in-room fallback.
+DESK_RING_SECONDS = int(os.getenv("DESK_RING_SECONDS", "40"))
+# Swappable in tests without touching httpx for the inference client.
+_DeskClient = httpx.AsyncClient
 # Our own MCP server: Firestore device telemetry + the policy corpus.
 MCP_TELEMETRY_URL = os.getenv(
     "MCP_TELEMETRY_URL",
@@ -292,6 +296,43 @@ class Assistant(Agent):
             f"Urgency: {brief['urgency']}. Suggested next steps: {steps}."
         )
 
+    async def _ring_desk(self, department: str, brief: dict) -> str:
+        """Post the handoff to the specialist desk and wait for accept/decline.
+
+        Returns "accepted", "declined", or "unanswered". Never raises — a desk
+        that is down simply means we fall through to the next transfer path.
+        """
+        if not ORDERS_API_KEY:
+            return "unanswered"
+        payload = {
+            "room": self._ctx.room.name if self._ctx is not None else "",
+            "department": department,
+            "brief": brief,
+            "caller": {"name": self.known_name, "account": self.known_account},
+        }
+        try:
+            async with _DeskClient(base_url=ORDERS_API_URL, timeout=8.0) as c:
+                r = await c.post(
+                    "/api/handoffs", json=payload, headers={"X-Api-Key": ORDERS_API_KEY}
+                )
+                r.raise_for_status()
+                hid = r.json()["id"]
+                logger.info(f"desk: ringing handoff {hid}")
+                for _ in range(DESK_RING_SECONDS // 2):
+                    await asyncio.sleep(2)
+                    st = await c.get(
+                        f"/api/handoffs/{hid}", headers={"X-Api-Key": ORDERS_API_KEY}
+                    )
+                    status = st.json().get("status") if st.status_code == 200 else None
+                    if status in ("accepted", "declined"):
+                        logger.info(f"desk: handoff {hid} {status}")
+                        return status
+        except Exception as err:
+            logger.warning(
+                f"desk unreachable ({err}); continuing to next transfer path"
+            )
+        return "unanswered"
+
     @function_tool
     async def transfer_to_human(
         self, context: RunContext, summary: str, department: str = "the support team"
@@ -332,7 +373,24 @@ class Assistant(Agent):
             except Exception as err:
                 logger.warning(f"could not publish summary to frontend: {err}")
 
-        # 2. Warm transfer, when an outbound trunk exists: LiveKit's prebuilt
+        # 2a. Ring the specialist desk (the web "human agent" console). The desk
+        #     shows the brief and, on Accept, joins this room as a participant —
+        #     the participant_connected handler then steps the agent back.
+        desk_answer = await self._ring_desk(department, brief)
+        if desk_answer == "accepted":
+            return {
+                "transferred": True,
+                "say": "Tell the customer a specialist has picked up and has the "
+                "summary in front of them, then stop talking.",
+            }
+        if desk_answer == "declined":
+            return {
+                "transferred": False,
+                "say": "Tell the customer no specialist is free right now, apologise "
+                "once, and offer to file a ticket so someone calls them back.",
+            }
+
+        # 2b. Warm transfer, when an outbound trunk exists: LiveKit's prebuilt
         #    WarmTransferTask holds the caller, dials the human into a private
         #    consult room, briefs them from the conversation so far, then merges
         #    the two. If nobody answers it returns to the caller. Without a trunk
