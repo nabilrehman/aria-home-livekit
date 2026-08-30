@@ -1,0 +1,179 @@
+<title>Aria Home Voice Support Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#F6F7F9;--fg:#141A22;--muted:#5B6674;--line:#D5DAE1;--panel:#FFFFFF;--accent:#0B47C1;--gcp:#1E8E5A;--lk:#7A3FD1;--human:#C8322B}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0B0F14;--fg:#E8ECF1;--muted:#98A3B3;--line:#2A3340;--panel:#121820;--accent:#6E9CFF;--gcp:#4FCB8E;--lk:#B48CFF;--human:#FF7A6E}}
+:root[data-theme="dark"]{--bg:#0B0F14;--fg:#E8ECF1;--muted:#98A3B3;--line:#2A3340;--panel:#121820;--accent:#6E9CFF;--gcp:#4FCB8E;--lk:#B48CFF;--human:#FF7A6E}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding:36px 28px 60px}
+main{max-width:1180px;margin:0 auto}
+h1{font:700 30px/1.1 Archivo,sans-serif;letter-spacing:-.025em;margin:0 0 6px}
+.dek{color:var(--muted);margin:0 0 26px;max-width:78ch}
+figure{margin:0 0 26px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+svg{max-width:100%;height:auto;display:block;color:var(--fg)}
+figcaption{color:var(--muted);font-size:13.5px;margin-top:12px;max-width:100ch}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:8px}
+.kv div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.kv b{font:700 13px Archivo,sans-serif;letter-spacing:.02em;display:block;margin-bottom:6px}
+.kv p{margin:0;font-size:13.5px;color:var(--muted)}
+code{font:12.5px "IBM Plex Mono",monospace}
+.t{font:500 13px "IBM Plex Sans",system-ui,sans-serif;fill:currentColor}
+.h{font:700 13px Archivo,sans-serif;fill:currentColor}
+.s{font:11px "IBM Plex Sans",system-ui,sans-serif;fill:var(--muted)}
+.m{font:10.5px "IBM Plex Mono",monospace;fill:var(--muted)}
+.zone{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:4 4}
+.zl{font:500 10.5px "IBM Plex Mono",monospace;letter-spacing:.14em}
+.box{fill:var(--panel);stroke:currentColor;stroke-width:1.1;rx:5}
+.audio{stroke:var(--lk);stroke-width:2.2;fill:none}
+.data{stroke:currentColor;stroke-width:1.3;fill:none;stroke-dasharray:5 4}
+.hum{stroke:var(--human);stroke-width:2;fill:none}
+</style>
+<main>
+<h1>Aria Home voice support — as deployed</h1>
+<p class="dek">Ember is a participant in a LiveKit room, co-located with the models. Everything she knows about a customer crosses into Google Cloud through one of three deliberately different integrations, and a human joins the same room when she hands off.</p>
+
+<figure>
+<svg viewBox="0 0 1140 640" role="img" aria-label="Callers on web or phone reach a LiveKit Cloud room where the Ember agent runs beside the inference models. Ember reads customer data from Google Cloud three ways: Cloud SQL through Google's MCP Toolbox, Firestore telemetry and Vertex RAG through a custom MCP server, and orders through a plain REST API on the web service. For a handoff, Ember posts a brief to the web service, a specialist's desk rings, and on accept the specialist joins the same LiveKit room.">
+<defs>
+<marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker>
+<marker id="ap" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--lk)"/></marker>
+<marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--human)"/></marker>
+</defs>
+
+<!-- zones -->
+<rect class="zone" x="14" y="40" width="200" height="330"/>
+<text class="zl" x="24" y="30" fill="var(--muted)">CALLERS</text>
+<rect class="zone" x="250" y="40" width="270" height="330" style="stroke:var(--lk)"/>
+<text class="zl" x="260" y="30" fill="var(--lk)">LIVEKIT CLOUD · us-east</text>
+<rect class="zone" x="560" y="40" width="566" height="580" style="stroke:var(--gcp)"/>
+<text class="zl" x="570" y="30" fill="var(--gcp)">GOOGLE CLOUD · bq-demos-469816 · us-central1</text>
+
+<!-- callers -->
+<rect class="box" x="34" y="70" width="160" height="70"/>
+<text class="h" x="46" y="94">Web caller</text>
+<text class="s" x="46" y="112">Aria Home store · WebRTC</text>
+<text class="s" x="46" y="127">Firebase-signed-in or guest</text>
+<rect class="box" x="34" y="170" width="160" height="60"/>
+<text class="h" x="46" y="194">Phone caller</text>
+<text class="s" x="46" y="212">SIP trunk → dispatch rule</text>
+<rect class="box" x="34" y="270" width="160" height="80" style="stroke:var(--human)"/>
+<text class="h" x="46" y="294">Support specialist</text>
+<text class="s" x="46" y="312">/desk in a browser</text>
+<text class="s" x="46" y="327">rings · Accept / Decline</text>
+
+<!-- livekit -->
+<rect class="box" x="270" y="70" width="230" height="52"/>
+<text class="h" x="282" y="92">Room / SFU</text>
+<text class="s" x="282" y="110">per-participant audio tracks</text>
+<rect class="box" x="270" y="140" width="230" height="52"/>
+<text class="h" x="282" y="162">Inference</text>
+<text class="s" x="282" y="180">AssemblyAI STT · Gemma 4 · Fish TTS · turn detector</text>
+<rect class="box" x="270" y="210" width="230" height="140" style="stroke:var(--lk);stroke-width:1.6"/>
+<text class="h" x="282" y="234">Ember · Agent</text>
+<text class="s" x="282" y="252">joins the room as a participant</text>
+<text class="m" x="282" y="272">tools: MCP ×2 · HTTP ×2</text>
+<text class="m" x="282" y="288">transfer_to_human → brief (LLM)</text>
+<text class="m" x="282" y="304">end_call · refund · tracking</text>
+<text class="m" x="282" y="320">adaptive interrupts · preemptive gen</text>
+<text class="m" x="282" y="336">user-away 15 s · latency metrics</text>
+
+<!-- audio edges -->
+<line class="audio" x1="194" y1="105" x2="268" y2="96" marker-end="url(#ap)"/>
+<line class="audio" x1="194" y1="200" x2="268" y2="104" marker-end="url(#ap)"/>
+<text class="s" x="200" y="86" style="fill:var(--lk)">audio</text>
+<!-- specialist joins room -->
+<path class="hum" d="M194,310 C230,310 240,120 268,112" marker-end="url(#ah)"/>
+<text class="s" x="198" y="262" style="fill:var(--human)">joins the same room</text>
+
+<!-- GCP: web service -->
+<rect class="box" x="580" y="70" width="250" height="150" style="stroke:var(--gcp)"/>
+<text class="h" x="592" y="92">aug24-web · Cloud Run</text>
+<text class="s" x="592" y="110">Firebase Auth → LiveKit token minting</text>
+<text class="s" x="592" y="126">Storefront · My Home · Orders · /desk</text>
+<text class="m" x="592" y="148">GET /api/orders  (X-Api-Key)</text>
+<text class="m" x="592" y="164">POST /api/handoffs · accept · decline</text>
+<text class="m" x="592" y="180">GET /me · /api/products · /assets</text>
+<text class="s" x="592" y="204">min-instances 1</text>
+
+<!-- toolbox -->
+<rect class="box" x="580" y="250" width="250" height="90" style="stroke:var(--gcp)"/>
+<text class="h" x="592" y="272">aria-toolbox · Cloud Run</text>
+<text class="s" x="592" y="290">Google MCP Toolbox for Databases</text>
+<text class="m" x="592" y="308">lookup_account_by_phone / _number</text>
+<text class="m" x="592" y="324">list_devices · find_device · file_ticket</text>
+
+<!-- custom mcp -->
+<rect class="box" x="580" y="370" width="250" height="90" style="stroke:var(--gcp)"/>
+<text class="h" x="592" y="392">aug24-mcp · Cloud Run</text>
+<text class="s" x="592" y="410">custom MCP server (FastMCP)</text>
+<text class="m" x="592" y="428">get_device_state · get_device_history</text>
+<text class="m" x="592" y="444">search_knowledge</text>
+
+<!-- stores -->
+<rect class="box" x="880" y="250" width="226" height="90"/>
+<text class="h" x="892" y="272">Cloud SQL · Postgres</text>
+<text class="s" x="892" y="290">system of record</text>
+<text class="m" x="892" y="308">customers · subscriptions · orders</text>
+<text class="m" x="892" y="324">devices (registry, sku) · tickets</text>
+
+<rect class="box" x="880" y="370" width="226" height="70"/>
+<text class="h" x="892" y="392">Firestore · aug24</text>
+<text class="m" x="892" y="410">device_telemetry (live, per-type)</text>
+<text class="m" x="892" y="426">products (sku → image, price)</text>
+
+<rect class="box" x="880" y="460" width="226" height="56"/>
+<text class="h" x="892" y="482">Vertex AI RAG</text>
+<text class="m" x="892" y="500">returns &amp; warranty policy PDF</text>
+
+<rect class="box" x="880" y="536" width="226" height="56"/>
+<text class="h" x="892" y="558">Cloud Storage · Firebase Auth</text>
+<text class="m" x="892" y="576">product images (private) · identity</text>
+
+<!-- data edges from Ember -->
+<path class="data" d="M500,300 L578,295" marker-end="url(#a)"/>
+<text class="s" x="505" y="286">MCP</text>
+<path class="data" d="M500,320 C540,320 540,415 578,415" marker-end="url(#a)"/>
+<text class="s" x="505" y="372">MCP</text>
+<path class="data" d="M500,240 C540,240 540,150 578,150" marker-end="url(#a)"/>
+<text class="s" x="505" y="190">HTTP · orders</text>
+<path class="hum" d="M500,262 C548,262 548,170 578,170" marker-end="url(#ah)"/>
+<text class="s" x="540" y="228" style="fill:var(--human)">brief</text>
+
+<!-- service → store edges -->
+<line class="data" x1="830" y1="295" x2="878" y2="295" marker-end="url(#a)"/>
+<text class="s" x="836" y="285">SQL</text>
+<line class="data" x1="830" y1="155" x2="878" y2="295" marker-end="url(#a)"/>
+<text class="s" x="842" y="215">SQL</text>
+<line class="data" x1="830" y1="405" x2="878" y2="405" marker-end="url(#a)"/>
+<line class="data" x1="830" y1="440" x2="878" y2="488" marker-end="url(#a)"/>
+<line class="data" x1="830" y1="130" x2="878" y2="560" marker-end="url(#a)"/>
+<text class="s" x="838" y="560">auth · images</text>
+<line class="data" x1="830" y1="200" x2="878" y2="400" marker-end="url(#a)"/>
+
+<!-- join key -->
+<path class="data" d="M993,340 L993,368" marker-end="url(#a)"/>
+<text class="m" x="1000" y="358">device_id · sku</text>
+
+<!-- web caller ↔ web service -->
+<path class="data" d="M114,140 C114,480 400,480 578,205"/>
+<text class="s" x="330" y="470">sign in · token · /me</text>
+<!-- desk ↔ web service -->
+<path class="hum" d="M114,350 C114,560 470,560 578,190"/>
+<text class="s" x="330" y="548" style="fill:var(--human)">desk polls · accept → room token</text>
+
+<!-- legend -->
+<line class="audio" x1="30" y1="420" x2="70" y2="420"/><text class="s" x="78" y="424">realtime audio (WebRTC / SIP)</text>
+<line class="data" x1="30" y1="446" x2="70" y2="446"/><text class="s" x="78" y="450">data / tool call</text>
+<line class="hum" x1="30" y1="472" x2="70" y2="472"/><text class="s" x="78" y="476">human handoff</text>
+<text class="s" x="30" y="512">Not shown: LiveKit WarmTransferTask dial-out (needs an</text>
+<text class="s" x="30" y="528">outbound SIP trunk) — second path after the desk.</text>
+</svg>
+<figcaption>Three ways across the GCP boundary, chosen per system: Cloud SQL through Google's MCP Toolbox (declarative SQL, no data-API code), Firestore telemetry and Vertex RAG through a custom MCP server (not SQL), and orders through a plain key-protected REST call (a one-line lookup doesn't need a protocol). The registry is relational and the state is not; they join on <code>device_id</code>. A handoff is a brief posted to the desk plus a human joining the room — no new subsystem.</figcaption>
+</figure>
+
+<div class="kv">
+<div><b>Identity</b><p>Firebase verifies the caller; Cloud Run mints the LiveKit token with the opaque uid as identity and only the account number as an attribute. Phone callers are matched on the last ten digits of caller ID.</p></div>
+<div><b>Handoff</b><p><code>transfer_to_human</code> asks the LLM for a brief (summary, next steps, mood, urgency) → desk rings for 40 s → Accept mints a <code>specialist-*</code> token for the same room and Ember steps back → else phone dial-out if a trunk exists → else in-room fallback.</p></div>
+<div><b>Failure posture</b><p>Empty lookups become "I can't see that on your account"; a store outage raises and Ember escalates rather than guessing a temperature; duplicate tickets are impossible (partial unique index); cold starts avoided with min-instances.</p></div>
+<div><b>Not in the picture</b><p>LiveKit Cloud observability (session replay, transcripts, traces), the GKE cluster that was decommissioned, and the Twilio trunk pending account upgrade.</p></div>
+</div>
+</main>

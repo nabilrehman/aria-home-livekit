@@ -133,3 +133,22 @@ def test_prompt_fetches_devices_once_and_rags_once():
     assert "list_devices once" in text
     assert "call it once per question" in text
     assert "Never end the call after a transfer" in text
+
+
+def test_tool_step_budget_covers_the_device_chain():
+    """identify → list_devices → find_device → get_device_state = 4 steps."""
+    src = Path(agent_mod.__file__).read_text()
+    m = re.search(r"max_tool_steps=(\d+)", src)
+    assert m and int(m.group(1)) >= 4
+
+
+def test_agent_exposes_at_most_the_documented_tool_budget():
+    """LiveKit guidance: aim for 5-10 tools; beyond ~13 selection degrades."""
+    src = Path(agent_mod.__file__).read_text()
+    local_tools = src.count("@function_tool")
+    toolbox = src[
+        src.index("allowed_tools=[") : src.index("]", src.index("allowed_tools=["))
+    ].count('"')
+    mcp_custom = 3  # get_device_state, get_device_history, search_knowledge
+    total = local_tools + toolbox // 2 + mcp_custom
+    assert total <= 16, f"{total} tools exposed — trim or split agents"

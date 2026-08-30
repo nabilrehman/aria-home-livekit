@@ -473,11 +473,19 @@ class Assistant(Agent):
     # these are ordinary function tools over HTTP: less machinery, one fewer
     # round trip, and the shape a customer's existing order API already has.
 
+    _http: httpx.AsyncClient | None = None
+
+    def _client(self) -> httpx.AsyncClient:
+        """One client per agent (per job): keeps the TLS connection to the orders
+        API warm instead of paying a handshake on every lookup."""
+        if self._http is None or self._http.is_closed:
+            self._http = httpx.AsyncClient(base_url=ORDERS_API_URL, timeout=8.0)
+        return self._http
+
     async def _orders_api(self, path: str, **params) -> dict:
-        async with httpx.AsyncClient(base_url=ORDERS_API_URL, timeout=8.0) as client:
-            r = await client.get(
-                path, params=params, headers={"X-Api-Key": ORDERS_API_KEY}
-            )
+        r = await self._client().get(
+            path, params=params, headers={"X-Api-Key": ORDERS_API_KEY}
+        )
         if r.status_code == 404:
             return {"found": False}
         r.raise_for_status()
@@ -843,7 +851,9 @@ async def my_agent(ctx: JobContext):
             model="fishaudio/s2.1-pro", voice="fa4c9eb3dccc4806b382b40d61c6b10a"
         ),
         expressive=True,
-        max_tool_steps=3,
+        # identify → list_devices → find_device → get_device_state is 4 chained
+        # steps; 3 forced retries and guessed ids. 6 leaves headroom, still bounded.
+        max_tool_steps=6,
         **SESSION_OPTIONS,
     )
 
