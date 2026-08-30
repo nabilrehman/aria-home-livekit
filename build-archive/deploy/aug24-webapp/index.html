@@ -642,6 +642,8 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--br
   *,*::before,*::after{animation:none!important;transition:none!important}
   .wave i{transform:scaleY(1)}
 }
+.call-art{display:block;margin:28px auto 0;width:300px;max-width:72%;height:auto}
+@media(max-width:600px){.call-art{width:220px}}
 </style>
 </head>
 <body>
@@ -923,6 +925,7 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--br
             <span class="d">Your devices load before you call.</span>
           </button>
         </div>
+        <img class="call-art" src="/assets/products/ember-call.png" alt="A phone on a voice call with Ember" width="320" height="320" loading="lazy">
       </div>
 
       <!-- 2 · sign in -->
@@ -955,6 +958,7 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--br
         <h1>How can we help?</h1>
         <p class="lede">Ember answers instantly, knows your devices and orders, and gets you to a person when you want one.</p>
         <button class="btn btn-brand btn-lg" id="start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/></svg> Start call with Ember</button>
+        <img class="call-art" src="/assets/products/ember-call.png" alt="A phone on a voice call with Ember" width="320" height="320" loading="lazy">
         <p class="mic-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/></svg> Your microphone turns on when the call connects.</p>
         <div class="caller">
           <span class="avatar guest" id="caller-avatar" aria-hidden="true">?</span>
