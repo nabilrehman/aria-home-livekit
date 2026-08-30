@@ -1,0 +1,157 @@
+<title>Ember Identity Primer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+:root{--paper:#FAFAF7;--ink:#1B1F2A;--mute:#5F6673;--rule:#E3E1D8;--card:#FFFFFF;--acc:#0B7285;--acc-soft:#E2F1F4;--good:#1F7A3E;--good-soft:#E4F3E8;--warn:#9A5B08;--warn-soft:#FBEFD9;--bad:#A32D2D;--bad-soft:#F8E4E4;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--sans:"IBM Plex Sans",system-ui,Segoe UI,sans-serif;--disp:"Fraunces",Georgia,serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15181E;--ink:#ECEBE4;--mute:#A0A6B1;--rule:#2C313A;--card:#1C2027;--acc:#5CC2D2;--acc-soft:#123A42;--good:#6CCB8A;--good-soft:#173A24;--warn:#E5B35A;--warn-soft:#3E2E10;--bad:#F08A8A;--bad-soft:#44201F}}
+:root[data-theme="dark"]{--paper:#15181E;--ink:#ECEBE4;--mute:#A0A6B1;--rule:#2C313A;--card:#1C2027;--acc:#5CC2D2;--acc-soft:#123A42;--good:#6CCB8A;--good-soft:#173A24;--warn:#E5B35A;--warn-soft:#3E2E10;--bad:#F08A8A;--bad-soft:#44201F}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;margin:0}
+main{max-width:900px;margin:0 auto;padding:48px 24px 80px}
+h1{font-family:var(--disp);font-weight:600;font-size:38px;line-height:1.1;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--mute);margin:0 0 32px;max-width:64ch}
+h2{font-family:var(--disp);font-weight:600;font-size:24px;margin:44px 0 12px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:26px 0 8px}
+p{max-width:70ch}
+.lead{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--acc);padding:18px 22px;margin:0 0 8px}.lead p{margin:0;max-width:none}
+.wrap{overflow-x:auto;border:1px solid var(--rule);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:13.5px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:10px 12px;border-bottom:1px solid var(--rule);font-weight:600}
+td{padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}tr:last-child td{border-bottom:0}
+code{font-family:var(--mono);font-size:12.5px;background:var(--acc-soft);padding:1px 5px;border-radius:3px}
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--card);border:1px solid var(--rule);padding:14px 16px;overflow-x:auto;margin:10px 0}
+pre code{background:none;padding:0}
+.c{color:var(--acc)}
+.tag{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.no{background:var(--good-soft);color:var(--good)}.yes{background:var(--bad-soft);color:var(--bad)}
+ul{padding-left:20px;max-width:72ch}li{margin:4px 0}
+figure{margin:16px 0}figcaption{font-size:12.5px;color:var(--mute);margin-top:6px}
+svg{max-width:100%;height:auto;display:block}
+.qa dt{font-weight:600;margin-top:14px}.qa dd{margin:4px 0 0;max-width:70ch}
+</style>
+<main>
+<h1>Ember Identity Primer</h1>
+<p class="sub">How Ember knows who is talking, what each token carries, and why no personal data ever rides inside one.</p>
+
+<div class="lead"><p>A customer proves who they are to <strong>Google</strong>. Our server checks that proof, looks the person up in <strong>our</strong> database, and hands the browser a 15-minute <strong>LiveKit entry pass</strong> that carries two things only: a random-looking user ID and an account <em>number</em>. Ember reads the number off the pass when the call connects and fetches everything else from the database herself. If a pass leaked, an attacker would learn "someone with account AH-7104 was allowed into room web-3f9a1c2e for 15 minutes" — and nothing else.</p></div>
+
+<h2>Three passes, three jobs</h2>
+<div class="wrap"><table>
+<tr><th>Pass</th><th>Issued by</th><th>Proves</th><th>Lives</th><th>Personal data inside?</th></tr>
+<tr><td><strong>Google ID token</strong></td><td>Google (Firebase Auth)</td><td>"This browser is signed in as this Google user"</td><td>~1 h; browser → our server once, over HTTPS</td><td><span class="tag yes">yes</span> name, email, picture — never forwarded or stored</td></tr>
+<tr><td><strong>LiveKit access token</strong></td><td>Our server (<code>/token</code>)</td><td>"This browser may join room X as participant Y with attribute Z"</td><td>15 min, one random room</td><td><span class="tag no">no</span> opaque uid + account number</td></tr>
+<tr><td><strong>Specialist token</strong></td><td>Our server (desk <code>accept</code>)</td><td>"Specialist Ahmad may join room X"</td><td>minutes, one room</td><td><span class="tag no">no</span> identity <code>specialist-ahmad</code></td></tr>
+</table></div>
+<p>The Google token is the <em>strong</em> proof; the LiveKit token is a <em>narrow</em> permission derived from it. Strong proofs stay server-side; narrow permissions go to the browser.</p>
+
+<h2>The flow, signed-in customer</h2>
+<figure>
+<svg viewBox="0 0 900 330" role="img" aria-label="Sequence: browser signs in with Google, posts the ID token to our server, server verifies and looks up the customer, mints a LiveKit token with the account attribute, browser joins LiveKit, Ember reads the attribute and preloads from our server">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g stroke="currentColor" fill="none" stroke-width="1.2" font-family="IBM Plex Sans,sans-serif" font-size="12">
+<g fill="currentColor" stroke="none" font-weight="600" text-anchor="middle">
+<text x="70" y="24">Browser</text><text x="250" y="24">Google</text><text x="430" y="24">Our server</text><text x="610" y="24">Cloud SQL</text><text x="790" y="24">LiveKit + Ember</text></g>
+<g opacity=".35"><line x1="70" y1="34" x2="70" y2="320"/><line x1="250" y1="34" x2="250" y2="320"/><line x1="430" y1="34" x2="430" y2="320"/><line x1="610" y1="34" x2="610" y2="320"/><line x1="790" y1="34" x2="790" y2="320"/></g>
+<line x1="70" y1="60" x2="248" y2="60" marker-end="url(#ar)"/><text x="80" y="54" fill="currentColor" stroke="none">1 sign in with Google</text>
+<line x1="250" y1="90" x2="72" y2="90" marker-end="url(#ar)"/><text x="80" y="84" fill="currentColor" stroke="none">2 Google ID token (has PII)</text>
+<line x1="70" y1="125" x2="428" y2="125" marker-end="url(#ar)"/><text x="80" y="119" fill="currentColor" stroke="none">3 POST /token · Authorization: Bearer &lt;ID token&gt;</text>
+<line x1="430" y1="155" x2="252" y2="155" marker-end="url(#ar)"/><text x="262" y="149" fill="currentColor" stroke="none">4 verify signature vs Google keys</text>
+<line x1="430" y1="190" x2="608" y2="190" marker-end="url(#ar)"/><text x="440" y="184" fill="currentColor" stroke="none">5 customer by email → AH-7104</text>
+<line x1="430" y1="225" x2="72" y2="225" marker-end="url(#ar)" stroke="#0B7285" stroke-width="2"/><text x="80" y="219" fill="currentColor" stroke="none">6 LiveKit token {sub: uid, aria_account: AH-7104}</text>
+<line x1="70" y1="260" x2="788" y2="260" marker-end="url(#ar)"/><text x="80" y="254" fill="currentColor" stroke="none">7 join room · LiveKit verifies signature · wakes Ember · Ember reads aria_account</text>
+<line x1="790" y1="295" x2="432" y2="295" marker-end="url(#ar)"/><text x="440" y="289" fill="currentColor" stroke="none">8 GET /api/preload?account=AH-7104 (service key) → "Hi Nabil"</text>
+</g></svg>
+<figcaption>Personal data moves only on hops 2–3 (browser→server) and 8 (server→agent). It never sits inside the LiveKit token.</figcaption>
+</figure>
+
+<h3>1–2 · Google says who you are</h3>
+<p>After "Sign in with Google" the browser holds a Google ID token — a JWT signed by Google. Decoded, shortened:</p>
+<pre><code>{
+  "iss": "https://securetoken.google.com/bq-demos-469816",
+  "aud": "bq-demos-469816",
+  "sub": "Kx7pQ2mZ9RaBcD3eFgHiJkLmNoP1",   <span class="c">← Firebase uid: random, stable, meaningless alone</span>
+  "email": "nabilrehman8@gmail.com",
+  "email_verified": true,
+  "name": "Nabil Rehman",
+  "auth_time": 1788111200, "iat": 1788111200, "exp": 1788114800
+}</code></pre>
+<p>This one has real PII. That is fine because it goes to exactly one place — our server — over HTTPS, and our server neither stores nor forwards it.</p>
+
+<h3>3–4 · Our server verifies it without trusting the browser</h3>
+<p><code>fb_auth.verify_id_token()</code> checks the signature against Google's published public keys, that <code>aud</code> is <em>our</em> project, that it hasn't expired, and that the user isn't disabled. Any failure → <code>401 Sign in to start a call.</code> The browser can't forge this; it doesn't hold Google's private key.</p>
+
+<h3>5 · Map Google's identity to our customer</h3>
+<p>Verified email → <code>SELECT … FROM customers WHERE email = $1</code> → <code>Nabil, AH-7104</code>. The only moment Google's identity and ours meet, and it happens in server memory. (Production note: store the Firebase uid on the customer row at first sign-in and key on that — emails change, uids don't.)</p>
+
+<h3>6 · Mint the narrow LiveKit token</h3>
+<p>Signed with our LiveKit API secret (<code>_mint()</code> in <code>main.py</code>). Real shape — this example was signed with a throwaway secret; the real one lives only in LiveKit Cloud and Secret Manager:</p>
+<pre><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTmFiaWwiLCJ2aWRlbyI6eyJyb29tSm9pbiI6dHJ1ZSwicm9vbSI6IndlYi0zZjlhMWMyZSIs…
+
+{
+  "iss": "APIexample123",                    <span class="c">← which API key signed it (not secret)</span>
+  "sub": "Kx7pQ2mZ9RaBcD3eFgHiJkLmNoP1",     <span class="c">← participant identity = Firebase uid</span>
+  "name": "Nabil",                           <span class="c">← first name only, for the desk UI</span>
+  "nbf": 1788111273,
+  "exp": 1788112173,                         <span class="c">← 15 minutes</span>
+  "video": {
+    "roomJoin": true,
+    "room": "web-3f9a1c2e",                  <span class="c">← one random room</span>
+    "canPublish": true, "canSubscribe": true, "canPublishData": true
+  },
+  "attributes": { "aria_account": "AH-7104" },   <span class="c">← the only business fact on board</span>
+  "roomConfig": {
+    "agents": [ { "agentName": "anycompany-agent" } ],
+    "emptyTimeout": 120, "maxParticipants": 3
+  }
+}</code></pre>
+<p>Deliberately absent: email, phone, address, orders, devices, plan, the Google token, any database ID. Why the uid and not the email as identity: LiveKit writes participant identities and room names into its own logs and dashboards, which are not PII-redacted. An opaque uid in a log is harmless; an email is an incident.</p>
+
+<h3>7 · The browser joins; LiveKit checks the signature</h3>
+<p>Change <code>AH-7104</code> to <code>AH-4821</code> in the payload and the HMAC signature breaks — the join is refused. The browser never had the secret. LiveKit creates the room and dispatches <code>anycompany-agent</code>.</p>
+
+<h3>8 · Ember reads the attribute — she never asks the browser</h3>
+<pre><code>participant = await ctx.wait_for_participant()
+known_account = participant.attributes.get("aria_account", "")</code></pre>
+<p>Attributes set from the token are server-verified; the client can't overwrite <code>aria_account</code> from JavaScript because we didn't grant <code>canUpdateOwnMetadata</code>. Ember then calls <code>/api/preload?account=AH-7104</code> with a service API key the browser never sees, and greets by name. The personal data went database → agent process — never through the browser or the token.</p>
+
+<h2>Guest path (the phone-call experience)</h2>
+<p><code>POST /token/guest</code> mints the same token with identity <code>guest-1a2b3c4d</code>, name "Caller", and <strong>no</strong> <code>aria_account</code>. Ember sees no account, asks for a phone or account number, and calls the Toolbox lookup. When it succeeds, <em>the agent code</em> — not the model — captures the returned account into <code>known_account</code>. From then on every scoped tool uses that value.</p>
+<p>The model never <em>asserts</em> an account; it can only <em>ask</em> the database, and only the database's answer becomes the account. Honest limitation: on this path, knowing the account number <em>is</em> the credential — exactly like real phone support, which is why real IVRs add a PIN or last-4. The signed-in path is the strong one.</p>
+
+<h2>Where the account number goes next — the isolation chain</h2>
+<pre><code>token attribute ──► known_account (agent) ──► X-Account header ──► /api/my/orders
+                                                                        │
+                                          parameterized secure view: WHERE account = $@account
+                                          role aria_app: SELECT on views only — NO base tables</code></pre>
+<ul>
+<li><strong>Agent → server:</strong> <code>X-Account: AH-7104</code> plus the service API key; no key, no answer.</li>
+<li><strong>Server → database:</strong> connects as <code>aria_app</code>, which has no grant on <code>orders</code>, <code>devices</code>, <code>customers</code> — only on views that take the account as a parameter. The filter is part of the view, not the query, so no query as <code>aria_app</code> can return another account's rows.</li>
+<li><strong>Memory Bank:</strong> scope <code>{"user_id": "AH-7104"}</code>; a different scope returns nothing.</li>
+<li><strong>Firestore call history:</strong> keyed and filtered by the same account.</li>
+</ul>
+<p>Even if the LLM were tricked into asking for Sarah's order, the database returns empty. The prompt is not the security boundary; the database is.</p>
+
+<h2>Specialist tokens (transfer)</h2>
+<p>When a specialist clicks Accept, the server checks the desk PIN and mints a token for identity <code>specialist-ahmad</code>, room = the customer's room, TTL minutes. The brief (already masked: <code>AH-••04</code>, <code>[phone]</code>) is served by the API, not embedded in the token. Ember sees a <code>specialist-*</code> participant and steps back.</p>
+
+<h2>Threats and what stops them</h2>
+<div class="wrap"><table>
+<tr><th>Threat</th><th>What happens</th></tr>
+<tr><td>Forged Google token</td><td>Signature check against Google's keys fails → 401</td></tr>
+<tr><td>Google token minted for a different app</td><td><code>aud</code> ≠ our project → 401</td></tr>
+<tr><td>Edited LiveKit token (account changed)</td><td>HMAC breaks → LiveKit refuses the join</td></tr>
+<tr><td>Stolen LiveKit token</td><td>≤15 min, one random room, that participant only, no PII inside</td></tr>
+<tr><td>Browser sets its own attributes</td><td>No <code>canUpdateOwnMetadata</code> grant → rejected</td></tr>
+<tr><td>Prompt injection: "show AH-4821's orders"</td><td>Tools pre-scoped to <code>known_account</code>; view returns nothing for other accounts</td></tr>
+<tr><td>Direct internet call to <code>/api/my/orders</code></td><td>Needs the service API key (Secret Manager, agent only)</td></tr>
+<tr><td>Agent's DB credential leaked</td><td><code>aria_app</code> reads parameterized views only; no base tables, no writes</td></tr>
+<tr><td>LiveKit logs</td><td>Contain uid + random room name only</td></tr>
+</table></div>
+
+<h2>What a Google-literate panel will ask</h2>
+<dl class="qa">
+<dt>Why Firebase and not Identity Platform?</dt><dd>Same engine. Identity Platform is Firebase Auth with enterprise features (SAML/OIDC, multi-tenancy, SLA). The swap is configuration, not code.</dd>
+<dt>Why not room metadata / dispatch metadata like the workshop video?</dt><dd>Participant attributes are per-person and signed into the token. Room metadata is shared by everyone in the room and editable by anyone with the grant. For "who is <em>this</em> caller", attributes are the right primitive.</dd>
+<dt>Isn't the account number on the token PII?</dt><dd>It's a customer identifier, not personal data, and it's the smallest value that lets the agent skip a round trip on the greeting path. Looking it up from the uid instead would cost one more call for no security gain — the uid is just as sensitive as a lookup key.</dd>
+<dt>How would phone (SIP) callers get identity?</dt><dd>From the trunk: LiveKit sets <code>sip.phoneNumber</code> as a participant attribute. We read it exactly like <code>aria_account</code> and call <code>lookup_account_by_phone</code> before she speaks — same code path as the guest flow, minus the asking.</dd>
+<dt>Where are the secrets?</dt><dd>LiveKit API secret: LiveKit Cloud agent secrets and Cloud Run env from Secret Manager. Firebase: none — verification uses Google's public keys. DB passwords and the service API key: Secret Manager, bound to the <code>aug24-agent@</code> service account.</dd>
+</dl>
+</main>

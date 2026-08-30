@@ -1,0 +1,137 @@
+<title>Ember Memory Stack Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+:root{--paper:#FAFAF7;--ink:#1B1F2A;--mute:#5F6673;--rule:#E3E1D8;--card:#FFFFFF;--acc:#0B7285;--acc-soft:#E2F1F4;--good:#1F7A3E;--good-soft:#E4F3E8;--warn:#9A5B08;--warn-soft:#FBEFD9;--bad:#A32D2D;--bad-soft:#F8E4E4;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--sans:"IBM Plex Sans",system-ui,Segoe UI,sans-serif;--disp:"Fraunces",Georgia,serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15181E;--ink:#ECEBE4;--mute:#A0A6B1;--rule:#2C313A;--card:#1C2027;--acc:#5CC2D2;--acc-soft:#123A42;--good:#6CCB8A;--good-soft:#173A24;--warn:#E5B35A;--warn-soft:#3E2E10;--bad:#F08A8A;--bad-soft:#44201F}}
+:root[data-theme="dark"]{--paper:#15181E;--ink:#ECEBE4;--mute:#A0A6B1;--rule:#2C313A;--card:#1C2027;--acc:#5CC2D2;--acc-soft:#123A42;--good:#6CCB8A;--good-soft:#173A24;--warn:#E5B35A;--warn-soft:#3E2E10;--bad:#F08A8A;--bad-soft:#44201F}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;margin:0}
+main{max-width:920px;margin:0 auto;padding:48px 24px 80px}
+h1{font-family:var(--disp);font-weight:600;font-size:38px;line-height:1.1;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--mute);margin:0 0 36px;max-width:64ch}
+h2{font-family:var(--disp);font-weight:600;font-size:24px;margin:44px 0 12px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:24px 0 8px}
+p{max-width:68ch}
+.verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--acc);padding:18px 22px;margin:0 0 8px}
+.verdict p{margin:0 0 8px}.verdict p:last-child{margin:0}
+.wrap{overflow-x:auto;border:1px solid var(--rule);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:10px 12px;border-bottom:1px solid var(--rule);font-weight:600}
+td{padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+code{font-family:var(--mono);font-size:12.5px;background:var(--acc-soft);padding:1px 5px;border-radius:3px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.have{background:var(--good-soft);color:var(--good)}.gap{background:var(--warn-soft);color:var(--warn)}.no{background:var(--bad-soft);color:var(--bad)}.skip{background:var(--acc-soft);color:var(--acc)}
+ul{padding-left:20px;max-width:70ch}li{margin:4px 0}
+.src{font-size:12.5px;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:12px 0}
+.opt{background:var(--card);border:1px solid var(--rule);padding:16px 18px}
+.opt h3{margin:0 0 6px}.opt .cost{font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+figure{margin:16px 0}figcaption{font-size:12.5px;color:var(--mute);margin-top:6px}
+svg{max-width:100%;height:auto;display:block}
+</style>
+<main>
+<h1>Ember Memory Stack Review</h1>
+<p class="sub">The Supabase → Google Cloud PRD, checked against docs current to 28 Aug 2026 and against what Ember already runs. Bottom line first, evidence after.</p>
+
+<div class="verdict">
+<p><strong>Verdict: don't move memory into AlloyDB.</strong> The PRD's own decision matrix says "Memory Bank for relationship facts, a Postgres table for hard state." Ember already does exactly that split — hard state in Cloud SQL + Firestore, facts in Vertex AI Memory Bank, both preloaded in parallel with the WebRTC handshake. AlloyDB adds ScaNN and Preview AI operators; none of that is on our hot path, and the smallest cluster is ~$110–225/month for a demo that runs on a $50 Cloud SQL instance today.</p>
+<p><strong>What's actually missing</strong> is small: a <code>forget</code> tool, a metrics line proving Memory Bank retrieval latency (Google publishes none), and hybrid keyword search — which only matters if we ever need exact SKU/part-number matches, and RAG Engine can't do it on its managed store anyway.</p>
+</div>
+
+<h2>Feature by feature: PRD vs Ember today</h2>
+<div class="wrap"><table>
+<tr><th>PRD capability</th><th>Ember today</th><th>Where</th><th>Status</th></tr>
+<tr><td>Identity without trusting the client (verified uid → LiveKit token)</td><td>Firebase ID token verified server-side; uid = LiveKit identity, account rides as participant attribute <code>aria_account</code>. Guests identify by phone/account via Toolbox.</td><td><code>webapp/main.py /token</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Anonymous auth (zero login)</td><td>Deliberately not: signed-in Gmail or guest lookup. Anonymous UUIDs can't be tied to an order history, which is what the graded beats need.</td><td>—</td><td><span class="tag skip">by design</span></td></tr>
+<tr><td>Row-level isolation enforced in the database</td><td>Parameterized secure views (<code>$@account</code>) read by a role with no base-table grant. Same extension exists on AlloyDB — no change if we migrated.</td><td><code>secure_views.sql</code>, <code>/api/my/*</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Parallel preload before first turn (profile, devices, memories)</td><td>One <code>/api/preload</code> call gathered with <code>session.start</code>: profile, devices + live state, latest order, last call, memories → <code>update_instructions</code>.</td><td><code>agent.py _preload</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Memory: explicit <em>remember</em></td><td><code>memories.create(fact, scope={user_id})</code></td><td><code>mcp/server.py remember</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Memory: <em>recall</em> / semantic search</td><td><code>memories.retrieve(similarity_search_params)</code> — Memory Bank embeds the query itself (default <code>text-embedding-005</code>).</td><td><code>recall</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Memory: automatic extraction + contradiction handling</td><td><code>memories.generate(direct_contents_source, wait_for_completion=False)</code> at shutdown. Verified live: "back Sept 10" → "Sept 3" updated, not duplicated. The Supabase EAV design only gets this via exact key match.</td><td><code>save_call_memory</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Memory: <em>forget</em></td><td>Not exposed. Memory Bank supports delete and TTL; ~15 lines.</td><td>—</td><td><span class="tag gap">gap</span></td></tr>
+<tr><td>Memory: <em>list all</em></td><td>Preload already pulls the full scope; no separate tool needed.</td><td><code>/api/preload</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Hybrid search (vector + full-text, RRF)</td><td>No. Memory Bank is vector-only; RAG Engine's managed store is vector-only. Only needed for exact tokens (SKUs, error codes).</td><td>—</td><td><span class="tag gap">gap · optional</span></td></tr>
+<tr><td>Knowledge base RAG over manuals/policy</td><td>Vertex RAG Engine corpus (returns policy PDF, europe-west3), <code>retrieveContexts</code> top-3.</td><td><code>search_knowledge</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Device state read + control</td><td>Read: Firestore telemetry (<code>get_device_state</code>, history). Write/control: none — support agent is read-only by design; nothing can unlock a door.</td><td><code>mcp/server.py</code></td><td><span class="tag skip">read-only by design</span></td></tr>
+<tr><td>ToolError for missing records</td><td>Yes, with idempotency guard so the model doesn't retry into a second ticket.</td><td><code>agent.py</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>Post-call telemetry in shutdown callback</td><td>Masked transcript + tool calls + brief → Firestore <code>call_history</code>; turn latency metrics logged.</td><td><code>_remember</code>, <code>turn_latency.py</code></td><td><span class="tag have">have</span></td></tr>
+<tr><td>In-database embeddings</td><td>Not needed: Memory Bank and RAG Engine embed internally. (Cloud SQL has <code>google_ml_integration</code> if we ever want it — AlloyDB not required.)</td><td>—</td><td><span class="tag skip">n/a</span></td></tr>
+<tr><td>Measured retrieval latency</td><td>We log turn latency but not the Memory Bank / RAG call time separately.</td><td>—</td><td><span class="tag gap">gap</span></td></tr>
+</table></div>
+
+<h2>Where the PRD is wrong or out of date</h2>
+<div class="wrap"><table>
+<tr><th>PRD claim</th><th>Current docs say</th></tr>
+<tr><td>"Cloud SQL supports ScaNN"</td><td><span class="tag no">false</span> <code>alloydb_scann</code> is AlloyDB-only; Cloud SQL has pgvector 0.8.5 HNSW/IVFFlat. Its "Vector Assist" preview is currently disabled.</td></tr>
+<tr><td>"ScaNN is 4x faster than HNSW"</td><td><em>Up to</em> 4x at ~1M vectors (Google's GloVe-100 benchmark), 10x only when HNSW spills RAM at 1B. Our memory table would hold a few hundred rows — irrelevant.</td></tr>
+<tr><td>"Native hybrid search in AlloyDB"</td><td>Documented pattern is the same manual RRF CTE as Supabase. <code>ai.hybrid_search()</code>, <code>ai.if/ai.rank</code>, BM25 (<code>pg_textsearch</code>, PG17+) are all <strong>Preview</strong> behind flags.</td></tr>
+<tr><td>"Memory Bank adds 150–350 ms sequential overhead"</td><td>No retrieval latency is published anywhere. Also moot for Ember: retrieval runs in the preload gather, and the greeting doesn't wait for it.</td></tr>
+<tr><td>"RAG Engine hybrid search via Vector Search backend"</td><td><span class="tag no">false</span> Hybrid is only available with a Weaviate backend. RagManagedDb and Vector Search 1.0/2.0 are vector-only inside RAG Engine.</td></tr>
+<tr><td>"Vertex AI Memory Bank / RAG Engine" naming</td><td>Rebranded at Next '26 (Apr 2026): <strong>Gemini Enterprise Agent Platform</strong>; Agent Engine → Agent Runtime; Vector Search 2.0 → Agent Retrieval; Vertex AI Search → Agent Search. Say "Agent Engine Memory Bank (Gemini Enterprise Agent Platform)" on the slide.</td></tr>
+<tr><td><code>text-embedding-005</code> as the embedding model</td><td>Works (768-dim) but retires <strong>1 Apr 2027</strong> and it is Memory Bank's default. Set <code>gemini-embedding-001</code> (MRL-truncated to 768) on the memory bank config before a customer deploy.</td></tr>
+<tr><td><code>embedding('text-embedding-005', txt)</code> returns a vector</td><td>Returns <code>REAL[]</code>; needs <code>::vector(768)</code>. Also valid on Cloud SQL, not just AlloyDB.</td></tr>
+<tr><td>Memory Bank API version</td><td>Product GA (Dec 2025), REST surface still <code>v1beta1</code>. Our Python client abstracts this; a raw REST caller must use v1beta1.</td></tr>
+<tr><td>RAG Engine "GA"</td><td>GA in europe-west3/4 (where our corpus is — good call). us-central1 is allowlist. Serverless mode (Apr 2026) is the cheap option if the corpus grows.</td></tr>
+<tr><td>Memory Bank pricing</td><td>New metering from <strong>1 Sep 2026</strong> (two days away): ~$0.028 per 1M reads, $0.085 per 1M writes, $0.30/GiB-month. Gemini extraction tokens dominate; storage/ops are noise.</td></tr>
+</table></div>
+
+<h2>The three ways to hold memory on Google Cloud</h2>
+<figure>
+<svg viewBox="0 0 900 250" role="img" aria-label="Three memory architectures compared by what sits between the agent and the facts">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g fill="none" stroke="currentColor" stroke-width="1.2" font-family="IBM Plex Sans,sans-serif" font-size="12">
+<!-- A -->
+<rect x="20" y="20" width="270" height="210" rx="4" stroke-dasharray="4 3" opacity=".5"/>
+<text x="32" y="40" fill="currentColor" stroke="none" font-weight="600">A · Ember today</text>
+<rect x="40" y="60" width="100" height="34" rx="3"/><text x="90" y="82" text-anchor="middle" fill="currentColor" stroke="none">LiveKit agent</text>
+<rect x="170" y="60" width="100" height="34" rx="3" stroke="#0B7285" stroke-width="2"/><text x="220" y="82" text-anchor="middle" fill="currentColor" stroke="none">Memory Bank</text>
+<rect x="40" y="130" width="100" height="34" rx="3"/><text x="90" y="152" text-anchor="middle" fill="currentColor" stroke="none">Cloud SQL</text>
+<rect x="170" y="130" width="100" height="34" rx="3"/><text x="220" y="152" text-anchor="middle" fill="currentColor" stroke="none">RAG Engine</text>
+<line x1="140" y1="77" x2="168" y2="77" marker-end="url(#a)"/>
+<line x1="90" y1="94" x2="90" y2="128" marker-end="url(#a)"/>
+<line x1="140" y1="147" x2="168" y2="147" marker-end="url(#a)"/>
+<text x="40" y="195" fill="currentColor" stroke="none" opacity=".75">3 calls, all in one gather</text>
+<text x="40" y="212" fill="currentColor" stroke="none" opacity=".75">facts extracted by Gemini, consolidated</text>
+<!-- B -->
+<rect x="315" y="20" width="270" height="210" rx="4" stroke-dasharray="4 3" opacity=".5"/>
+<text x="327" y="40" fill="currentColor" stroke="none" font-weight="600">B · PRD: AlloyDB unified</text>
+<rect x="335" y="60" width="100" height="34" rx="3"/><text x="385" y="82" text-anchor="middle" fill="currentColor" stroke="none">LiveKit agent</text>
+<rect x="465" y="60" width="100" height="104" rx="3" stroke="#0B7285" stroke-width="2"/>
+<text x="515" y="85" text-anchor="middle" fill="currentColor" stroke="none">AlloyDB</text>
+<text x="515" y="105" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">state · memory rows</text>
+<text x="515" y="122" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">pgvector · tsvector</text>
+<text x="515" y="139" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">embedding() in SQL</text>
+<line x1="435" y1="77" x2="463" y2="77" marker-end="url(#a)"/>
+<text x="335" y="195" fill="currentColor" stroke="none" opacity=".75">1 call, &lt;15 ms, but the LLM must</text>
+<text x="335" y="212" fill="currentColor" stroke="none" opacity=".75">call remember() for every fact</text>
+<!-- C -->
+<rect x="610" y="20" width="270" height="210" rx="4" stroke-dasharray="4 3" opacity=".5"/>
+<text x="622" y="40" fill="currentColor" stroke="none" font-weight="600">C · Hybrid (if SKUs matter)</text>
+<rect x="630" y="60" width="100" height="34" rx="3"/><text x="680" y="82" text-anchor="middle" fill="currentColor" stroke="none">LiveKit agent</text>
+<rect x="760" y="60" width="100" height="34" rx="3" stroke="#0B7285" stroke-width="2"/><text x="810" y="82" text-anchor="middle" fill="currentColor" stroke="none">Memory Bank</text>
+<rect x="760" y="130" width="100" height="34" rx="3"/><text x="810" y="152" text-anchor="middle" fill="currentColor" stroke="none">Cloud SQL + FTS</text>
+<line x1="730" y1="77" x2="758" y2="77" marker-end="url(#a)"/>
+<line x1="730" y1="85" x2="758" y2="140" marker-end="url(#a)"/>
+<text x="630" y="195" fill="currentColor" stroke="none" opacity=".75">facts in Memory Bank; exact tokens</text>
+<text x="630" y="212" fill="currentColor" stroke="none" opacity=".75">(SKU, error code) via tsvector in Postgres</text>
+</g></svg>
+<figcaption>A is what runs now. B trades automatic extraction for one fewer network hop. C adds keyword search only where vectors are weak.</figcaption>
+</figure>
+
+<div class="grid">
+<div class="opt"><h3>A · Memory Bank (current)</h3><p class="cost">~$0 at demo scale · retrieval unmeasured, hidden by gather</p><ul><li>Facts extracted and consolidated by Gemini — nobody writes <code>remember()</code> for every preference.</li><li>Scope = account number is the isolation boundary.</li><li>Keep. Add <code>forget</code>, pin embedding model, log retrieval ms.</li></ul></div>
+<div class="opt"><h3>B · AlloyDB EAV + pgvector</h3><p class="cost">$110–225/mo minimum (free 30-day trial cluster) · &lt;15 ms</p><ul><li>Right when memory <em>is</em> hard state the agent writes deterministically (setpoints, PINs).</li><li>Loses implicit extraction; contradictions only resolved on exact key.</li><li>Everything it offers except ScaNN also runs on our Cloud SQL.</li></ul></div>
+<div class="opt"><h3>C · Add tsvector to Cloud SQL</h3><p class="cost">$0 extra · one migration</p><ul><li>Only if the panel probes "what about model numbers / error codes?"</li><li>RAG Engine can't do hybrid on its managed store; Postgres FTS can, next to the data we already own.</li></ul></div>
+</div>
+
+<h2>What I'd change before the panel</h2>
+<ul>
+<li><strong>Add <code>forget(account, fact)</code></strong> — closes the CRUD story ("remember, recall, forget") the PRD's five-tool set implies. Memory Bank supports delete; ~15 lines in <code>server.py</code> + <code>data.py</code>.</li>
+<li><strong>Log Memory Bank and RAG retrieval time</strong> per call in <code>turn_latency.py</code> — turns "Google publishes no figure" into "we measured 90 ms, and it's off the greeting path anyway."</li>
+<li><strong>Pin <code>similarity_search_config.embedding_model = gemini-embedding-001</code></strong> on the memory bank — the default retires April 2027.</li>
+<li><strong>Slide wording:</strong> "Agent Engine Memory Bank on Gemini Enterprise Agent Platform" and cite the 1 Sep 2026 pricing. Say "we chose managed memory over pgvector because facts are extracted, not declared" — that is the one-sentence answer to "why not AlloyDB?"</li>
+<li><strong>Don't build</strong> AlloyDB, anonymous auth, or device control for this demo. If asked: "AlloyDB is a drop-in for our Cloud SQL — same parameterized views, same Toolbox — and we'd move when ScaNN filtered search matters, i.e. millions of vectors, not hundreds."</li>
+</ul>
+
+<p class="src">Sources checked 26–30 Aug 2026: AlloyDB embeddings, ScaNN, adaptive filtering, parameterized secure views, hybrid search and pricing docs; Cloud SQL extensions list; Memory Bank setup/fetch/generate docs and Agent Platform pricing; RAG Engine overview, vector-db choices, retrieval-and-ranking, billing; Vertex model-versions and embeddings pricing; adk.dev memory services; Google blogs on ScaNN vs HNSW (Mar 2025), Memory Bank preview (Jul 2025), ADK memory (Aug 2025), multi-agent memory (Mar 2026).</p>
+</main>

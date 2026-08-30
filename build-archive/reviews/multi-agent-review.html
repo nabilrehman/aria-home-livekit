@@ -1,0 +1,117 @@
+<title>Ember Multi-Agent Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+:root{--paper:#FAFAF7;--ink:#1B1F2A;--mute:#5F6673;--rule:#E3E1D8;--card:#FFFFFF;--acc:#0B7285;--acc-soft:#E2F1F4;--good:#1F7A3E;--good-soft:#E4F3E8;--warn:#9A5B08;--warn-soft:#FBEFD9;--bad:#A32D2D;--bad-soft:#F8E4E4;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--sans:"IBM Plex Sans",system-ui,Segoe UI,sans-serif;--disp:"Fraunces",Georgia,serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15181E;--ink:#ECEBE4;--mute:#A0A6B1;--rule:#2C313A;--card:#1C2027;--acc:#5CC2D2;--acc-soft:#123A42;--good:#6CCB8A;--good-soft:#173A24;--warn:#E5B35A;--warn-soft:#3E2E10;--bad:#F08A8A;--bad-soft:#44201F}}
+:root[data-theme="dark"]{--paper:#15181E;--ink:#ECEBE4;--mute:#A0A6B1;--rule:#2C313A;--card:#1C2027;--acc:#5CC2D2;--acc-soft:#123A42;--good:#6CCB8A;--good-soft:#173A24;--warn:#E5B35A;--warn-soft:#3E2E10;--bad:#F08A8A;--bad-soft:#44201F}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;margin:0}
+main{max-width:920px;margin:0 auto;padding:48px 24px 80px}
+h1{font-family:var(--disp);font-weight:600;font-size:38px;line-height:1.1;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--mute);margin:0 0 32px;max-width:64ch}
+h2{font-family:var(--disp);font-weight:600;font-size:24px;margin:44px 0 12px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:24px 0 8px}
+p{max-width:70ch}
+.lead{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--acc);padding:18px 22px;margin:0 0 8px}.lead p{margin:0 0 8px;max-width:none}.lead p:last-child{margin:0}
+.wrap{overflow-x:auto;border:1px solid var(--rule);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:700px;font-size:13.5px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:10px 12px;border-bottom:1px solid var(--rule);font-weight:600}
+td{padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}tr:last-child td{border-bottom:0}
+code{font-family:var(--mono);font-size:12.5px;background:var(--acc-soft);padding:1px 5px;border-radius:3px}
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--card);border:1px solid var(--rule);padding:14px 16px;overflow-x:auto;margin:10px 0}pre code{background:none;padding:0}
+.tag{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.in{background:var(--warn-soft);color:var(--warn)}.out{background:var(--acc-soft);color:var(--acc)}.have{background:var(--good-soft);color:var(--good)}.gap{background:var(--bad-soft);color:var(--bad)}
+ul{padding-left:20px;max-width:72ch}li{margin:4px 0}
+blockquote{border-left:3px solid var(--rule);margin:10px 0;padding:4px 16px;color:var(--mute);max-width:68ch}
+figure{margin:16px 0}figcaption{font-size:12.5px;color:var(--mute);margin-top:6px}svg{max-width:100%;height:auto;display:block}
+.src{font-size:12.5px;color:var(--mute)}.src a{color:inherit}
+</style>
+<main>
+<h1>Ember Multi-Agent Review</h1>
+<p class="sub">What production voice-support teams actually do with multiple agents — LiveKit, OpenAI, Google, Parloa, Sierra, Decagon — and what that means for Ember. Sources checked 30 Aug 2026.</p>
+
+<div class="lead">
+<p><strong>Revised recommendation.</strong> Yesterday I suggested splitting Ember into a front-door agent plus two persona specialists. The evidence says do something narrower: <strong>keep one Ember, add <em>tasks</em>, not personas.</strong> LiveKit's own two richest examples (hotel receptionist, healthcare) are one <code>Agent</code> with <code>AgentTask</code>s for bounded jobs — they do not hand off between persona agents. Parloa's production data (24% faster resolution) comes from agents that own one <em>user goal</em> each with deterministic gating, not from "billing bot" vs "tech bot". And every source lists the same #1 failure: context loss and repeat-yourself at the handoff boundary.</p>
+<p><strong>For Ember that means:</strong> one voice, one identity path, and three bounded tasks — <em>Return/Refund intake</em>, <em>Device troubleshooting</em>, <em>Specialist handoff</em> — plus the out-of-band workers we already run (brief writer, memory extraction, call logging). This is smaller than the three-persona split, cheaper to test before the panel, and it is the architecture LiveKit's docs literally tell you to start from.</p>
+</div>
+
+<h2>What each source actually recommends</h2>
+<div class="wrap"><table>
+<tr><th>Source</th><th>Topology they use or recommend</th><th>Key line / number</th></tr>
+<tr><td><strong>LiveKit docs — Workflows</strong></td><td>"Start with a single agent and a small set of tools." Split only on: instruction bloat, conflicting tool access, multi-turn data collection, backtracking. Tasks = short-lived, return a typed result, "minimal" latency; agent handoffs "carry handoff overhead per transition".</td><td>Tasks for "discrete operations that must complete before continuing"; separate agents only for "distinct reasoning behavior or tool access".</td></tr>
+<tr><td><strong>LiveKit blog — Handoff pattern</strong></td><td>Triage → specialists (Billing / Support / Sales) → human. Context via <code>chat_ctx.copy(exclude_instructions=True)</code>.</td><td>"If there's only one specialist agent, skip the triage layer entirely." "#1 source of frustration in transfers is having to repeat information." "The handoff boundary is where most friction and failure lives."</td></tr>
+<tr><td><strong>LiveKit examples repo</strong> (<code>hotel_receptionist</code>, <code>healthcare</code>)</td><td><strong>One Agent</strong> + tool mixins (<code>RoomTools</code>, <code>RestaurantTools</code>, <code>ServicesTools</code>) + <code>AgentTask</code>s (<code>book_room</code>, <code>verify_booking</code>, <code>get_card</code>, <code>GetInsuranceTask</code>, <code>ScheduleAppointmentTask</code>) + <code>TaskGroup</code> for intake + <code>WarmTransferTask</code>.</td><td>"The LLM never owns money values" — totals and refund caps are computed server-side. This is the closest published analogue to Aria Home (orders, policies, disputes).</td></tr>
+<tr><td><strong>OpenAI realtime-agents</strong></td><td>Two patterns: <em>Chat-Supervisor</em> (fast realtime model talks; bigger text model does tools/decisions) and <em>Sequential handoff</em> (Authentication → Returns → Sales → Simulated Human).</td><td>Handoffs exist to avoid "all instructions and tools in a single agent, which can degrade performance." Supervisor pattern trade: more "let me think" fillers.</td></tr>
+<tr><td><strong>Google ADK</strong></td><td>Coordinator/Dispatcher → Billing Specialist, Tech Support Specialist; 8 named patterns.</td><td>"Do not build a nested loop system on day one. Start with a sequential chain, debug it, and then add complexity."</td></tr>
+<tr><td><strong>Parloa — Subtask Agents</strong> (voice-first, production)</td><td>One agent per <em>user goal</em> (auth, order status, cancellation, FAQ, escalation). Two-layer routing: deterministic eligibility (<code>is_authenticated == true</code>) at sub-ms, then the <em>current</em> agent's LLM picks among eligible ones — <strong>no routing LLM call</strong>.</td><td>Split signal: "when resolution instructions stretch to cover more than two or three scenarios." Result: "24% average reduction in time-to-call-resolution… fastest conversations up to 47% sooner." "Treat the LLM as a bounded participant."</td></tr>
+<tr><td><strong>Sierra — Constellation of models</strong></td><td>Not persona agents: 15+ models by <em>function</em> — retrieval, classification, tool calling, reasoning, tone — plus real-time <strong>supervisors</strong> that check output against scope and policy before the agent responds.</td><td>"No single model meets the unique constraints of every task." Supervisors run in the response path; guardrails are deterministic.</td></tr>
+<tr><td><strong>Decagon — AOPs</strong></td><td>One agent; behaviour is a library of natural-language "Agent Operating Procedures" (SOPs) selected per situation, with code-level guardrails.</td><td>Avoids "codifying every scenario into an inflexible tree."</td></tr>
+<tr><td><strong>Production post-mortems (2026)</strong></td><td>—</td><td>"Infinite handoff loops are the number one failure mode… context loss compounds with every transfer." "Over-specialization… super fine-grained agents that require multiple handoffs to perform one task." "Right-size the agent and right-size the prompt."</td></tr>
+</table></div>
+
+<h2>The taxonomy that falls out</h2>
+<div class="wrap"><table>
+<tr><th>Role</th><th>Runs</th><th>Who does it</th><th>Ember</th></tr>
+<tr><td><strong>Conversation agent</strong> — the voice, identity, tone, routing</td><td><span class="tag in">in-band</span></td><td>Everyone; usually exactly one</td><td><span class="tag have">have</span> Ember</td></tr>
+<tr><td><strong>Goal / task agents</strong> — bounded multi-turn jobs with a typed result (verify identity, collect return reason, take card, schedule)</td><td><span class="tag in">in-band</span></td><td>LiveKit examples, Parloa subtasks, OpenAI Authentication/Returns</td><td><span class="tag gap">gap</span> — identify, return-intake, troubleshoot</td></tr>
+<tr><td><strong>Domain persona specialists</strong> (Billing bot, Tech bot)</td><td><span class="tag in">in-band</span></td><td>LiveKit/ADK blog tutorials, Cerebras workshop</td><td>Not needed at 14 tools — tutorials, not production evidence</td></tr>
+<tr><td><strong>Supervisor / policy checker</strong> — checks the reply against scope before it's spoken</td><td><span class="tag in">in-band</span> (adds latency)</td><td>Sierra, OpenAI chat-supervisor</td><td>Partial: refund never approved by Ember; deterministic guards (<code>_handed_off</code>, idempotent tickets)</td></tr>
+<tr><td><strong>Deterministic gate</strong> — code decides what the LLM may route to</td><td>sub-ms</td><td>Parloa eligibility layer</td><td><span class="tag have">have</span> tools scoped to <code>known_account</code>; not yet as explicit eligibility</td></tr>
+<tr><td><strong>Handoff-brief writer</strong> — summary, mood, next steps for the human</td><td><span class="tag out">out-of-band</span> (parallel LLM call)</td><td>LiveKit warm transfer, agent-assist vendors</td><td><span class="tag have">have</span> <code>_handoff_brief</code></td></tr>
+<tr><td><strong>Memory extractor</strong></td><td><span class="tag out">out-of-band</span></td><td>Memory Bank, mem0</td><td><span class="tag have">have</span> <code>generate_memories</code> at shutdown</td></tr>
+<tr><td><strong>QA scorer / call logger</strong></td><td><span class="tag out">out-of-band</span></td><td>Cresta, AmplifAI, every contact-centre stack</td><td><span class="tag have">have</span> masked transcript + tool calls in Firestore; no score yet</td></tr>
+<tr><td><strong>Human escalation</strong></td><td><span class="tag in">in-band</span></td><td>All</td><td><span class="tag have">have</span> Specialist Desk / WarmTransferTask</td></tr>
+</table></div>
+
+<h2>Why persona specialists are the wrong split for Ember</h2>
+<ul>
+<li><strong>Ember's questions cross domains in one breath.</strong> "My thermostat order arrived broken" is an order <em>and</em> a device. A persona split forces a routing decision the customer never asked for; a task split doesn't — Ember stays, and pulls in <em>Return intake</em> when that becomes the goal.</li>
+<li><strong>The handoff boundary is where identity and preload get lost.</strong> Every source names repeat-yourself as the top complaint. With tasks, <code>known_account</code>, the preload text and memories never leave the agent.</li>
+<li><strong>14 tools is under the threshold.</strong> LiveKit's tool guidance is 5–12 per turn; Parloa's split signal is "more than two or three scenarios" <em>in one resolution instruction</em>. We're at the edge, and tasks fix it by hiding a task's tools until the task runs.</li>
+<li><strong>No routing LLM call.</strong> Parloa's number comes from routing being free. LiveKit's persona handoff costs a full LLM decision plus a filler line; a task invocation is the same tool call the agent was making anyway.</li>
+</ul>
+
+<h2>What to build instead</h2>
+<figure>
+<svg viewBox="0 0 900 300" role="img" aria-label="One conversation agent, Ember, with three bounded tasks in-band and three background workers out-of-band">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g stroke="currentColor" fill="none" stroke-width="1.2" font-family="IBM Plex Sans,sans-serif" font-size="12">
+<rect x="330" y="30" width="240" height="70" rx="4" stroke="#0B7285" stroke-width="2"/>
+<text x="450" y="57" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">Ember — one agent, one voice</text>
+<text x="450" y="78" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">identity · preload · memory · lookups · routing by tool call</text>
+<g><rect x="60" y="170" width="200" height="60" rx="4"/><text x="160" y="193" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">IdentifyCallerTask</text><text x="160" y="212" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">guest path · returns account or None</text></g>
+<g><rect x="350" y="170" width="200" height="60" rx="4"/><text x="450" y="193" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">ReturnIntakeTask</text><text x="450" y="212" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">order · reason · policy check → typed result</text></g>
+<g><rect x="640" y="170" width="200" height="60" rx="4"/><text x="740" y="193" text-anchor="middle" fill="currentColor" stroke="none" font-weight="600">TroubleshootDeviceTask</text><text x="740" y="212" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">device · state · history · manual → fixed / escalate</text></g>
+<line x1="400" y1="100" x2="170" y2="168" marker-end="url(#a)"/><line x1="450" y1="100" x2="450" y2="168" marker-end="url(#a)"/><line x1="500" y1="100" x2="730" y2="168" marker-end="url(#a)"/>
+<text x="250" y="130" fill="currentColor" stroke="none" font-size="11" opacity=".75">typed result returns to Ember; context never leaves</text>
+<g opacity=".8" stroke-dasharray="4 3"><rect x="60" y="255" width="780" height="34" rx="4"/></g>
+<text x="450" y="277" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">out-of-band, already running: handoff brief (parallel LLM) · Memory Bank extraction (shutdown) · call log to Firestore (shutdown)</text>
+</g></svg>
+<figcaption>Tasks take temporary control, hide their tools from every other turn, and hand a typed result back. Ember's persona, identity and memory are never copied anywhere.</figcaption>
+</figure>
+
+<div class="wrap"><table>
+<tr><th>Task</th><th>Starts when</th><th>Tools it owns (hidden otherwise)</th><th>Returns</th><th>Why a task and not a prompt paragraph</th></tr>
+<tr><td><code>IdentifyCallerTask</code></td><td>No <code>aria_account</code> on the token</td><td><code>lookup_account_by_phone</code>, <code>lookup_account_by_number</code></td><td><code>account | None</code></td><td>Multi-turn (ask, mis-hear, retry); everything after is gated on its result — Parloa's <code>is_authenticated</code> pattern in LiveKit terms.</td></tr>
+<tr><td><code>ReturnIntakeTask</code></td><td>Customer wants a return/refund</td><td><code>my_order</code>, <code>search_knowledge</code> (policy), <code>file_ticket</code></td><td><code>{order, reason, within_window, next: refund_desk | ticket | declined}</code></td><td>Multi-turn data collection with backtracking ("actually the other order"); the refund decision is computed from policy + dates in code — "the LLM never owns money values."</td></tr>
+<tr><td><code>TroubleshootDeviceTask</code></td><td>Device "not working"</td><td><code>find_my_device</code>, <code>get_device_state</code>, <code>get_device_history</code>, <code>search_knowledge</code> (manuals)</td><td><code>{device, finding, resolved: bool}</code></td><td>Its own loop: check state → read history → try a step → confirm. Keeps five tools out of every ordinary turn.</td></tr>
+</table></div>
+
+<h3>What stays exactly as it is</h3>
+<ul>
+<li>Ember's greeting, preload, memory tools and simple lookups ("is my thermostat on", "my last order") — a task for a one-shot question is over-splitting.</li>
+<li>Specialist Desk / <code>WarmTransferTask</code> — already the escalation leg; <code>ReturnIntakeTask</code> returns <code>next: refund_desk</code> and Ember calls it, so the brief is written with the task's typed result in hand.</li>
+<li>All out-of-band workers.</li>
+</ul>
+
+<h3>Cost and risk before the panel</h3>
+<ul>
+<li>Code: three <code>AgentTask</code> classes plus moving eight tool definitions onto them; Ember's prompt shrinks by roughly a third. ~1 day including tests.</li>
+<li>Tests: the 16 live beats don't change from the customer's side; add one offline test per task (LiveKit's examples ship <code>test_agent.py</code> for exactly this).</li>
+<li>Demo script: unchanged. The panel sees it only on the architecture slide and in the answer to "how does this scale to 40 intents?" — <em>"we add a task, not forty tools, and the caller never gets transferred between bots."</em></li>
+</ul>
+
+<h2>If Mike asks "why not a triage agent like the LiveKit blog?"</h2>
+<p>"Their own docs say skip triage when there's one specialist — and their own hotel and healthcare examples don't use one either. Triage earns its keep when departments have different tools, different compliance rules, and different people maintaining the prompts. Aria Home support is one department. What we borrowed from the multi-agent playbook is the part with production numbers behind it: bounded goals, deterministic gating on identity, and never copying context across a boundary."</p>
+
+<p class="src">Sources: <a href="https://docs.livekit.io/agents/logic/workflows/">LiveKit Workflows docs</a> · <a href="https://livekit.com/blog/handoff-pattern-voice-agents">LiveKit handoff pattern</a> · <a href="https://github.com/livekit/agents/tree/main/examples/hotel_receptionist">livekit/agents hotel_receptionist</a>, <a href="https://github.com/livekit/agents/tree/main/examples/healthcare">healthcare</a>, <a href="https://github.com/livekit/agents/tree/main/examples/warm-transfer">warm-transfer</a> · <a href="https://github.com/openai/openai-realtime-agents">openai-realtime-agents</a> · <a href="https://openai.github.io/openai-agents-python/handoffs/">OpenAI Agents SDK handoffs</a> · <a href="https://developers.googleblog.com/developers-guide-to-multi-agent-patterns-in-adk/">ADK multi-agent patterns</a> · <a href="https://www.parloa.com/labs/insights/multi-agent-architecture-for-voice/">Parloa Subtask Agents</a> · <a href="https://sierra.ai/blog/constellation-of-models">Sierra constellation of models</a> · <a href="https://decagon.ai/blog/why-we-built-aop">Decagon AOPs</a> · <a href="https://achan2013.medium.com/ai-agent-anti-patterns-six-hard-won-lessons-e9de592fd7d6">Agent anti-patterns (Jun 2026)</a> · <a href="https://beam.ai/agentic-insights/multi-agent-orchestration-patterns-production">Orchestration patterns in production (2026)</a> · <a href="https://cresta.com/guides/automated-call-scoring-agent-performance-solutions">Cresta call scoring</a></p>
+</main>
