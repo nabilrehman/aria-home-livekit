@@ -1649,7 +1649,7 @@ $('start').onclick = async () => {
     room.on(LivekitClient.RoomEvent.TrackSubscribed, t => {
       if (t.kind === 'audio') t.attach().play();
     });
-    room.on(LivekitClient.RoomEvent.TranscriptionReceived, (segs, participant) => {
+    // TranscriptionReceived: not shown to the customer; the specialist desk has the transcript.
       // the caller's own words come back tagged with the local identity
       const mine = !!participant && !!room && participant.identity === room.localParticipant.identity;
       for (const s of segs) if (s.final) addLine(s.text, mine ? 'you' : 'them');
@@ -1660,13 +1660,11 @@ $('start').onclick = async () => {
       try {
         const m = JSON.parse(new TextDecoder().decode(payload));
         if (m && m.type === 'handoff') {
+          // Customer side: confirmation only. The case summary, mood and next
+          // steps are internal and live on the specialist desk.
           $('ho-dept').textContent = m.department || '';
-          $('ho-body').textContent = m.summary || '';
-          const steps = Array.isArray(m.next_steps) ? m.next_steps : [];
-          $('ho-mood').textContent = m.mood ? 'Caller mood: ' + m.mood : '';
-          $('ho-urg').textContent = m.urgency ? 'Urgency: ' + m.urgency : '';
-          $('ho-steps').innerHTML = steps.map(x => `<li>${esc(x)}</li>`).join('');
-          $('ho-meta').hidden = !(m.mood || m.urgency || steps.length);
+          $('ho-body').textContent = 'A specialist is joining with your details already in front of them.';
+          $('ho-meta').hidden = true;
           $('handoff').classList.add('on');
         }
       } catch (_) {}
@@ -1677,11 +1675,11 @@ $('start').onclick = async () => {
     $('wave').parentElement.classList.add('calling');
     $('state').textContent = 'Live — say hello';
     $('state').classList.add('live');
-    $('script').classList.add('on');
+    /* transcript is internal (desk only) */ $('script').classList.remove('on');
     startTimer();
   } catch (e) {
     $('state').textContent = 'Could not connect';
-    $('script').classList.add('on');
+    /* transcript is internal (desk only) */ $('script').classList.remove('on');
     addLine(e.message, 'note');
   }
 };

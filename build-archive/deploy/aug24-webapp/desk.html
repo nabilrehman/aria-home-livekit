@@ -46,6 +46,12 @@ button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .line.them b{color:var(--brand)}
 .hist .h{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
 .hist .h:last-child{border-bottom:0}
+.case{background:#F7F8FA;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:6px 0 4px}
+.case .eyebrow{margin-bottom:6px} .case p{margin:0 0 8px;font-size:15px}
+details.h{padding:10px 0;border-bottom:1px solid var(--line)} details.h:last-child{border-bottom:0}
+details.h summary{display:flex;justify-content:space-between;gap:10px;font-size:14px;cursor:pointer;list-style:none}
+details.h summary::-webkit-details-marker{display:none}
+details.h .cs{margin:8px 0 0;font-size:14px;color:var(--ink)} details.h .cs ul{margin:4px 0 0;padding-left:18px}
 .pin{display:flex;gap:8px} input{font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:8px;flex:1}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
@@ -71,6 +77,7 @@ button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
     <div class="card" id="live">
       <p class="eyebrow">On the line</p>
       <div class="who"><span class="avatar" id="lv-av"></span><div><div class="n" id="lv-name"></div><div class="m" id="lv-meta"></div></div></div>
+      <div class="case" id="lv-case"></div>
       <div class="viz" id="viz"></div>
       <div class="row"><button class="end" id="hang">End call</button></div>
       <div id="script"></div>
@@ -136,8 +143,15 @@ function render(items){
   document.querySelectorAll('[data-decline]').forEach(b => b.onclick = () => decline(b.dataset.decline));
 }
 
+function caseHtml(h){
+  const b = h.brief || {};
+  return `<p class="eyebrow">Case summary</p><p>${esc(b.summary || '')}</p>
+    <div class="row" style="margin-top:0">${b.mood ? `<span class="pill ${moodClass(b.mood)}">Mood · ${esc(b.mood)}</span>` : ''}${b.urgency ? `<span class="pill ${b.urgency==='high'?'warn':''}">Urgency · ${esc(b.urgency)}</span>` : ''}</div>
+    ${(b.next_steps||[]).length ? `<p class="eyebrow" style="margin-top:12px">Next steps</p><ul class="steps">${b.next_steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>` : ''}`;
+}
+
 function renderHist(items){
-  $('hist').innerHTML = items.length ? items.slice(0,8).map(h => `<div class="h"><span>${esc((h.caller||{}).name||'Caller')} · ${esc(h.department)}</span><span class="pill ${h.status==='accepted'?'ok':'bad'}">${esc(h.status)}</span></div>`).join('') : '<div class="quiet">Nothing yet</div>';
+  $('hist').innerHTML = items.length ? items.slice(0,8).map(h => `<details class="h"><summary><span>${esc((h.caller||{}).name||'Caller')} · ${esc(h.department)}</span><span class="pill ${h.status==='accepted'?'ok':'bad'}">${esc(h.status)}</span></summary><div class="cs">${caseHtml(h)}</div></details>`).join('') : '<div class="quiet">Nothing yet</div>';
 }
 
 async function accept(id, h){
@@ -147,6 +161,7 @@ async function accept(id, h){
   const d = await r.json(); active = h;
   const c = h.caller || {};
   $('lv-av').textContent = initials(c.name); $('lv-name').textContent = c.name || 'Caller'; $('lv-meta').textContent = `${c.account || ''} · ${h.department}`;
+  $('lv-case').innerHTML = caseHtml(h);
   $('script').innerHTML = ''; $('live').classList.add('on'); $('queue').innerHTML = '';
   room = new LivekitClient.Room({adaptiveStream:true});
   room.on(LivekitClient.RoomEvent.TrackSubscribed, t => { if (t.kind === 'audio') t.attach().play(); });
