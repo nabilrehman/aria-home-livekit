@@ -76,7 +76,7 @@ Click **Call as a guest → Start call**.
 |---|---|---|
 | "Hi, I need help with my account." | She **asks** for phone or account number. | "No caller ID on this path — same as an unknown phone." |
 | "A H four eight two one." | "Hi Sarah… I can see your account." | "Digits-only match on Cloud SQL, through Google's MCP Toolbox. 'AH 4821', '4821', 'ah-4821' all resolve." |
-| "What's the status of order five eight one two one?" | "Your Aria Thermostat is **processing**, delivers September third." | "Order by number — one scoped call, account pinned by the identification step." |
+| "What's the status of order five eight one two one?" | "Your Indoor Camera two pack is **processing** — still in the warehouse, delivers September third." | "Order by number — one scoped call, account pinned by the identification step." |
 | "And order five eight one three one?" | "**No order with that number on this account.**" | **Mike:** "Same tool, same second. That one is Nabil's. She can't see it — the database won't return it. Parameterized secure views, a role with no base-table access, and the account never comes from the model." |
 | "Okay, bye." | goodbye, call closes | — |
 
