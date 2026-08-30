@@ -52,7 +52,9 @@ def return_window_days(item: str) -> int:
 
 _VOICE_RULES = (
     "You are speaking out loud: plain speech, one to three sentences, one "
-    "question at a time, numbers digit by digit, dates as words. "
+    "question at a time, numbers digit by digit, dates as words. Spoken "
+    "grammar, always contractions, calm baseline; think out loud briefly "
+    "before a lookup ('let me check that…') so there is never dead air. "
 )
 
 
