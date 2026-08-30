@@ -30,6 +30,7 @@ CLOUD_SQL_INSTANCE = os.environ.get("CLOUD_SQL_INSTANCE", "")
 FIRESTORE_DB = os.environ.get("FIRESTORE_DB", "aug24")
 TELEMETRY_COLLECTION = "device_telemetry"
 PRODUCTS_COLLECTION = "products"
+CALLS_COLLECTION = "call_history"
 
 
 def digits(s) -> str:
@@ -311,6 +312,51 @@ class Repo:
             "price_usd": prod.get("price_usd"),
             "category": prod.get("category"),
         }
+
+    # ── call memory (Firestore) ─────────────────────────────────────────────
+    #
+    # LiveKit keeps a conversation only for the length of a call. Anything Ember
+    # should remember next time — what the customer called about, how it ended —
+    # is written here at hang-up and read back at the next greeting.
+
+    def save_call(self, account_number: str, call: dict) -> str:
+        """Append one call record under the account. Returns the document id."""
+        try:
+            from datetime import datetime, timezone
+
+            doc = {**call, "account_number": account_number,
+                   "ended_at": datetime.now(timezone.utc)}
+            ref = (self.firestore().collection(CALLS_COLLECTION)
+                   .document(account_number).collection("calls").document())
+            ref.set(doc)
+            return ref.id
+        except Exception as err:
+            raise DataUnavailable(f"call save failed: {err}") from err
+
+    def recent_calls(self, account_number: str, limit: int = 3) -> list[dict]:
+        """Newest first. Transcripts are excluded; the brief is what the agent needs."""
+        try:
+            from google.cloud import firestore as fs
+
+            snaps = (self.firestore().collection(CALLS_COLLECTION)
+                     .document(account_number).collection("calls")
+                     .order_by("ended_at", direction=fs.Query.DESCENDING)
+                     .limit(limit).stream())
+            out = []
+            for sn in snaps:
+                d = sn.to_dict() or {}
+                when = d.get("ended_at")
+                out.append({
+                    "call_id": sn.id,
+                    "ended_at": when.isoformat() if hasattr(when, "isoformat") else str(when),
+                    "summary": d.get("summary", ""),
+                    "next_steps": d.get("next_steps", []),
+                    "mood": d.get("mood"),
+                    "outcome": d.get("outcome"),
+                })
+            return out
+        except Exception as err:
+            raise DataUnavailable(f"call history read failed: {err}") from err
 
     # ── tickets ─────────────────────────────────────────────────────────────
 

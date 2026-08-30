@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import textwrap
 
 import httpx
@@ -25,6 +26,7 @@ from livekit.agents import (
 from livekit.plugins import ai_coustics
 
 import opaque_backend
+import pii
 import store
 from turn_latency import TurnLatency
 
@@ -86,7 +88,11 @@ MCP_TELEMETRY_URL = os.getenv(
 
 class Assistant(Agent):
     def __init__(
-        self, room_name: str = "", known_account: str = "", known_name: str = ""
+        self,
+        room_name: str = "",
+        known_account: str = "",
+        known_name: str = "",
+        last_call: dict | None = None,
     ) -> None:
         self.room_name = room_name
         # Set when the caller signed in on the web: the token carried their account.
@@ -146,6 +152,24 @@ class Assistant(Agent):
                 "look anyone up. Deploy aria-toolbox and set it."
             )
         self._mcp_servers = servers
+        # What this customer called about last time (Firestore call memory), for
+        # signed-in callers. Guests get it through the get_previous_calls tool.
+        memory = ""
+        if last_call and last_call.get("summary"):
+            memory = textwrap.dedent(
+                f"""
+
+                # Their previous call
+
+                On {last_call.get("ended_at", "a recent day")[:10]} they called about:
+                {last_call["summary"]}
+                Open items then: {"; ".join(map(str, last_call.get("next_steps") or [])) or "none"}.
+                If it is relevant to why they are calling now, acknowledge it in one
+                natural sentence. Do not recite it, and never mention it if they are
+                clearly calling about something new.
+                """
+            )
+
         # A signed-in web caller is already authenticated, so never make them prove
         # who they are a second time — that is the whole point of the login.
         identified = ""
@@ -189,7 +213,9 @@ class Assistant(Agent):
                 them, and briefly confirm you can see their account. Use
                 lookup_account_by_phone when you have a number, otherwise
                 lookup_account_by_number. Keep the customer_id it returns — every
-                other lookup needs it.
+                other lookup needs it. Then call get_previous_calls once with their
+                account number; if their last call is relevant, acknowledge it in one
+                sentence, otherwise say nothing about it.
 
                 # What you can do
 
@@ -255,7 +281,8 @@ class Assistant(Agent):
                 not open on the thank-you.
                 """
             )
-            + identified,
+            + identified
+            + memory,
         )
 
     # ---------------------------------------------------------------- tools
@@ -381,7 +408,7 @@ class Assistant(Agent):
             department: which team to route to, e.g. "the subscription team".
         """
         ctx = self._ctx
-        brief = await self._handoff_brief(summary)
+        brief = pii.mask_brief(await self._handoff_brief(summary))
         logger.info("TRANSFER -> %s\n  BRIEF: %s", department, json.dumps(brief))
 
         # 1. Hand the summary to the web frontend — it renders in the summary
@@ -549,6 +576,73 @@ class Assistant(Agent):
             }
         logger.info(f"orders API: {digits} -> {data.get('status')}")
         return data
+
+    # ------------------------------------------------ call memory
+    #
+    # LiveKit keeps the conversation only for the length of the job. At hang-up we
+    # write the full call — masked transcript, tool calls, and the LLM brief — to
+    # Firestore through the web service, so the next call can start informed.
+
+    @staticmethod
+    def _account_from_history(history) -> str:
+        """Find the account number an identification tool returned, if any."""
+        for item in getattr(history, "items", []):
+            if getattr(item, "type", "") == "function_call_output":
+                out = str(getattr(item, "output", "") or "")
+                m = pii._ACCOUNT.search(out)
+                if m and "account_number" in out:
+                    raw = re.search(r"AH[\s-]?(\d{4})", out, re.I)
+                    if raw:
+                        return f"AH-{raw.group(1)}"
+        return ""
+
+    def call_record(self, history, outcome: str = "completed") -> dict:
+        """Everything worth keeping from this call, PII-masked."""
+        transcript, tool_calls = [], []
+        for item in getattr(history, "items", []):
+            kind = getattr(item, "type", "")
+            if kind == "message":
+                text = getattr(item, "text_content", None) or ""
+                if text:
+                    transcript.append({"role": item.role, "text": text})
+            elif kind == "function_call":
+                tool_calls.append(
+                    {
+                        "tool": getattr(item, "name", ""),
+                        "args": pii.mask(str(getattr(item, "arguments", "")))[:300],
+                    }
+                )
+        return {
+            "room": self.room_name,
+            "outcome": outcome,
+            "transcript": pii.mask_transcript(transcript),
+            "tool_calls": tool_calls,
+            "turns": sum(1 for t in transcript if t["role"] == "user"),
+        }
+
+    async def save_call_memory(self, history) -> None:
+        account = self.known_account or self._account_from_history(history)
+        if not account or not ORDERS_API_KEY:
+            logger.info("call memory: no identified account, nothing saved")
+            return
+        record = self.call_record(
+            history, "transferred" if self._handed_off else "completed"
+        )
+        fallback = (
+            f"Call with {self.known_name or 'the customer'} on account {account}."
+        )
+        brief = pii.mask_brief(await self._handoff_brief(fallback))
+        record.update(
+            {k: brief.get(k) for k in ("summary", "next_steps", "mood", "urgency")}
+        )
+        record["account_number"] = account
+        try:
+            r = await self._client().post(
+                "/api/calls", json=record, headers={"X-Api-Key": ORDERS_API_KEY}
+            )
+            logger.info(f"call memory saved for {account}: {r.status_code}")
+        except Exception as err:
+            logger.warning(f"call memory not saved: {err}")
 
     @function_tool
     async def end_call(self, context: RunContext):
@@ -874,10 +968,30 @@ async def my_agent(ctx: JobContext):
     except Exception as err:
         logger.warning(f"could not read caller attributes: {err}")
 
+    # Call memory: what a signed-in caller talked about last time.
+    last_call = None
+    if known_account and ORDERS_API_KEY:
+        try:
+            async with _DeskClient(base_url=ORDERS_API_URL, timeout=5.0) as c:
+                r = await c.get(
+                    "/api/calls",
+                    params={"account": known_account},
+                    headers={"X-Api-Key": ORDERS_API_KEY},
+                )
+                calls = r.json().get("calls") if r.status_code == 200 else None
+                last_call = calls[0] if calls else None
+                if last_call:
+                    logger.info(f"call memory: last call {last_call.get('ended_at')}")
+        except Exception as err:
+            logger.warning(f"call memory unavailable: {err}")
+
     # Create the agent first so we can hand it the JobContext — the transfer
     # tool needs the live room (to publish the summary) and the SIP API.
     assistant = Assistant(
-        room_name=ctx.room.name, known_account=known_account, known_name=known_name
+        room_name=ctx.room.name,
+        known_account=known_account,
+        known_name=known_name,
+        last_call=last_call,
     )
     assistant._ctx = ctx
 
@@ -894,6 +1008,11 @@ async def my_agent(ctx: JobContext):
     )
 
     TurnLatency().attach(session, ctx)
+
+    async def _remember() -> None:
+        await assistant.save_call_memory(session.history)
+
+    ctx.add_shutdown_callback(_remember)
 
     # ------------------------------------------------------------------
     # Human handoff: the human (SIP dial-out) or a manual specialist is just

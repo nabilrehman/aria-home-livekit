@@ -139,6 +139,29 @@ RAG_CORPUS = f"projects/{PROJECT}/locations/{RAG_REGION}/ragCorpora/230584300921
 
 
 @mcp.tool()
+def get_previous_calls(account_number: str) -> dict:
+    """What this customer called about before — their last few calls, newest first.
+
+    Call this right after you identify a caller. If the most recent call is
+    recent and relevant, acknowledge it in one natural sentence ("last time you
+    called about the doorbell order — did that arrive?"). Never recite the list.
+
+    Args:
+        account_number: their Aria Home account number, e.g. "AH-4821".
+    """
+    try:
+        calls = repo.recent_calls(account_number.strip().upper(), limit=3)
+    except DataUnavailable as err:
+        log.error(f"TOOL get_previous_calls -> STORE DOWN: {err}")
+        return {"found": False, "error": "history_unavailable",
+                "say": "Carry on without history; do not mention it."}
+    log.info(f"TOOL get_previous_calls({account_number}) -> {len(calls)} calls")
+    if not calls:
+        return {"found": False, "say": "This is their first call. Do not mention history."}
+    return {"found": True, "calls": calls, "source": "Aria Home call history · Firestore via MCP"}
+
+
+@mcp.tool()
 def search_knowledge(question: str) -> dict:
     """Search Aria Home's policy knowledge base to answer a customer question.
 

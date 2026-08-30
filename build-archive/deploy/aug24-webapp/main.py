@@ -391,6 +391,45 @@ def handoff_decline(hid):
     return jsonify(item)
 
 
+# ── Call memory: the agent writes a record at hang-up; reads happen via MCP ──
+@app.post("/api/calls")
+def call_save():
+    if not _api_key_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    body = request.get_json(silent=True) or {}
+    account = (body.get("account_number") or "").strip().upper()
+    if not account:
+        return jsonify({"error": "account_number required"}), 400
+    record = {
+        "room": body.get("room", ""),
+        "summary": body.get("summary", ""),
+        "next_steps": body.get("next_steps", []),
+        "mood": body.get("mood"),
+        "urgency": body.get("urgency"),
+        "outcome": body.get("outcome", "completed"),
+        "transcript": (body.get("transcript") or [])[:400],
+    }
+    try:
+        cid = repo.save_call(account, record)
+    except DataUnavailable as err:
+        app.logger.error(f"call save failed: {err}")
+        return jsonify({"error": "history_unavailable"}), 503
+    app.logger.info(f"call saved for {account}: {cid}")
+    return jsonify({"call_id": cid}), 201
+
+
+@app.get("/api/calls")
+def call_list():
+    if not _api_key_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    account = (request.args.get("account") or "").strip().upper()
+    try:
+        return jsonify({"calls": repo.recent_calls(account, limit=3)})
+    except DataUnavailable as err:
+        app.logger.error(f"call list failed: {err}")
+        return jsonify({"error": "history_unavailable"}), 503
+
+
 @app.get("/desk")
 def desk():
     return Response(
