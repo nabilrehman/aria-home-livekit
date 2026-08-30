@@ -1649,11 +1649,7 @@ $('start').onclick = async () => {
     room.on(LivekitClient.RoomEvent.TrackSubscribed, t => {
       if (t.kind === 'audio') t.attach().play();
     });
-    // TranscriptionReceived: not shown to the customer; the specialist desk has the transcript.
-      // the caller's own words come back tagged with the local identity
-      const mine = !!participant && !!room && participant.identity === room.localParticipant.identity;
-      for (const s of segs) if (s.final) addLine(s.text, mine ? 'you' : 'them');
-    });
+    // Live captions are not shown to the customer; the specialist desk has the transcript.
     room.on(LivekitClient.RoomEvent.Disconnected, endUi);
 
     room.on(LivekitClient.RoomEvent.DataReceived, payload => {
