@@ -65,46 +65,60 @@ Also before the room: **laptop on power, wired headphones or a quiet mic, Chrome
 
 ---
 
-## 2 · The live script — what you say, what must happen
+## 2 · The demo — one call, seven minutes, every graded beat once
 
-Timing: **6 minutes total** for the demo. Say each "watch for" line *before* the beat.
+Two browser tabs before you start: the **store** (signed in with your Gmail, on the Support page) and the **Specialist Desk** (`/desk`, PIN 8616, name "Ahmad"). Warm-up from §1 done. Say each "watch for" line *before* the beat.
 
-### Call 1 — Guest (the phone experience) · Sarah · ~3 min
+### Prologue · Sarah, by phone (60 s) — requirement 1b, the guest path
+Click **Call as a guest → Start call**.
 
-Open the console → **Call as a guest** → **Start call**.
+| You say | Must happen | To the panel |
+|---|---|---|
+| "Hi, I need help with my account." | She **asks** for phone or account number. | "No caller ID on this path — same as an unknown phone." |
+| "A H four eight two one." | "Hi Sarah… I can see your account." | "Digits-only match on Cloud SQL, through Google's MCP Toolbox. 'AH 4821', '4821', 'ah-4821' all resolve." |
+| "Actually, what's the status of order five eight one three one?" | "**No order with that number on this account.**" | **Mike:** "That's Nabil's order. She can't see it — the database won't return it. Parameterized secure views, a role with no base-table access, and the account never comes from the model." |
+| "Okay, bye." | goodbye, call closes | — |
 
-| # | Requirement | You say | Must happen | Say to the panel |
-|---|---|---|---|---|
-| 1a | Greet + look up | *(Ember opens)* "Hi, I'm calling from 512 555 1188." | "Hi **Sarah**… I can see your account." No account-number question. | "That was caller-ID → Cloud SQL through Google's MCP Toolbox. She never asked me who I am." |
-| 1b | Ask for account # if no phone | *(second run, later, optional)* "Hi, I need help with my account." | She **asks** for phone or account number. Say "A H four eight two one." → "Hi Sarah." | "Same lookup, digits-only match — 'A H 4821', '4821', 'ah-4821' all resolve." |
-| 2a | Most recent order | "What's the status of my most recent order?" | "Your Indoor Camera two pack is **processing**… due **September third**." | "Orders are a plain REST call — not everything needs MCP. Newest by *date*, not by number." |
-| 2b | Thermostat active | "Is my thermostat active?" | "Yes, your living room thermostat is **on**…" | "Two stores, one answer: Postgres found the device, Firestore said what it's doing." |
-| 2c | Temperature | "What's the temperature in my living room?" | "**Seventy-one degrees**." | "Live telemetry, read just now — she'll tell you *when* it reported if you ask." |
-| 4 | Grounded policy | "How long do I have to return a doorbell camera?" | "**Fourteen days**" (not thirty). | "That number exists only in Aria Home's policy PDF. Correct answer = retrieval, not memory." |
-| 3 | Transfer + summary | "I need to change the delivery address — can I speak to a person?" | She says she's connecting you and **has passed a summary**. The **"Handed to a person"** panel appears with a 2–3 sentence brief naming Sarah, the order, and why. | "This is the beat where CSAT normally dies — the human picks up already briefed. Stop talking; let them read it." |
-| — | End | "That's all, thanks." | She says goodbye; the call closes itself a few seconds later. | — |
+### Act 1 · You, signed in (90 s) — requirement 1a
+Switch tab → **Start call with Ember**.
 
-### Call 2 — Signed in (the web experience) · you · ~2 min
+| You say | Must happen | To the panel |
+|---|---|---|
+| *(nothing)* | "**Hi Nabil**, I can see your account." No question. | **Ahmad:** "Firebase verified him; the account rides on the LiveKit token. Nobody recites an account number to a machine." |
+| "What do you know about my hallway sensor?" | "It's not reporting — **needs a battery**… and I have a note your dog **Biscuit** sets it off." | **Mike:** "Two stores in one answer: live telemetry from Firestore, and a fact from Vertex AI Memory Bank. Both were preloaded in parallel with the session start — zero tool calls for that answer." |
 
-**Sign in first → Continue with Google** (your Gmail) → the right rail fills: **4/5 reporting**, motion sensor amber "needs battery", order history with **#58131 MOST RECENT ORDER** on top → **Start call**.
+### Act 2 · The three graded questions (90 s) — requirement 2
 
-| # | You say | Must happen | Say to the panel |
-|---|---|---|---|
-| 1 | *(nothing — let her open)* | "**Hi Nabil**, I can see your account…" — **no** phone/account question. | "Firebase verified me; the account rides on the LiveKit token as an attribute. Identity is the opaque uid — never email or phone in LiveKit's logs." |
-| 2 | "Where's my order?" | "Smart Sensor four pack, processing, due September fourth." → point at #58131 on screen | "Screen and voice read the same row." |
-| 3 | "Is my hallway sensor okay?" | "It's **not reporting — needs a battery**, about six percent." | "An honest 'off' with a reason, not a guess. Amber on screen, amber in her answer." |
-| 4 | "Is my back door locked?" | "Yes, locked, battery ninety-one percent." | — |
-| 5 | "Bye." | Goodbye → room closes. | — |
+| You say | Must happen | To the panel |
+|---|---|---|
+| "What's the status of my most recent order?" | Smart Sensor four pack, processing, September fourth. | **Varun:** "A plain REST call into an order API — the kind you already have. Not everything needs a protocol." |
+| "Is my living room thermostat on, and what's it set to?" | On, sixty-nine degrees, cooling. | "Registry in Postgres, state in Firestore, joined on device id — a thermostat and a lock don't share a schema." |
+| "How long do I have to return a doorbell camera?" | **Fourteen days.** | "That number exists only in your policy PDF. Right answer = retrieval, not memory." |
 
-### If the panel takes the wheel ("can we ask it things?")
+### Act 3 · Memory (45 s) — requirement 4, and the differentiator
 
-Yes — that is requirement 4. Good ones to invite:
-- "Which plan am I on?" → Video Plus
-- "What devices do I have?" → lists them
-- "Is my garage camera recording?" (Sarah has none) → "There's no garage camera on this account — you have…" **never** a state for a device that doesn't exist
-- "What's the serial number on my lock?" → admits it doesn't have that **and offers a ticket or a person** (no dead ends)
-- Talk over her mid-sentence → she stops (adaptive interruption). Cough/"mm-hm" → she **resumes** where she was (false-interruption resume).
-- Go silent 15s → she checks in ("Are you still there?").
+| You say | Must happen | To the panel |
+|---|---|---|
+| "Remember that my back door lock sticks when it's cold." | "I'll remember that." | **Ahmad:** "That's a customer preference stored in Memory Bank, scoped to his account. Next call, any agent — human or Ember — knows it. Contradict it later and it's *updated*, not duplicated." |
+
+### Act 4 · Transfer with a summary (2 min) — requirement 3
+Move the **desk** tab into view.
+
+| You say | Must happen | To the panel |
+|---|---|---|
+| "I want a refund on order five eight one three zero, it arrived damaged. Put me through to someone." | Ember: "connecting you now, I've passed along a summary." **Desk rings**: Nabil · refunds · summary · mood · urgency · next steps. | **Ahmad:** "Look at the desk before anyone picks up. This is the beat where CSAT normally dies — here the human starts briefed. Stop talking. Let them read it." |
+| Click **Accept call** (as Ahmad) | Ember: "a specialist has joined…" and goes silent. You (Ahmad) say "Hi Nabil, I've got the damaged sensor pack here — I can refund that now." | **Mike:** "The specialist is just another participant in the same LiveKit room. No new subsystem. The phone version is the same tool with a SIP trunk." |
+| Click **End call** | Call ends. Desk keeps the case summary under Recent. | **Varun:** "Every transferred call is a record — brief, outcome, transcript — masked, in Firestore. That's your QA dataset for free." |
+
+### Epilogue (20 s) — memory across calls
+**Start call** again. Say: "Anything I told you about my back door?" → "Your back door lock sticks when it's cold." → "Thanks, bye."
+> "Same customer, fresh session, no login screen twice. That's the difference between a bot and a support line."
+
+### Timing guard
+Prologue 1:00 · Act 1 1:30 · Act 2 1:30 · Act 3 0:45 · Act 4 2:00 · Epilogue 0:20 = **7 min**. If running long, drop the Epilogue; never drop Act 4.
+
+### If the panel takes the wheel
+Invite it after Act 2. Good probes: "Is my garage camera recording?" (no such device — she says so); "What's the serial on my lock?" (doesn't know, offers a ticket); talk over her (stops); cough (resumes); silence 15 s (checks in).
 
 ---
 
