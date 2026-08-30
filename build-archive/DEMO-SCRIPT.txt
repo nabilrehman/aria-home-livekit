@@ -1,4 +1,4 @@
-ARIA HOME x EMBER — PANEL DEMO SCRIPT
+Hing ARIA HOME x EMBER — PANEL DEMO SCRIPT
 =====================================================================
 Assignment coverage check, demo flow, and word-for-word script.
 Store:  https://aug24-web-549403515075.us-central1.run.app
@@ -122,18 +122,6 @@ CALL 2 — NABIL, SIGNED IN (requirements 1a, 2, 3, 4)        ~5.5 min
       retrieval, not model memory. Product manuals are in the same
       corpus: ask her what error E four means on a thermostat."
 
-  Act 2b · Troubleshooting task (~45s)
-  YOU: "My hallway sensor isn't working. Can you help me fix it?"
-  EMBER: enters a troubleshooting flow — checks the live state and
-      history, pulls the manual's fix (CR123A battery, ~2 years),
-      walks ONE step, asks if that resolved it. Say "no, still dead"
-      → she offers a ticket or a person.
-      say-to-panel (Mike): "That's the third sub-workflow — a
-      TroubleshootDeviceTask. While it runs she carries only the six
-      tools for THIS job, and it hands back a typed result: device,
-      finding, resolved or not. Same LiveKit construct as their own
-      hotel and healthcare reference agents."
-
   Act 3 · Memory (45s)  — the differentiator
   YOU: "Remember that my back door lock sticks when it's cold."
   EMBER: confirms — after actually storing it.
@@ -189,9 +177,8 @@ Go silent 15 seconds                 → she checks in.
 ---------------------------------------------------------------------
 PART 4 · TIMING + RECOVERY
 ---------------------------------------------------------------------
-Call 1 1:15 · Act 1 1:00 · Act 2 1:30 · Act 2b 0:45 · Act 3 0:45 ·
-Act 4 2:00 · Epilogue 0:20  =  ~7:45. Timing is yours to manage;
-if something must go, drop the Epilogue — never Act 4. Running long: drop the Epilogue. NEVER drop
+Call 1 1:15 · Act 1 1:00 · Act 2 1:30 · Act 3 0:45 · Act 4 2:00 ·
+Epilogue 0:20  =  ~7 min. Running long: drop the Epilogue. NEVER drop
 Act 4 — it is a graded requirement.
 
 If the desk misses the ring (40 s): Ember says a specialist isn't

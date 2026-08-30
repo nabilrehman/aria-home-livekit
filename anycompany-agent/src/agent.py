@@ -12,6 +12,9 @@ from livekit import api
 from livekit.agents import (
     Agent,
     AgentServer,
+    AudioConfig,
+    BackgroundAudioPlayer,
+    BuiltinAudioClip,
     AgentSession,
     JobContext,
     RunContext,
@@ -1387,6 +1390,21 @@ async def my_agent(ctx: JobContext):
             _spawn(_step_forward(p.identity))
 
     await ctx.connect()
+
+    # Office ambience behind the voice, and keyboard typing while she is
+    # running a tool — the caller hears her "looking it up" instead of dead
+    # air. Kept quiet: atmosphere, not a call centre in a hailstorm.
+    background_audio = BackgroundAudioPlayer(
+        ambient_sound=AudioConfig(BuiltinAudioClip.OFFICE_AMBIENCE, volume=0.5),
+        thinking_sound=[
+            AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING, volume=0.6),
+            AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING2, volume=0.5),
+        ],
+    )
+    try:
+        await background_audio.start(room=ctx.room, agent_session=session)
+    except Exception as err:  # never let ambience block a call
+        logger.warning(f"background audio unavailable: {err}")
 
     # Speak first — otherwise the caller is met with silence. Guests are greeted
     # by IdentifyCallerTask (Assistant.on_enter), which owns the whole
