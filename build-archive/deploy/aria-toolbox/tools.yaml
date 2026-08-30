@@ -104,22 +104,31 @@ tools:
         type: string
         description: A room, device type, or device name, in the caller's words.
     statement: |
+      -- Every meaningful word the caller said must match the device (room, type
+      -- or name). "living room thermostat" -> the living-room thermostat;
+      -- "garage camera" for a home with no garage -> nothing, never a guess.
       WITH words AS (
-        SELECT w FROM unnest(string_to_array(LOWER($2), ' ')) AS w WHERE length(w) > 2
+        SELECT w FROM unnest(string_to_array(LOWER($2), ' ')) AS w
+        WHERE length(w) > 2
+          AND w NOT IN ('the','one','ones','that','this','its','please','check','and','for')
+      ),
+      scored AS (
+        SELECT d.device_id, d.name, d.device_type, d.room,
+               (SELECT count(*) FROM words) AS n_words,
+               (SELECT count(*) FROM words
+                 WHERE LOWER(d.room) LIKE '%' || w || '%'
+                    OR LOWER(d.device_type) LIKE '%' || w || '%'
+                    OR LOWER(d.name) LIKE '%' || w || '%'
+                    OR (w IN ('cam','cameras') AND d.device_type = 'camera')
+                    OR (w IN ('locks') AND d.device_type = 'lock')
+                    OR (w IN ('sensors') AND d.device_type = 'sensor')
+                    OR (w IN ('thermostats','heating','temperature') AND d.device_type = 'thermostat')) AS hits
+        FROM devices d WHERE d.customer_id = $1
       )
-      SELECT d.device_id, d.name, d.device_type, d.room,
-             (SELECT count(*) FROM words
-               WHERE LOWER(d.room) LIKE '%' || w || '%'
-                  OR LOWER(d.device_type) LIKE '%' || w || '%'
-                  OR LOWER(d.name) LIKE '%' || w || '%') AS score
-      FROM devices d
-      WHERE d.customer_id = $1
-        AND EXISTS (SELECT 1 FROM words
-                     WHERE LOWER(d.room) LIKE '%' || w || '%'
-                        OR LOWER(d.device_type) LIKE '%' || w || '%'
-                        OR LOWER(d.name) LIKE '%' || w || '%')
-      ORDER BY score DESC, d.device_id
-      LIMIT 1;
+      SELECT device_id, name, device_type, room
+      FROM scored
+      WHERE n_words > 0 AND hits = n_words
+      ORDER BY device_id LIMIT 1;
 
   # ── orders ───────────────────────────────────────────────────────────────
   get_recent_order:
