@@ -5,6 +5,8 @@ Offline — instructions, options and seed data only.
 """
 
 import re
+
+import pytest
 import sys
 from pathlib import Path
 
@@ -102,3 +104,32 @@ def test_session_options_are_what_the_entrypoint_uses():
     """Guards against the options dict drifting from the real AgentSession call."""
     src = Path(agent_mod.__file__).read_text()
     assert "**SESSION_OPTIONS" in src
+
+
+# ── Findings from the live call review (30 Aug) ─────────────────────────────
+
+
+def test_empty_mcp_result_becomes_a_spoken_not_found():
+    """A SQL query matching nothing is an answer, not a ToolError to retry on."""
+    import json
+    from types import SimpleNamespace
+
+    from agent import _mcp_result
+
+    out = json.loads(_mcp_result(SimpleNamespace(result=SimpleNamespace(content=[]))))
+    assert out["found"] is False and "say" in out
+
+
+@pytest.mark.asyncio
+async def test_end_call_is_refused_once_a_specialist_has_the_call():
+    a = Assistant()
+    a._handed_off = True
+    out = await a.end_call(None)
+    assert out["ok"] is False and "specialist" in out["say"].lower()
+
+
+def test_prompt_fetches_devices_once_and_rags_once():
+    text = Assistant().instructions
+    assert "list_devices once" in text
+    assert "call it once per question" in text
+    assert "Never end the call after a transfer" in text

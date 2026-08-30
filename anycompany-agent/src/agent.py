@@ -54,6 +54,29 @@ ORDERS_API_KEY = os.getenv("ORDERS_API_KEY", "")
 DESK_RING_SECONDS = int(os.getenv("DESK_RING_SECONDS", "40"))
 # Swappable in tests without touching httpx for the inference client.
 _DeskClient = httpx.AsyncClient
+
+
+def _mcp_result(ctx) -> str:
+    """Resolve an MCP tool result for the model.
+
+    An empty result (a SQL query that matched nothing) is a legitimate answer —
+    "no such device" — not a failure. The SDK default raises a ToolError there,
+    which made the model retry or guess. Turn it into something it can say.
+    """
+    content = ctx.result.content or []
+    if len(content) == 1:
+        return str(content[0].model_dump_json())
+    if len(content) > 1:
+        return json.dumps([item.model_dump() for item in content])
+    return json.dumps(
+        {
+            "found": False,
+            "say": "Nothing matched. Tell the customer you cannot see that on their "
+            "account and, if it was a device, list the devices they do have.",
+        }
+    )
+
+
 # Our own MCP server: Firestore device telemetry + the policy corpus.
 MCP_TELEMETRY_URL = os.getenv(
     "MCP_TELEMETRY_URL",
@@ -69,6 +92,8 @@ class Assistant(Agent):
         # Set when the caller signed in on the web: the token carried their account.
         self.known_account = known_account
         self.known_name = known_name
+        # Set once a human has taken the call; end_call must not fire after that.
+        self._handed_off = False
         # Set in the entrypoint so tools can publish data + call the SIP API.
         self._ctx: JobContext | None = None
         # order_number -> Ticket, so a retry reuses rather than duplicates
@@ -92,6 +117,7 @@ class Assistant(Agent):
                 transport_type="streamable_http",
                 timeout=20,
                 client_session_timeout_seconds=20,
+                tool_result_resolver=_mcp_result,
             )
         ]
         if TOOLBOX_MCP_URL:
@@ -102,6 +128,7 @@ class Assistant(Agent):
                     transport_type="streamable_http",
                     timeout=20,
                     client_session_timeout_seconds=20,
+                    tool_result_resolver=_mcp_result,
                     # Orders are deliberately NOT taken from here — a one-line status
                     # lookup is an HTTP function tool, not an MCP round trip.
                     allowed_tools=[
@@ -169,16 +196,18 @@ class Assistant(Agent):
                 Use your tools for anything factual. Never guess an order status, a
                 temperature, a date, or whether a device is on.
 
-                - Devices are a two-step read. First find_device (or list_devices)
-                  with the customer_id to turn "my thermostat" or "the front door"
-                  into a device_id. Then get_device_state with that device_id for
+                - Right after you identify the caller, call list_devices once with
+                  their customer_id and remember every device_id. Devices are a
+                  two-step read: find the device_id (from that list, or find_device
+                  for "the living room one"), then read its state. Then get_device_state with that device_id for
                   whether it is on and what it is reading right now — temperature,
                   locked, recording. For "has it been like this all day", use
                   get_device_history.
                 - "My most recent order" or "where is my order": get_recent_order
                   with their account number. A specific order number: lookup_order.
                 - Policy questions — returns, refunds, warranty, subscription terms:
-                  search_knowledge. Never guess policy; always search. The policy
+                  search_knowledge — call it once per question and answer from what
+                  comes back. Never guess policy; always search. The policy
                   documents call the company "AnyCompany" — that is an old name.
                   Never say AnyCompany out loud; always say Aria Home.
                 - Refunds, warranty checks, device sync and package tracking have
@@ -186,6 +215,8 @@ class Assistant(Agent):
                 - When they ask for a person, are frustrated, or you cannot resolve it:
                   transfer_to_human. Compose a short summary first so the human is briefed.
                 - When they say goodbye or the call is clearly finished: end_call.
+                  Never end the call after a transfer — once a specialist has taken
+                  over, stay silent unless the customer addresses you.
 
                 # Numbers
 
@@ -378,6 +409,7 @@ class Assistant(Agent):
         #     the participant_connected handler then steps the agent back.
         desk_answer = await self._ring_desk(department, brief)
         if desk_answer == "accepted":
+            self._handed_off = True
             return {
                 "transferred": True,
                 "say": "Tell the customer a specialist has picked up and has the "
@@ -519,6 +551,13 @@ class Assistant(Agent):
         closes a moment after you finish speaking.
         """
         ctx = self._ctx
+        if self._handed_off:
+            logger.info("END CALL refused: a specialist has the call")
+            return {
+                "ok": False,
+                "say": "Do not end the call. A specialist is handling it now; stay "
+                "silent unless the customer speaks to you directly.",
+            }
         logger.info("END CALL requested by the model")
 
         async def _close() -> None:
@@ -854,7 +893,13 @@ async def my_agent(ctx: JobContext):
     handoff_tasks: set[asyncio.Task] = set()
 
     def _spawn(coro) -> None:
-        task = asyncio.create_task(coro)
+        async def _guarded():
+            try:
+                await coro
+            except RuntimeError as err:  # session already closing — nothing to say to
+                logger.info(f"handoff announcement skipped: {err}")
+
+        task = asyncio.create_task(_guarded())
         handoff_tasks.add(task)
         task.add_done_callback(handoff_tasks.discard)
 
@@ -863,6 +908,7 @@ async def my_agent(ctx: JobContext):
         return "specialist" in low or "human" in low or "agent" in low
 
     async def _step_back(identity: str) -> None:
+        assistant._handed_off = True
         await session.say(
             "Good news — a specialist has just joined and they can see everything "
             "we've talked about. I'll leave you with them."

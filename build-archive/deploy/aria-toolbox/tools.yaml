@@ -92,23 +92,34 @@ tools:
     description: >
       Find one of a customer's devices by room, type or name — however they
       referred to it ("the living room one", "my thermostat", "front door
-      camera"). Returns the device_id you then pass to get_device_state or
-      get_room_temperature to read its live state.
+      camera", "living room thermostat"). Any word that matches counts, and the
+      best match wins. Returns the device_id you then pass to get_device_state
+      to read its live state. If nothing matches, the result is empty — tell
+      the customer you cannot see that device and list what they do have.
     parameters:
       - name: customer_id
         type: integer
         description: The customer_id from lookup_account.
       - name: search
         type: string
-        description: A room, device type, or device name.
+        description: A room, device type, or device name, in the caller's words.
     statement: |
-      SELECT device_id, name, device_type, room
-      FROM devices
-      WHERE customer_id = $1
-        AND (LOWER(room) LIKE '%' || LOWER($2) || '%'
-             OR LOWER(device_type) LIKE '%' || LOWER($2) || '%'
-             OR LOWER(name) LIKE '%' || LOWER($2) || '%')
-      ORDER BY device_id LIMIT 1;
+      WITH words AS (
+        SELECT w FROM unnest(string_to_array(LOWER($2), ' ')) AS w WHERE length(w) > 2
+      )
+      SELECT d.device_id, d.name, d.device_type, d.room,
+             (SELECT count(*) FROM words
+               WHERE LOWER(d.room) LIKE '%' || w || '%'
+                  OR LOWER(d.device_type) LIKE '%' || w || '%'
+                  OR LOWER(d.name) LIKE '%' || w || '%') AS score
+      FROM devices d
+      WHERE d.customer_id = $1
+        AND EXISTS (SELECT 1 FROM words
+                     WHERE LOWER(d.room) LIKE '%' || w || '%'
+                        OR LOWER(d.device_type) LIKE '%' || w || '%'
+                        OR LOWER(d.name) LIKE '%' || w || '%')
+      ORDER BY score DESC, d.device_id
+      LIMIT 1;
 
   # ── orders ───────────────────────────────────────────────────────────────
   get_recent_order:

@@ -23,7 +23,11 @@ from __future__ import annotations
 import statistics
 from dataclasses import dataclass
 
+import logging
+
 from livekit.agents import ConversationItemAddedEvent, JobContext
+
+log = logging.getLogger("turn_latency")
 
 GREEN = "\033[32m"
 YELLOW = "\033[33m"
@@ -110,6 +114,18 @@ class TurnLatency:
             return
         self._turns.append(turn)
         self._print(turn, len(self._turns))
+        log.info(
+            "turn latency",
+            extra={
+                "turn": len(self._turns),
+                "eou_ms": round(turn.eou_ms),
+                "ttft_ms": round(turn.ttft_ms),
+                "ttfb_ms": round(turn.ttfb_ms),
+                "e2e_ms": round(
+                    turn.e2e_ms or (turn.eou_ms + turn.ttft_ms + turn.ttfb_ms)
+                ),
+            },
+        )
 
     # ---------- output ----------
 
