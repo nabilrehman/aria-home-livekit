@@ -277,8 +277,11 @@ class Assistant(Agent):
                 - When they ask for a person, are frustrated, or you cannot resolve it:
                   transfer_to_human. Compose a short summary first so the human is briefed.
                 - If they ask you to remember something for next time — a preference,
-                  a detail about their home — call remember with one plain sentence.
-                  To check what they told us before, use recall.
+                  a detail about their home — you MUST call the remember tool with
+                  one plain sentence before you confirm. Never say you have noted
+                  or will remember something unless the tool call happened; a
+                  promise without the call loses the fact. To check what they
+                  told us before, use recall.
                 - When they say goodbye or the call is clearly finished: end_call.
                   Never end the call after a transfer — once a specialist has taken
                   over, stay silent unless the customer addresses you.
@@ -593,7 +596,8 @@ class Assistant(Agent):
         lines.append(
             "Answer from this directly when it covers the question; only call a tool "
             "for something not listed or to re-check a live reading if they doubt it. "
-            "If they ask you to remember something, use the remember tool."
+            "If they ask you to remember something, you MUST call the remember tool "
+            "before confirming — never just say you noted it."
         )
         return "\n".join(lines) + "\n"
 
