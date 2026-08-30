@@ -265,30 +265,37 @@ class Assistant(Agent):
             except Exception as err:
                 logger.warning(f"could not publish summary to frontend: {err}")
 
-        # 2. Warm SIP transfer: dial the human's number INTO the room, if an
-        #    outbound trunk is configured. The participant_connected handler
-        #    then steps the agent back automatically. Guarded so a missing trunk
-        #    degrades to the in-room fallback rather than failing the call.
-        if ctx is not None and SIP_OUTBOUND_TRUNK_ID:
+        # 2. Warm transfer, when an outbound trunk exists: LiveKit's prebuilt
+        #    WarmTransferTask holds the caller, dials the human into a private
+        #    consult room, briefs them from the conversation so far, then merges
+        #    the two. If nobody answers it returns to the caller. Without a trunk
+        #    we keep the in-room handoff (summary on screen, specialist joins).
+        if ctx is not None and SIP_OUTBOUND_TRUNK_ID and TRANSFER_TO_NUMBER:
             try:
-                await ctx.api.sip.create_sip_participant(
-                    api.CreateSIPParticipantRequest(
-                        sip_trunk_id=SIP_OUTBOUND_TRUNK_ID,
-                        sip_call_to=TRANSFER_TO_NUMBER,
-                        room_name=ctx.room.name,
-                        participant_identity="human-agent",
-                        participant_name="Human Agent",
-                        wait_until_answered=False,
-                    )
+                from livekit.agents.beta.workflows import WarmTransferTask
+
+                logger.info(f"warm transfer: dialing {TRANSFER_TO_NUMBER}")
+                result = await WarmTransferTask(
+                    sip_call_to=TRANSFER_TO_NUMBER,
+                    sip_trunk_id=SIP_OUTBOUND_TRUNK_ID,
+                    chat_ctx=self.chat_ctx,
+                    ringing_timeout=30.0,
+                    extra_instructions=(
+                        "You are briefing a human Aria Home specialist before "
+                        f"connecting the caller. Lead with this summary: {summary}"
+                    ),
                 )
-                logger.info(f"SIP transfer: dialing {TRANSFER_TO_NUMBER}")
+                logger.info(f"warm transfer result: {result}")
+                return {
+                    "transferred": True,
+                    "say": "The specialist is on the line and has been briefed. "
+                    "Introduce them in one sentence, then stop talking.",
+                }
             except Exception as err:
-                logger.warning(
-                    f"SIP dial-out failed ({err}); using in-room fallback instead"
-                )
+                logger.warning(f"warm transfer failed ({err}); using in-room fallback")
         else:
             logger.info(
-                "No SIP_OUTBOUND_TRUNK_ID set — summary delivered to the frontend; "
+                "No outbound trunk — summary delivered to the frontend; "
                 "a specialist can join the room to take over."
             )
 
