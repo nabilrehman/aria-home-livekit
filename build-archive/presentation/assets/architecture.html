@@ -74,7 +74,7 @@ code{font:12.5px "IBM Plex Mono",monospace}
 <text class="m" x="282" y="288">transfer_to_human → brief (LLM)</text>
 <text class="m" x="282" y="304">end_call · refund · tracking</text>
 <text class="m" x="282" y="320">adaptive interrupts · preemptive gen</text>
-<text class="m" x="282" y="336">user-away 15 s · latency metrics</text>
+<text class="m" x="282" y="336">PII mask → desk, memory, logs</text>
 
 <!-- audio edges -->
 <line class="audio" x1="194" y1="105" x2="268" y2="96" marker-end="url(#ap)"/>
@@ -91,7 +91,7 @@ code{font:12.5px "IBM Plex Mono",monospace}
 <text class="s" x="592" y="126">Storefront · My Home · Orders · /desk</text>
 <text class="m" x="592" y="148">GET /api/orders  (X-Api-Key)</text>
 <text class="m" x="592" y="164">POST /api/handoffs · accept · decline</text>
-<text class="m" x="592" y="180">GET /me · /api/products · /assets</text>
+<text class="m" x="592" y="180">GET /me · /api/products · /api/calls</text>
 <text class="s" x="592" y="204">min-instances 1</text>
 
 <!-- toolbox -->
@@ -106,7 +106,7 @@ code{font:12.5px "IBM Plex Mono",monospace}
 <text class="h" x="592" y="392">aug24-mcp · Cloud Run</text>
 <text class="s" x="592" y="410">custom MCP server (FastMCP)</text>
 <text class="m" x="592" y="428">get_device_state · get_device_history</text>
-<text class="m" x="592" y="444">search_knowledge</text>
+<text class="m" x="592" y="444">search_knowledge · get_previous_calls</text>
 
 <!-- stores -->
 <rect class="box" x="880" y="250" width="226" height="90"/>
@@ -115,10 +115,11 @@ code{font:12.5px "IBM Plex Mono",monospace}
 <text class="m" x="892" y="308">customers · subscriptions · orders</text>
 <text class="m" x="892" y="324">devices (registry, sku) · tickets</text>
 
-<rect class="box" x="880" y="370" width="226" height="70"/>
-<text class="h" x="892" y="392">Firestore · aug24</text>
-<text class="m" x="892" y="410">device_telemetry (live, per-type)</text>
-<text class="m" x="892" y="426">products (sku → image, price)</text>
+<rect class="box" x="880" y="362" width="226" height="86"/>
+<text class="h" x="892" y="384">Firestore · aug24</text>
+<text class="m" x="892" y="402">device_telemetry (live, per-type)</text>
+<text class="m" x="892" y="418">products (sku → image, price)</text>
+<text class="m" x="892" y="434">call_history (masked, per account)</text>
 
 <rect class="box" x="880" y="460" width="226" height="56"/>
 <text class="h" x="892" y="482">Vertex AI RAG</text>
@@ -173,6 +174,7 @@ code{font:12.5px "IBM Plex Mono",monospace}
 <div class="kv">
 <div><b>Identity</b><p>Firebase verifies the caller; Cloud Run mints the LiveKit token with the opaque uid as identity and only the account number as an attribute. Phone callers are matched on the last ten digits of caller ID.</p></div>
 <div><b>Handoff</b><p><code>transfer_to_human</code> asks the LLM for a brief (summary, next steps, mood, urgency) → desk rings for 40 s → Accept mints a <code>specialist-*</code> token for the same room and Ember steps back → else phone dial-out if a trunk exists → else in-room fallback.</p></div>
+<div><b>Memory &amp; privacy</b><p>At hang-up the agent writes the call (masked transcript, tool calls, brief, outcome) to Firestore <code>call_history</code>; the next call loads it. <code>pii.py</code> masks phones, emails, cards and account numbers inside the agent before anything is stored, shown to the desk, or logged. LiveKit Cloud PII redaction covers the Cloud-side recordings (dashboard toggle).</p></div>
 <div><b>Failure posture</b><p>Empty lookups become "I can't see that on your account"; a store outage raises and Ember escalates rather than guessing a temperature; duplicate tickets are impossible (partial unique index); cold starts avoided with min-instances.</p></div>
 <div><b>Not in the picture</b><p>LiveKit Cloud observability (session replay, transcripts, traces), the GKE cluster that was decommissioned, and the Twilio trunk pending account upgrade.</p></div>
 </div>
