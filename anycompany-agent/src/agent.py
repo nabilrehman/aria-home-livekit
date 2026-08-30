@@ -1218,7 +1218,9 @@ async def my_agent(ctx: JobContext):
         ),
         tts=inference.TTS(
             model="fishaudio/s2.1-pro",
-            voice="fa4c9eb3dccc4806b382b40d61c6b10a",
+            # "Sarah — an engaged speaker": LiveKit's curated female voice for
+            # this model. Staying on Fish Audio keeps expressive mode rendering.
+            voice="933563129e564b19a115bedd57b7406a",
             fallback=["cartesia/sonic-3"],
         ),
         expressive=True,
