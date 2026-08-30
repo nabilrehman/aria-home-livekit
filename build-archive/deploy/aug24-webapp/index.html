@@ -1384,7 +1384,12 @@ function orderKey(item) {
     : /thermostat/i.test(n) ? 'thermostat' : /lock/i.test(n) ? 'lock'
     : /camera|mount|floodlight/i.test(n) ? 'floodlight' : null;
 }
-const art = (key, alt) => IMG[key] ? `<img src="${IMG[key]}" alt="${esc(alt || '')}" width="200" height="200" loading="lazy">` : '';
+// Pictures come from the data (Firestore `products` via /me → image_url); the
+// embedded set is only a fallback if a row has no catalogue image.
+const art = (key, alt, row) => {
+  const src = (row && row.image_url) || IMG[key];
+  return src ? `<img src="${src}" alt="${esc(alt || '')}" width="200" height="200" loading="lazy">` : '';
+};
 
 function summarise(me) {
   const devices = me.devices || [];
@@ -1411,7 +1416,7 @@ function devicesHtml(devices) {
     const p = parts(d), sv = sev(d);
     return `
     <div class="dev ${sv === 'ok' ? '' : sv === 'down' ? 'off' : 'warn'}">
-      <span class="th">${art(imgKey(d), p.kind)}<span class="dot ${d.on ? 'on' : ''}"></span></span>
+      <span class="th">${art(imgKey(d), p.kind, d)}<span class="dot ${d.on ? 'on' : ''}"></span></span>
       <span class="n"><span class="room">${esc(p.room)}</span>
         <span class="kind"> · ${esc(p.kind)}</span>
         <span class="sub">${esc(health(d))}</span></span>
@@ -1424,7 +1429,7 @@ function latestOrderHtml(o) {
   const [cls, label] = ORDER_STATUS[String(o.status || '').toLowerCase()] || ['mute', cap(o.status)];
   return `
     <a class="lo" href="#orders">
-      <span class="ord-thumb">${art(orderKey(o.item), o.item)}</span>
+      <span class="ord-thumb">${art(orderKey(o.item), o.item, o)}</span>
       <span><b>#${esc(o.order_id)}</b><span class="it">${esc(o.item)}</span></span>
       <span class="pill ${cls}">${esc(label)}</span>
     </a>`;
@@ -1439,7 +1444,7 @@ function ordersHtml(orders, withTrack) {
     const delivered = st === 'delivered';
     return `
     <article class="ord${i === 0 ? ' newest' : ''}">
-      <span class="ord-thumb">${art(orderKey(o.item), o.item)}</span>
+      <span class="ord-thumb">${art(orderKey(o.item), o.item, o)}</span>
       <div class="ord-body">
       ${i === 0 ? '<span class="ord-flag">Most recent order</span>' : ''}
       <div class="ord-top">
@@ -1470,7 +1475,7 @@ function attentionHtml(devices) {
       : `<a class="btn btn-brand btn-sm" href="#support">Troubleshoot</a>`;
     return `
     <div class="attn">
-      <div class="well">${art(imgKey(d), p.kind)}</div>
+      <div class="well">${art(imgKey(d), p.kind, d)}</div>
       <div>
         <div class="k"><span class="badge warn">Needs attention</span></div>
         <h2>${esc(title)}</h2>
@@ -1502,7 +1507,7 @@ function homeDevicesHtml(devices) {
     const p = parts(d), sv = sev(d);
     return `
     <article class="hdev ${sv === 'ok' ? '' : sv === 'down' ? 'off' : 'warn'}">
-      <div class="well">${art(imgKey(d), p.kind)}</div>
+      <div class="well">${art(imgKey(d), p.kind, d)}</div>
       <span class="room">${esc(p.room)}</span>
       <h3>${esc(p.kind)}</h3>
       <div class="rd"><span class="dot ${d.on ? 'on' : ''}"></span>${esc(reading(d))}</div>
