@@ -18,7 +18,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from livekit.agents import AgentSession
+from livekit.agents import AgentSession, RunContext, function_tool
 
 from agent import Assistant
 
@@ -67,9 +67,20 @@ async def test_refund_request_triggers_a_real_warm_transfer():
     fired: dict = {}
 
     class Observed(Assistant):
+        @function_tool
         async def transfer_to_human(
-            self, context, summary: str, department: str = "the support team"
+            self,
+            context: RunContext,
+            summary: str,
+            department: str = "the support team",
         ):
+            """Transfer the caller to a human agent, handing them a summary of the call.
+
+            Args:
+                summary: who the caller is, what they asked, what was resolved, why
+                    they need a person.
+                department: which team to route to.
+            """
             fired["summary"] = summary
             return await Assistant.transfer_to_human(self, context, summary, department)
 
