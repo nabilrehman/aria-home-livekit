@@ -1,0 +1,415 @@
+<title>Talking While You Wait</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE;
+  --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26;
+  --shadow:0 1px 2px rgba(23,27,33,.05), 0 4px 14px rgba(23,27,33,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F;
+    --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F;
+  --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:18px; line-height:1.68; -webkit-font-smoothing:antialiased}
+h1,h2,h3,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+a{color:var(--teal); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px}
+
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:56px; padding-bottom:40px}
+.kicker{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 16px}
+h1{font-size:clamp(36px,6.4vw,58px); line-height:1.0; letter-spacing:-.03em; font-weight:700; margin:0 0 20px; text-wrap:balance}
+.dek{font-size:20px; color:var(--ink-2); margin:0 0 24px}
+.startline{border-top:1px solid var(--rule); padding-top:16px; font-size:16px; color:var(--ink-2)}
+.startline b{color:var(--ink); font-weight:600}
+
+main{padding:8px 0 80px}
+.ch{margin:0 0 12px; padding:44px 0 0}
+.ch-num{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--teal); display:block; margin-bottom:10px}
+h2{font-size:clamp(26px,3.9vw,34px); line-height:1.13; letter-spacing:-.024em; margin:0 0 20px; font-weight:700; text-wrap:balance}
+h3{font-size:19px; margin:30px 0 9px; font-weight:600; letter-spacing:-.01em}
+p{margin:0 0 17px}
+ul,ol{margin:0 0 17px; padding-left:24px}
+li{margin:0 0 9px}
+li::marker{color:var(--ink-3)}
+code:not(pre code){background:var(--surface-2); padding:.1em .38em; border-radius:2px; font-size:.84em; border:1px solid var(--rule)}
+
+.bridge{margin:30px 0 0; padding:18px 20px 18px 22px; background:var(--rust-soft); border-left:3px solid var(--rust); border-radius:0 3px 3px 0}
+.bridge .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--rust); display:block; margin-bottom:7px; font-weight:600}
+.bridge p{margin:0; font-size:17px; color:var(--ink)}
+
+.keep{margin:26px 0; padding:16px 20px; background:var(--teal-soft); border-left:3px solid var(--teal); border-radius:0 3px 3px 0}
+.keep .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:7px; font-weight:600}
+.keep p{margin:0; font-size:17px}
+.keep p + p{margin-top:11px}
+
+.aside{margin:26px 0; padding:16px 19px; background:var(--surface); border:1px solid var(--rule); border-radius:3px}
+.aside .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:7px; font-weight:600}
+.aside p{margin:0; font-size:16.5px}
+.aside p + p{margin-top:11px}
+
+figure{margin:32px 0; width:100%}
+@media(min-width:900px){figure{width:calc(100% + 130px); margin-left:-65px}}
+.figbox{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; min-width:480px; height:auto; color:var(--ink)}
+figcaption{font-size:14.5px; color:var(--ink-2); margin:11px auto 0; line-height:1.5; max-width:700px}
+figcaption b{color:var(--ink); font-weight:600}
+
+.tablebox{overflow-x:auto; margin:24px 0; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+@media(min-width:900px){.tablebox{width:calc(100% + 130px); margin-left:-65px}}
+table{border-collapse:collapse; width:100%; min-width:520px; font-size:15.5px}
+th,td{padding:11px 15px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace; font-size:13.5px}
+
+pre{background:var(--surface-2); border:1px solid var(--rule); border-radius:3px; padding:15px 17px; overflow-x:auto; margin:18px 0; font-size:13.5px; line-height:1.65}
+pre code{background:none; border:0; padding:0}
+.c-teal{color:var(--teal)} .c-rust{color:var(--rust)} .c-grey{color:var(--ink-3)} .c-bad{color:var(--bad)}
+.c-good{color:var(--good)}
+
+hr{border:0; border-top:1px solid var(--rule); margin:44px 0 0}
+footer{border-top:1px solid var(--rule); margin-top:50px; padding:26px 0 60px; color:var(--ink-3); font-size:14.5px}
+footer p{margin:0 0 9px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">Companion piece · built and measured on your laptop</p>
+    <h1>Talking While You Wait</h1>
+    <p class="dek">What happens to a conversation when your agent has to go and do something slow — and the two things LiveKit gives you to fix it.</p>
+    <p class="startline"><b>Everything here has numbers behind it.</b> They came from a refund flow running against a deliberately slow backend, tested by voice, on your own machine.</p>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<!-- 01 -->
+<section class="ch">
+  <span class="ch-num">01</span>
+  <h2>The moment the conversation stops</h2>
+
+  <p>Your agent is talking to someone. They ask for a refund. To actually do it, the agent has to call three separate systems — check the order is eligible, ask the payment processor, write a record. Together they take about six seconds.</p>
+
+  <p>Written the obvious way, that code does exactly what you'd expect:</p>
+
+  <pre><code>await check_eligibility(order)     <span class="c-grey"># 1.6s</span>
+await payment_processor(order)     <span class="c-grey"># 3.2s</span>
+await write_ledger(order)          <span class="c-grey"># 1.4s</span>
+return {"reference": reference}</code></pre>
+
+  <p>And here is the problem, which is not obvious at all until you hear it: <strong>while that runs, the agent cannot speak.</strong> It has no reply yet, because the tool hasn't returned. So the caller gets nothing. No "one moment", no hold music, no breathing. Silence.</p>
+
+  <p>On a screen, six seconds of a spinner is fine. On a phone call, six seconds of silence is a dropped call.</p>
+
+  <div class="bridge">
+    <span class="lbl">And it's worse than six seconds</span>
+    <p>Because the person on the other end doesn't sit quietly through it. They react. And their reaction makes it longer.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 02 -->
+<section class="ch">
+  <span class="ch-num">02</span>
+  <h2>The silence feeds itself</h2>
+
+  <p>Here is a real transcript from your own test. Six seconds of backend work. Watch what actually happened:</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 250" role="img" aria-label="Timeline of a real blocking refund call. The customer confirms at zero seconds, the backend finishes at 6.8 seconds, the customer says are you there at 6.8 seconds, and the agent does not speak until 18.7 seconds because the customer's words became new conversational turns.">
+        <line x1="60" y1="150" x2="790" y2="150" stroke="var(--rule)" stroke-width="1"/>
+        <g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-3)" text-anchor="middle">
+          <text x="60" y="172">0s</text><text x="305" y="172">6.8s</text><text x="770" y="172">18.7s</text>
+        </g>
+
+        <rect x="60" y="120" width="245" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/>
+        <text x="182" y="137" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">backend working — 6.2s</text>
+
+        <rect x="305" y="120" width="465" height="24" rx="2" fill="var(--rust-soft)" stroke="var(--bad)" stroke-dasharray="4 3"/>
+        <text x="537" y="137" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">extra 11.9s — caused by the customer reacting to the silence</text>
+
+        <line x1="60" y1="100" x2="60" y2="150" stroke="var(--ink-3)" stroke-width="1.4"/>
+        <text x="66" y="96" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">"Yeah, that's correct."</text>
+        <text x="66" y="82" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">customer confirms</text>
+
+        <line x1="305" y1="52" x2="305" y2="150" stroke="var(--bad)" stroke-width="1.6"/>
+        <text x="313" y="48" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--bad)">"Are you there?"  ·  "Hello."</text>
+        <text x="313" y="64" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">their patience ran out — and these words</text>
+        <text x="313" y="78" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">became new turns the agent had to process first</text>
+
+        <line x1="770" y1="100" x2="770" y2="150" stroke="var(--teal)" stroke-width="1.6"/>
+        <circle cx="770" cy="150" r="4" fill="var(--teal)"/>
+        <text x="764" y="96" text-anchor="end" font-family="Archivo,sans-serif" font-size="11" fill="var(--teal)">agent finally speaks</text>
+
+        <text x="60" y="212" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">6.2 seconds of work produced 18.7 seconds of dead air.</text>
+        <text x="60" y="230" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-2)">Nearly two thirds of the damage came from the customer trying to check the line was alive.</text>
+      </svg>
+    </div>
+    <figcaption><b>A real call, measured.</b> The customer's <em>"Are you there?"</em> landed sixteen milliseconds after the backend finished — so instead of hearing the refund result, those words became a new conversational turn, which had to be recognised, endpointed and answered before anything about the refund could be said.</figcaption>
+  </figure>
+
+  <p>That is the thing to understand: silence isn't a passive cost. It makes the customer speak, speaking creates a turn, the turn adds delay, and the delay creates more silence. <strong>The failure compounds itself.</strong></p>
+
+  <div class="keep">
+    <span class="lbl">Keep this one</span>
+    <p>The tester lasted <strong>6.8 seconds</strong> before saying "are you there?" — and that was someone who knew it was a test and knew the backend was slow. A real customer with a real problem cracks sooner.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Which is why</span>
+    <p>LiveKit gives you two separate ways to make noise while a tool is still running. They sound similar and they are not.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 03 -->
+<section class="ch">
+  <span class="ch-num">03</span>
+  <h2>Two channels, two different jobs</h2>
+
+  <p>The framework's answer is a pair of tools that both fill silence but travel completely different routes to the speaker.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 240" role="img" aria-label="Two paths from a running tool to the customer's ear. ctx.update goes into the chat context, is read by the language model, and comes out as natural speech. ctx.with_filler goes straight to session.say and bypasses the model entirely.">
+        <defs>
+          <marker id="w-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="w-rust" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--rust)"/></marker>
+        </defs>
+
+        <rect x="20" y="92" width="120" height="52" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="80" y="114" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">your tool,</text>
+        <text x="80" y="130" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">still running</text>
+
+        <!-- update path -->
+        <path d="M140,108 L200,62" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#w-teal)"/>
+        <text x="150" y="76" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--teal)">ctx.update()</text>
+
+        <rect x="206" y="38" width="126" height="46" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="269" y="60" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">chat context</text>
+        <text x="269" y="75" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">the model can see it</text>
+
+        <line x1="332" y1="61" x2="386" y2="61" stroke="var(--teal)" stroke-width="2" marker-end="url(#w-teal)"/>
+        <rect x="392" y="38" width="126" height="46" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="455" y="60" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">the LLM</text>
+        <text x="455" y="75" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">rewords it naturally</text>
+
+        <path d="M518,61 L600,96" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#w-teal)"/>
+
+        <!-- filler path -->
+        <path d="M140,128 L200,176" stroke="var(--rust)" stroke-width="2" fill="none" marker-end="url(#w-rust)"/>
+        <text x="146" y="172" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--rust)">ctx.with_filler()</text>
+
+        <rect x="206" y="154" width="126" height="46" rx="3" fill="var(--rust-soft)" stroke="var(--rust)"/>
+        <text x="269" y="176" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">session.say()</text>
+        <text x="269" y="191" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">exact words, no model</text>
+
+        <path d="M332,177 L600,140" stroke="var(--rust)" stroke-width="2" fill="none" marker-end="url(#w-rust)"/>
+        <text x="404" y="176" font-family="Archivo,sans-serif" font-size="10" fill="var(--rust)">skips the LLM entirely</text>
+
+        <rect x="606" y="96" width="120" height="48" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.5"/>
+        <text x="666" y="118" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">the customer</text>
+        <text x="666" y="133" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">hears something</text>
+      </svg>
+    </div>
+    <figcaption><b>Same destination, different route.</b> An update is <em>information</em> — the model reads it and says it in its own words, so it can weave it into the conversation. A filler is <em>audio</em> — the exact sentence you wrote, played directly, with the model none the wiser.</figcaption>
+  </figure>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th></th><th class="mono">ctx.update()</th><th class="mono">ctx.with_filler()</th></tr></thead>
+      <tbody>
+        <tr><td><strong>What it is</strong></td><td>information</td><td>noise</td></tr>
+        <tr><td><strong>Route</strong></td><td>into the chat context, the model voices it</td><td>straight to the speaker, bypassing the model</td></tr>
+        <tr><td><strong>Wording</strong></td><td>the model rephrases naturally</td><td>exactly what you typed</td></tr>
+        <tr><td><strong>Model knows?</strong></td><td>yes — it can refer back to it</td><td>no</td></tr>
+        <tr><td><strong>Use for</strong></td><td>real progress: "the processor accepted it"</td><td>gap filling: "hang tight"</td></tr>
+        <tr><td><strong>Fires</strong></td><td>immediately, when you call it</td><td>only after a stretch of silence</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="keep">
+    <span class="lbl">The one that matters most</span>
+    <p>The <strong>first</strong> <code>ctx.update()</code> is what makes the tool non-blocking. Before it, the conversation is stuck waiting on your tool. After it, the agent has the floor back and can keep talking while your slow work carries on underneath.</p>
+    <p>A tool that never calls <code>update()</code> behaves like an ordinary blocking tool, no matter what else you do.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">And here's where it went wrong</span>
+    <p>Both of these were used correctly on the first attempt, and one of them still did absolutely nothing. It took measuring to notice.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 04 -->
+<section class="ch">
+  <span class="ch-num">04</span>
+  <h2>The trap in the word "delay"</h2>
+
+  <p>Filler speech takes a <code>delay</code>. The natural reading is "wait this long into the tool, then say something." That reading is wrong, and it produces a feature that silently never runs.</p>
+
+  <p><strong><code>delay</code> means: how long the whole session must be continuously quiet before the filler is allowed to fire.</strong> Not quiet inside your tool — quiet on the call. And every time <em>anyone</em> speaks, including your own progress updates, that timer resets to zero.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 250" role="img" aria-label="Two arrangements. In the wrong one, a single filler scope wraps three phases and the progress updates keep resetting the idle timer so the filler never fires. In the right one, each phase has its own filler scope with a shorter delay, so a filler fires during the long phase.">
+        <text x="16" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--bad)">ONE SCOPE AROUND EVERYTHING &#183; delay 4s</text>
+
+        <rect x="20" y="38" width="700" height="42" rx="3" fill="none" stroke="var(--bad)" stroke-dasharray="4 3"/>
+        <text x="30" y="53" font-family="IBM Plex Mono,monospace" font-size="9.5" fill="var(--bad)">with_filler(delay=4)</text>
+
+        <g font-family="Archivo,sans-serif" font-size="10" text-anchor="middle">
+          <rect x="40" y="58" width="120" height="16" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="100" y="70" fill="var(--ink-2)">1.6s</text>
+          <rect x="196" y="58" width="230" height="16" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="311" y="70" fill="var(--ink-2)">3.2s</text>
+          <rect x="462" y="58" width="110" height="16" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="517" y="70" fill="var(--ink-2)">1.4s</text>
+        </g>
+        <g stroke="var(--teal)" stroke-width="2">
+          <line x1="178" y1="52" x2="178" y2="86"/><line x1="444" y1="52" x2="444" y2="86"/>
+        </g>
+        <text x="178" y="100" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--teal)">update()</text>
+        <text x="444" y="100" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--teal)">update()</text>
+        <text x="178" y="112" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--bad)">timer resets</text>
+        <text x="444" y="112" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--bad)">timer resets</text>
+        <text x="30" y="132" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--bad)">Longest quiet stretch is 3.2s. The threshold is 4s. The filler never plays &#8212; not once, no error.</text>
+
+        <line x1="16" y1="150" x2="806" y2="150" stroke="var(--rule)"/>
+
+        <text x="16" y="176" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--good)">ONE SCOPE PER PHASE &#183; delay 2s</text>
+
+        <g font-family="Archivo,sans-serif" font-size="10" text-anchor="middle">
+          <rect x="40" y="192" width="120" height="30" rx="3" fill="none" stroke="var(--good)" stroke-dasharray="3 2"/>
+          <rect x="46" y="200" width="108" height="16" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="100" y="212" fill="var(--ink-2)">1.6s</text>
+          <rect x="196" y="192" width="230" height="30" rx="3" fill="var(--teal-soft)" stroke="var(--good)"/>
+          <rect x="202" y="200" width="218" height="16" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="311" y="212" fill="var(--ink-2)">3.2s</text>
+          <rect x="462" y="192" width="110" height="30" rx="3" fill="none" stroke="var(--good)" stroke-dasharray="3 2"/>
+          <rect x="468" y="200" width="98" height="16" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="517" y="212" fill="var(--ink-2)">1.4s</text>
+        </g>
+        <line x1="311" y1="186" x2="311" y2="196" stroke="var(--rust)" stroke-width="2"/>
+        <circle cx="311" cy="186" r="3.5" fill="var(--rust)"/>
+        <text x="322" y="184" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)">filler fires here &#8212; "Still with the payment processor, hang tight."</text>
+        <text x="30" y="240" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--good)">Each phase gets its own quiet window. The 3.2s phase clears a 2s threshold, so the gap gets covered.</text>
+      </svg>
+    </div>
+    <figcaption><b>Why the first attempt did nothing.</b> One scope wrapped around three phases meant the progress updates kept resetting the idle timer, and the longest quiet stretch never reached the threshold. No error, no warning — the output still looked reasonable, because the updates were doing all the work. Only measuring the gaps revealed the filler had never played.</figcaption>
+  </figure>
+
+  <div class="aside">
+    <span class="lbl">Why this is worth remembering</span>
+    <p>This is the most useful kind of bug: the API was called correctly, the arguments were valid, nothing threw, and the feature was inert. The only way to catch it was to measure the silence and notice a line that should have appeared and didn't.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">So the shape that works</span>
+    <p>One update to open, then a filler scope around each slow phase, sized to that phase.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 05 -->
+<section class="ch">
+  <span class="ch-num">05</span>
+  <h2>What good looks like</h2>
+
+  <pre><code><span class="c-grey"># Opens the conversation back up. The FIRST update is what makes</span>
+<span class="c-grey"># the tool non-blocking, so this line matters more than it looks.</span>
+await ctx.update("Starting the refund. This takes a few seconds.")
+
+<span class="c-grey"># Phase 1 — short. One filler is enough if they go quiet.</span>
+async with ctx.with_filler("Just checking that order, one moment.", delay=2):
+    await check_eligibility(order)
+await ctx.update("The order is eligible. Sending it to the processor.")
+
+<span class="c-grey"># Phase 2 — the long one. A callable rotates the lines so it</span>
+<span class="c-grey"># never repeats itself, which is what makes a bot sound broken.</span>
+lines = ["Still with the payment processor, hang tight.",
+         "Almost there, just waiting on their confirmation."]
+async with ctx.with_filler(lambda step: lines[step],
+                           delay=2, interval=4, max_steps=len(lines)):
+    await payment_processor(order)
+await ctx.update("The processor accepted it. Writing the record now.")
+
+<span class="c-grey"># Phase 3 — short.</span>
+async with ctx.with_filler("Nearly done.", delay=2):
+    await write_ledger(order)
+
+<span class="c-grey"># Spoken automatically as a follow-up once the agent is idle.</span>
+<span class="c-grey"># No extra update() needed here.</span>
+return {"reference": reference, "arrives_in": "three to five business days"}</code></pre>
+
+  <p>Four things in there are deliberate. <strong>One update before anything slow</strong>, because that's what hands the conversation back. <strong>A scope per phase</strong>, so each gets its own quiet window. <strong>A short delay</strong>, tuned to the actual gaps rather than guessed. And <strong>a callable for the long phase</strong>, so repeated fillers say different things.</p>
+
+  <h3>What it did to the numbers</h3>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Version</th><th>Longest silence</th><th>What the customer hears</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Blocking</strong></td><td class="mono">7.7 s</td><td>nothing, then the result</td></tr>
+        <tr><td><strong>First attempt</strong></td><td class="mono">3.1 s</td><td>three updates, filler never fired</td></tr>
+        <tr><td><strong>Per-phase scopes</strong></td><td class="mono">2.0 s</td><td>updates plus filler covering the long gap</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Same six seconds of backend work in all three. The only thing that changed is what the customer heard while it happened.</p>
+
+  <div class="keep">
+    <span class="lbl">Say it out loud</span>
+    <p>"Anything slower than a second or two needs to talk while it works. There are two channels — one puts a status into the conversation so the model voices it naturally, the other plays a fixed line straight to the speaker during quiet gaps. The gotcha is that the filler delay is measured against session silence, not against your tool, so your own progress updates reset it. I had that wrong the first time and my filler never fired at all."</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="ch">
+  <span class="ch-num">&mdash;</span>
+  <h2>Four things to carry</h2>
+
+  <ol>
+    <li><strong>Silence on a phone call reads as a dropped call</strong>, and past a few seconds the customer starts talking — which makes it worse, not better.</li>
+    <li><strong>The first <code>ctx.update()</code> is the switch.</strong> It hands the conversation back and makes everything after it non-blocking.</li>
+    <li><strong>Updates are information, fillers are noise.</strong> One goes through the model, one goes around it.</li>
+    <li><strong><code>delay</code> counts session silence, not tool time.</strong> Wrap each slow phase separately, or your filler will never fire and nothing will tell you.</li>
+  </ol>
+
+  <footer>
+    <p>Companion to <a href="https://claude.ai/code/artifact/eca37b35-b278-4b09-b3ac-4571b3660c64">From Sound to Conversation</a>, <a href="https://claude.ai/code/artifact/cf30cc8a-a9ed-4e69-abee-301642ef2340">Inside the Room</a>, <a href="https://claude.ai/code/artifact/c7cafc7b-638e-4917-82b6-63da043d74d4">What LiveKit Ships</a> and the <a href="https://claude.ai/code/artifact/280e533f-f812-4e14-b135-cf8bb95adba2">AnyCompany Voice Agent Playbook</a>.</p>
+    <p>Numbers measured August 2026 against a simulated backend taking 6.2 seconds across three calls. API details from the <a href="https://docs.livekit.io/agents/logic/tools/async/">LiveKit async tools documentation</a>.</p>
+  </footer>
+</section>
+
+</div>
+</main>

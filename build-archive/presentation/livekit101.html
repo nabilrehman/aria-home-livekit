@@ -1,0 +1,503 @@
+<title>LiveKit, From the Ground Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE;
+  --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26;
+  --shadow:0 1px 2px rgba(23,27,33,.05), 0 4px 14px rgba(23,27,33,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F;
+    --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F;
+  --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:18px; line-height:1.68; -webkit-font-smoothing:antialiased}
+h1,h2,h3,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+a{color:var(--teal); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px}
+
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:56px; padding-bottom:40px}
+.kicker{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 16px}
+h1{font-size:clamp(34px,6vw,54px); line-height:1.02; letter-spacing:-.03em; font-weight:700; margin:0 0 20px; text-wrap:balance}
+.dek{font-size:20px; color:var(--ink-2); margin:0 0 24px}
+.startline{border-top:1px solid var(--rule); padding-top:16px; font-size:16px; color:var(--ink-2)}
+.startline b{color:var(--ink); font-weight:600}
+
+.toc{max-width:760px; margin:0 auto; padding:22px 24px 4px}
+.toc ol{list-style:none; margin:0; padding:0; columns:2; column-gap:32px; font-size:14.5px}
+.toc li{break-inside:avoid; margin-bottom:7px; font-family:Archivo,sans-serif}
+.toc a{color:var(--ink-2); text-decoration:none}
+.toc a:hover{color:var(--teal)}
+.toc .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3); margin-right:8px}
+
+main{padding:8px 0 80px}
+.ch{margin:0 0 12px; padding:44px 0 0; scroll-margin-top:16px}
+.ch-num{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--teal); display:block; margin-bottom:10px}
+h2{font-size:clamp(25px,3.7vw,33px); line-height:1.13; letter-spacing:-.024em; margin:0 0 20px; font-weight:700; text-wrap:balance}
+h3{font-size:19px; margin:30px 0 9px; font-weight:600; letter-spacing:-.01em}
+p{margin:0 0 17px}
+ul,ol{margin:0 0 17px; padding-left:24px}
+li{margin:0 0 9px}
+li::marker{color:var(--ink-3)}
+code:not(pre code){background:var(--surface-2); padding:.1em .38em; border-radius:2px; font-size:.84em; border:1px solid var(--rule)}
+
+.bridge{margin:30px 0 0; padding:18px 20px 18px 22px; background:var(--rust-soft); border-left:3px solid var(--rust); border-radius:0 3px 3px 0}
+.bridge .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--rust); display:block; margin-bottom:7px; font-weight:600}
+.bridge p{margin:0; font-size:17px; color:var(--ink)}
+.keep{margin:26px 0; padding:16px 20px; background:var(--teal-soft); border-left:3px solid var(--teal); border-radius:0 3px 3px 0}
+.keep .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:7px; font-weight:600}
+.keep p{margin:0; font-size:17px}
+.keep p + p{margin-top:11px}
+.aside{margin:26px 0; padding:16px 19px; background:var(--surface); border:1px solid var(--rule); border-radius:3px}
+.aside .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:7px; font-weight:600}
+.aside p{margin:0; font-size:16.5px}
+.aside p + p{margin-top:11px}
+
+figure{margin:32px 0; width:100%}
+@media(min-width:900px){figure{width:calc(100% + 130px); margin-left:-65px}}
+.figbox{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; min-width:500px; height:auto; color:var(--ink)}
+figcaption{font-size:14.5px; color:var(--ink-2); margin:11px auto 0; line-height:1.5; max-width:700px}
+figcaption b{color:var(--ink); font-weight:600}
+
+.tablebox{overflow-x:auto; margin:24px 0; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+@media(min-width:900px){.tablebox{width:calc(100% + 130px); margin-left:-65px}}
+table{border-collapse:collapse; width:100%; min-width:540px; font-size:15.5px}
+th,td{padding:11px 15px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace; font-size:13px}
+td.term{font-family:Archivo,sans-serif; font-weight:600; color:var(--teal); white-space:nowrap}
+
+pre{background:var(--surface-2); border:1px solid var(--rule); border-radius:3px; padding:15px 17px; overflow-x:auto; margin:18px 0; font-size:13.5px; line-height:1.65}
+pre code{background:none; border:0; padding:0}
+.c-teal{color:var(--teal); font-weight:600} .c-rust{color:var(--rust); font-weight:600}
+.c-grey{color:var(--ink-3)} .c-good{color:var(--good); font-weight:600}
+
+hr{border:0; border-top:1px solid var(--rule); margin:44px 0 0}
+footer{border-top:1px solid var(--rule); margin-top:50px; padding:26px 0 60px; color:var(--ink-3); font-size:14.5px}
+footer p{margin:0 0 9px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">The foundational one · read this before the others</p>
+    <h1>LiveKit, From the Ground Up</h1>
+    <p class="dek">What LiveKit actually is, layer by layer — and the one definition that clears up why you could build an agent in a browser and it just worked, with no laptop and no cloud of your own.</p>
+    <p class="startline"><b>The confusion is universal.</b> "Agent" sounds like a thing that lives inside LiveKit. It isn't, and once that clicks the whole architecture falls into place.</p>
+  </div>
+</header>
+
+<div class="toc">
+  <ol>
+    <li><span class="n">01</span><a href="#layers">Three layers, not one product</a></li>
+    <li><span class="n">02</span><a href="#server">The media server: the beating heart</a></li>
+    <li><span class="n">03</span><a href="#room">The room model</a></li>
+    <li><span class="n">04</span><a href="#agent">What an agent really is</a></li>
+    <li><span class="n">05</span><a href="#vocab">Worker, job, session, dispatch</a></li>
+    <li><span class="n">06</span><a href="#builder">Why Agent Builder just worked</a></li>
+    <li><span class="n">07</span><a href="#cloud">Cloud vs self-hosting</a></li>
+    <li><span class="n">08</span><a href="#whole">The whole thing on one page</a></li>
+  </ol>
+</div>
+
+<main>
+<div class="wrap">
+
+<!-- 01 -->
+<section class="ch" id="layers">
+  <span class="ch-num">01</span>
+  <h2>LiveKit is three layers, not one product</h2>
+
+  <p>When people say "LiveKit," they're usually pointing at one of three different things without realizing it. Untangling them is most of the battle, so let's name all three up front and then take each in turn.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 280" role="img" aria-label="LiveKit is three stacked layers: the open-source media server at the bottom, the room model in the middle, and the Agents framework on top. LiveKit Cloud is a managed way to run all three.">
+        <rect x="60" y="30" width="700" height="66" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.4"/>
+        <text x="80" y="56" font-family="Archivo,sans-serif" font-size="14" font-weight="700" fill="var(--teal)">3 · THE AGENTS FRAMEWORK</text>
+        <text x="80" y="76" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-2)">a library — lets your program join a room and run an AI pipeline</text>
+        <text x="742" y="66" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--ink-3)">pip install livekit-agents</text>
+
+        <rect x="60" y="106" width="700" height="66" rx="5" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.4"/>
+        <text x="80" y="132" font-family="Archivo,sans-serif" font-size="14" font-weight="700" fill="var(--ink)">2 · THE ROOM MODEL</text>
+        <text x="80" y="152" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-2)">rooms, participants, tracks — the shared vocabulary everything speaks</text>
+
+        <rect x="60" y="182" width="700" height="66" rx="5" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.4"/>
+        <text x="80" y="208" font-family="Archivo,sans-serif" font-size="14" font-weight="700" fill="var(--ink)">1 · THE MEDIA SERVER (SFU)</text>
+        <text x="80" y="228" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-2)">open-source Go binary — moves the audio. the foundation everything sits on</text>
+        <text x="742" y="218" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--ink-3)">github.com/livekit/livekit</text>
+
+        <path d="M30,248 L30,30" stroke="var(--rust)" stroke-width="2" fill="none" marker-end="url(#l101-a)"/>
+        <defs><marker id="l101-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--rust)"/></marker></defs>
+        <text x="22" y="145" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)" transform="rotate(-90 22 139)">built on top of</text>
+      </svg>
+    </div>
+    <figcaption><b>Three layers, one name.</b> The bottom is a piece of open-source software. The middle is a set of concepts. The top is a library you install. And <em>LiveKit Cloud</em> — the thing you log into — is simply a managed, hosted way to run all three, so you never touch the plumbing.</figcaption>
+  </figure>
+
+  <p>So there are really <strong>four</strong> things wearing the same name, and keeping them straight is the whole game:</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>When someone says "LiveKit"</th><th>They might mean</th></tr></thead>
+      <tbody>
+        <tr><td class="term">the media server</td><td>the open-source Go program that routes audio. The foundation.</td></tr>
+        <tr><td class="term">the room model</td><td>the concepts — rooms, participants, tracks — that everything is built around.</td></tr>
+        <tr><td class="term">the Agents framework</td><td>the Python/Node library you use to write an agent.</td></tr>
+        <tr><td class="term">LiveKit Cloud</td><td>the managed product that runs all of the above for you.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Start at the bottom</span>
+    <p>Everything rests on the media server, so that's where the understanding has to start. It's the one piece that's genuinely LiveKit's, always.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 02 -->
+<section class="ch" id="server">
+  <span class="ch-num">02</span>
+  <h2>The media server: the beating heart</h2>
+
+  <p>At the very bottom is a single program, written in Go, that you can find on GitHub and run yourself. Its entire job is to move audio and video between people in real time. It's called an <strong>SFU</strong> — a Selective Forwarding Unit — and the name is a literal description: it selectively forwards streams.</p>
+
+  <p>Here's what it does, concretely. Everyone in a call sends their audio <em>up</em> to this server once. The server looks at who wants to hear whom, and forwards each stream <em>down</em> to the right people. It never opens the audio up, mixes it, or re-encodes it — it just routes, like an intelligent switchboard. That's why it adds almost no delay, and why every voice stays separate and clean.</p>
+
+  <p>This is the piece that is <em>always</em> LiveKit's, in every deployment, no matter what. Whether you're on their cloud or running everything yourself, this SFU is what the audio flows through. It is the one non-negotiable.</p>
+
+  <div class="aside">
+    <span class="lbl">A fact worth having</span>
+    <p>The media server is a single Go binary you can run in Docker or Kubernetes. That's what "self-hosting LiveKit" means — running this program on your own machines. It's open source and free. What you'd be giving up by doing that is the subject of chapter 07.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">But a server that moves audio needs a way to describe who's talking to whom</span>
+    <p>That's the layer above it — a small set of nouns that the whole system is organized around.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 03 -->
+<section class="ch" id="room">
+  <span class="ch-num">03</span>
+  <h2>The room model: three nouns</h2>
+
+  <p>The media server organizes everything around three concepts, and they are the entire data model. Once you have these, you can describe any LiveKit application.</p>
+
+  <ul>
+    <li>A <strong>room</strong> is one session — one conversation. It exists while people are in it and closes when they all leave.</li>
+    <li>A <strong>participant</strong> is anyone or anything in the room. A person in a browser. A phone caller. An AI. A recorder.</li>
+    <li>A <strong>track</strong> is one stream of media a participant is sending — their microphone audio, say. Participants subscribe to each other's tracks to hear them.</li>
+  </ul>
+
+  <p>The word doing all the work is <em>anything</em> in the definition of participant. The server does not care what kind of thing a participant is. A human and an AI join in exactly the same way, publish tracks in exactly the same way, and are heard in exactly the same way. That single fact is what makes the next chapter possible — and it's the fact that clears up your confusion.</p>
+
+  <div class="keep">
+    <span class="lbl">Keep this one</span>
+    <p>A participant is anything that joins a room. The server treats a person and an AI identically. Hold onto that — the entire mystery of "what is an agent" dissolves the moment you accept that an AI is just another participant.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 04 -->
+<section class="ch" id="agent">
+  <span class="ch-num">04</span>
+  <h2>What an agent really is</h2>
+
+  <p>This is the chapter that fixes the confusion, so let's be very precise. Here is the definition, taken almost word for word from LiveKit's own documentation:</p>
+
+  <div class="keep">
+    <span class="lbl">The definition, verbatim in spirit</span>
+    <p>"The Agents framework lets you add <strong>any Python or Node.js program</strong> to LiveKit rooms as full realtime participants."</p>
+  </div>
+
+  <p>Read that twice. An agent is not a special LiveKit object. An agent is <strong>a program you write</strong> — an ordinary Python or Node program — that uses LiveKit's library to <em>join a room as a participant</em>. That's it. That's the whole thing.</p>
+
+  <p>The mistake almost everyone makes, and the one you made, is hearing "agent" and picturing something that lives <em>inside</em> LiveKit — a backend service that LiveKit hosts and runs. It's the opposite. The agent is <em>your</em> code, and it reaches <em>into</em> a LiveKit room from wherever it happens to be running.</p>
+
+  <p>The cleanest analogy is a library you already know. When you write a Python script that uses the AWS SDK, your script doesn't "run inside AWS." It runs on your machine and <em>makes calls to</em> AWS. The LiveKit Agents framework is the same shape: it's a library your program imports so it can join a room. Your program runs where you run it. The room is in LiveKit. They connect over the network.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 240" role="img" aria-label="The wrong mental model shows the agent as a service living inside LiveKit. The right model shows the agent as your own program, running outside LiveKit, that connects into a room as a participant just like a human does.">
+        <text x="16" y="24" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--bad)">WHAT YOU PICTURED</text>
+        <rect x="16" y="40" width="360" height="180" rx="5" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.2"/>
+        <text x="36" y="64" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--rust)">LIVEKIT</text>
+        <circle cx="130" cy="140" r="40" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="130" y="144" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">the Room</text>
+        <rect x="230" y="110" width="120" height="60" rx="4" fill="var(--surface-2)" stroke="var(--ink-3)"/>
+        <text x="290" y="136" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">"the agent"</text>
+        <text x="290" y="152" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">living inside?</text>
+        <text x="36" y="204" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--bad)">a mysterious LiveKit-hosted thing</text>
+
+        <text x="440" y="24" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--teal)">WHAT'S TRUE</text>
+        <rect x="440" y="40" width="180" height="180" rx="5" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.2"/>
+        <text x="460" y="64" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--rust)">LIVEKIT</text>
+        <circle cx="530" cy="140" r="46" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.3"/>
+        <text x="530" y="126" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" font-weight="700" fill="var(--teal)">ROOM</text>
+        <rect x="492" y="132" width="76" height="24" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="530" y="148" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink)">you (human)</text>
+
+        <rect x="660" y="110" width="150" height="60" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="735" y="134" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="700" fill="var(--teal)">YOUR PROGRAM</text>
+        <text x="735" y="150" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-2)">agent.py — runs outside</text>
+        <path d="M660,140 L580,140" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#a101)"/>
+        <defs><marker id="a101" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker></defs>
+        <text x="628" y="132" text-anchor="middle" font-family="Archivo,sans-serif" font-size="8.5" fill="var(--teal)">joins in</text>
+      </svg>
+    </div>
+    <figcaption><b>The whole confusion, in one picture.</b> The agent isn't a resident of LiveKit. It's your program, running elsewhere, that connects into a room exactly the way your browser does — as a participant. The room is LiveKit's; the agent is yours.</figcaption>
+  </figure>
+
+  <p>You proved this yourself today without noticing. Your <code>agent.py</code> ran on your MacBook, and in the logs it said <code>registered worker &#8230; url: wss://&#8230;livekit.cloud</code>. Your program, on your desk, reached <em>out</em> to a room in LiveKit. The agent was never inside LiveKit. It was on your laptop, connected to LiveKit.</p>
+
+  <div class="aside">
+    <span class="lbl">And here's the lovely part</span>
+    <p>Because the framework just adds "any program" to a room, an agent doesn't even have to be AI. LiveKit calls these <em>programmatic participants</em> — a recorder, a media processor, a bridge to some external system. An AI voice agent is the most common kind, but the framework underneath is simply "let my code be a participant."</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 05 -->
+<section class="ch" id="vocab">
+  <span class="ch-num">05</span>
+  <h2>Worker, job, session, dispatch</h2>
+
+  <p>Now that "an agent is a program that joins a room" is solid, the rest of the vocabulary is just the machinery that connects one program to many calls. These four words appear all over the docs and your logs, and they're simpler than they sound.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Word</th><th>What it actually is</th></tr></thead>
+      <tbody>
+        <tr><td class="term">worker</td><td>Your agent program, running and <em>waiting</em>. It registered with LiveKit and stands by for work. One worker handles many calls. This is the thing that printed <code>registered worker</code> in your logs.</td></tr>
+        <tr><td class="term">job</td><td>One instance of the work — one call. When a room needs an agent, LiveKit hands the worker a job, and the worker forks a <strong>separate process</strong> to run it. Your <code>t3.small</code> could hold several jobs at once, each isolated.</td></tr>
+        <tr><td class="term">dispatch</td><td>The act of assigning a job to a worker. Happens automatically when someone joins a room, or explicitly via API — it's what a phone dispatch rule triggers.</td></tr>
+        <tr><td class="term">entrypoint</td><td>The function in your code that runs for each job. "The bulk of the code and logic you write." Your <code>my_agent(ctx)</code> function is the entrypoint.</td></tr>
+        <tr><td class="term">session</td><td>The <code>AgentSession</code> object you create inside a job — it wires up the STT&#8594;LLM&#8594;TTS pipeline and runs the actual conversation. One session lives for one call, and closes when the last person leaves.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Put together as a story: your <strong>worker</strong> starts up and registers. A customer calls. LiveKit <strong>dispatches</strong> a <strong>job</strong> to your worker. The worker forks a fresh process and runs your <strong>entrypoint</strong>, which creates an <strong>AgentSession</strong> that holds the conversation. The customer hangs up, the session closes, the process exits. The worker is still standing by for the next one.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 220" role="img" aria-label="One worker stands by and registers. When calls arrive, LiveKit dispatches a job for each, and the worker forks a separate isolated process per job, each running its own session. The worker keeps waiting.">
+        <rect x="20" y="80" width="150" height="60" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="95" y="104" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--teal)">1 WORKER</text>
+        <text x="95" y="122" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">registered, waiting</text>
+
+        <text x="250" y="40" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">three calls arrive → three jobs, each its own process</text>
+        <g font-family="Archivo,sans-serif" font-size="10" text-anchor="middle">
+          <rect x="250" y="54" width="150" height="34" rx="4" fill="var(--surface)" stroke="var(--rule)"/><text x="325" y="75" fill="var(--ink)">job · process A · session</text>
+          <rect x="250" y="94" width="150" height="34" rx="4" fill="var(--surface)" stroke="var(--rule)"/><text x="325" y="115" fill="var(--ink)">job · process B · session</text>
+          <rect x="250" y="134" width="150" height="34" rx="4" fill="var(--surface)" stroke="var(--rule)"/><text x="325" y="155" fill="var(--ink)">job · process C · session</text>
+        </g>
+        <g stroke="var(--teal)" stroke-width="1.6" fill="none">
+          <path d="M170,105 L246,71"/><path d="M170,110 L246,111"/><path d="M170,115 L246,151"/>
+        </g>
+        <text x="210" y="180" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--teal)">dispatch</text>
+
+        <g font-family="Archivo,sans-serif" font-size="10" text-anchor="middle">
+          <circle cx="500" cy="71" r="26" fill="var(--rust-soft)" stroke="var(--rust)"/><text x="500" y="74" fill="var(--rust)">Room 1</text>
+          <circle cx="500" cy="111" r="26" fill="var(--rust-soft)" stroke="var(--rust)"/><text x="500" y="114" fill="var(--rust)">Room 2</text>
+          <circle cx="500" cy="151" r="26" fill="var(--rust-soft)" stroke="var(--rust)"/><text x="500" y="154" fill="var(--rust)">Room 3</text>
+        </g>
+        <g stroke="var(--rust)" stroke-width="1.4" fill="none">
+          <path d="M400,71 L472,71"/><path d="M400,111 L472,111"/><path d="M400,151 L472,151"/>
+        </g>
+
+        <text x="600" y="105" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">isolation is the point:</text>
+        <text x="600" y="121" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">if process B crashes,</text>
+        <text x="600" y="137" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">A and C don't notice</text>
+      </svg>
+    </div>
+    <figcaption><b>One worker, many jobs, one process each.</b> This is why "a worker crashed" only degrades one call — jobs are isolated processes. It's also why you saw two agents answer at once earlier: you'd opened two sessions, and each got its own job and process.</figcaption>
+  </figure>
+
+  <div class="aside">
+    <span class="lbl">The reliability numbers hiding in here</span>
+    <p>If a worker dies unexpectedly, LiveKit notices within about <strong>15 seconds</strong> and dispatches a replacement. On deploy, workers <strong>drain</strong> — they finish their active calls and refuse new ones, so a restart never kills a live conversation. These aren't trivia; they're the answers to "what happens when it breaks."</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 06 -->
+<section class="ch" id="builder">
+  <span class="ch-num">06</span>
+  <h2>Why Agent Builder just worked</h2>
+
+  <p>Now the specific thing that threw you. You opened Agent Builder in the browser, filled in a form, hit a button, and talked to a working agent — no laptop, no cloud of your own, nothing installed. If an agent is "your program running somewhere," where was <em>that</em> program running?</p>
+
+  <p>The answer, straight from the docs: <strong>Agent Builder deploys your agent directly to LiveKit Cloud.</strong> The form you filled in generated the Python code for you, and the "Deploy" button ran that code as a worker <em>on LiveKit's own infrastructure.</em></p>
+
+  <p>So the program still exists, and it's still "your code joining a room as a participant" — it's just that <em>LiveKit is running it for you</em>, in their data center, instead of you running it on your laptop or your cloud. Nothing about the model changed. Only the location did.</p>
+
+  <p>This is the third home from the previous primer, made concrete. Remember there are exactly three places your agent-program can run:</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Where the agent runs</th><th>How you got there</th><th>You did this</th></tr></thead>
+      <tbody>
+        <tr><td class="term">your laptop</td><td><code>lk agent dev</code></td><td>yes — the whole day's testing</td></tr>
+        <tr><td class="term">LiveKit Cloud</td><td>Agent Builder's Deploy, or <code>lk agent deploy</code></td><td><strong>yes — the browser agent</strong></td></tr>
+        <tr><td class="term">your own cloud</td><td>container &#8594; GKE / EC2</td><td>not yet — the reference diagram's box</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="keep">
+    <span class="lbl">The thing that was confusing you, resolved</span>
+    <p>Agent Builder didn't prove that "the agent lives inside LiveKit." It proved that <strong>LiveKit will run your agent-program for you if you want.</strong> The agent is still a program joining a room — LiveKit just happened to be the one running it that time. Same model, hosted floor.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 07 -->
+<section class="ch" id="cloud">
+  <span class="ch-num">07</span>
+  <h2>Cloud versus self-hosting</h2>
+
+  <p>Since the media server is open source, you <em>could</em> run the entire stack yourself — the SFU, the coordination, the scaling, all on your own machines. So what does LiveKit Cloud actually give you that self-hosting doesn't? This is a real pre-sales question, and the honest answer is "a lot of operational weight you'd otherwise carry."</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Concern</th><th>Self-host the OSS server</th><th>LiveKit Cloud</th></tr></thead>
+      <tbody>
+        <tr><td>The SFU</td><td>you run the Go binary on your machines</td><td>managed, you never see it</td></tr>
+        <tr><td>Scaling past one server</td><td>you set up Redis coordination and a mesh yourself</td><td>a global mesh; each user hits the nearest edge, automatically</td></tr>
+        <tr><td>A server or region failing</td><td>your problem to detect and recover</td><td>sessions migrate to another instance automatically</td></tr>
+        <tr><td>Running the agent</td><td>your own Kubernetes</td><td>one-command managed hosting, autoscale, instant rollback</td></tr>
+        <tr><td>Models</td><td>bring your own keys, wire up each provider</td><td>LiveKit Inference — models with no keys, co-located for latency</td></tr>
+        <tr><td>Phone numbers</td><td>set up carrier trunks yourself</td><td>LiveKit Phone Numbers, provisioned in the dashboard</td></tr>
+        <tr><td>Seeing what happened</td><td>build your own logging/tracing</td><td>transcripts, traces, recordings in the dashboard</td></tr>
+        <tr><td>Uptime</td><td>whatever you can engineer</td><td>a 99.99% target on redundant infrastructure</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The single sharpest difference is the mesh. A self-hosted deployment is usually <em>single-home</em>: a given call lives entirely on one server, and everyone in it must connect to that one server no matter where they are in the world. LiveKit Cloud is <em>multi-home</em>: the servers form a mesh, each person connects to the edge nearest them, and the mesh relays between them. That's what makes it both low-latency everywhere and resilient to any single server dying.</p>
+
+  <div class="aside">
+    <span class="lbl">Why anyone self-hosts anyway</span>
+    <p>One reason, mostly: the media itself must never touch a third party — a hard data-residency or sovereignty rule. Then you self-host the media server too, and give up the mesh, the managed scaling, and the observability to get it. It's a real tradeoff, not a free choice, and naming what they'd lose is the honest way to have that conversation.</p>
+  </div>
+
+  <div class="keep">
+    <span class="lbl">Say it like this</span>
+    <p>"The media server is open source, so you can run all of this yourself. What Cloud buys you is the hard part: a global mesh so every user hits a nearby edge, automatic failover when a server dies, managed agent hosting, and the observability. You'd self-host the media server only if a regulation says the audio can't leave your infrastructure — and then you're taking on the mesh and the scaling yourself, which is a real cost worth being clear-eyed about."</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 08 -->
+<section class="ch" id="whole">
+  <span class="ch-num">08</span>
+  <h2>The whole thing on one page</h2>
+
+  <p>Here it is assembled, with every piece in its true home. Read it once from the left and the confusion should be gone for good.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 260" role="img" aria-label="The full picture: people and phone callers on the left connect to a room in LiveKit Cloud, which holds the SFU and the models. The agent program connects into the same room from wherever it runs — laptop, LiveKit Cloud, or your own cloud — and reaches out to your data and backends.">
+        <defs>
+          <marker id="w-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="w-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+        </defs>
+
+        <rect x="16" y="90" width="110" height="76" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="71" y="122" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">browser</text>
+        <text x="71" y="140" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">or phone</text>
+
+        <rect x="180" y="40" width="230" height="180" rx="5" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.4"/>
+        <text x="200" y="64" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--rust)">LIVEKIT CLOUD</text>
+        <circle cx="295" cy="130" r="46" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.3"/>
+        <text x="295" y="126" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="700" fill="var(--teal)">ROOM</text>
+        <text x="295" y="142" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">SFU · models</text>
+
+        <line x1="126" y1="128" x2="176" y2="128" stroke="var(--teal)" stroke-width="2" marker-start="url(#w-teal)" marker-end="url(#w-teal)"/>
+
+        <rect x="470" y="76" width="180" height="66" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="560" y="100" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--teal)">YOUR AGENT</text>
+        <text x="560" y="116" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-2)">a program, joins the room</text>
+        <text x="560" y="130" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">laptop · LK Cloud · your cloud</text>
+        <line x1="470" y1="120" x2="344" y2="128" stroke="var(--teal)" stroke-width="2" marker-end="url(#w-teal)"/>
+        <text x="410" y="112" text-anchor="middle" font-family="Archivo,sans-serif" font-size="8.5" fill="var(--teal)">joins in</text>
+
+        <rect x="470" y="168" width="180" height="60" rx="5" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="560" y="192" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">your data + backends</text>
+        <text x="560" y="208" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">Firestore · CRM · APIs · RAG</text>
+        <line x1="560" y1="142" x2="560" y2="164" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#w-slate)"/>
+
+        <text x="690" y="104" font-family="Archivo,sans-serif" font-size="10" fill="var(--rust)">LiveKit's</text>
+        <text x="690" y="196" font-family="Archivo,sans-serif" font-size="10" fill="var(--teal)">yours</text>
+        <line x1="660" y1="150" x2="800" y2="150" stroke="var(--rule)" stroke-dasharray="3 3"/>
+      </svg>
+    </div>
+    <figcaption><b>Everything in its home.</b> LiveKit owns the room, the SFU, and the models. You own the agent and everything it reaches — no matter which of the three places the agent runs. The line between "theirs" and "yours" falls at the edge of the room, not between the agent and the backend.</figcaption>
+  </figure>
+
+  <p>That's the architecture, whole. The people are on the left. The room and the models are LiveKit's. The agent is your program, joining the room from wherever it lives. And behind the agent is your data and your other systems, which are entirely yours. Nothing on the right ever moves to the left — LiveKit is transport and models, and everything that knows your business stays with you.</p>
+
+  <div class="keep">
+    <span class="lbl">The five sentences that hold it all</span>
+    <p>The <strong>media server</strong> moves the audio and is always LiveKit's. A <strong>room</strong> is one conversation; a <strong>participant</strong> is anything in it. An <strong>agent</strong> is your program that joins a room as a participant — it is not a thing inside LiveKit. It runs in one of three places, and Agent Builder simply picked "LiveKit Cloud" for you. And <strong>LiveKit Cloud</strong> is the managed way to run all of it, versus self-hosting the open-source server yourself.</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="ch">
+  <span class="ch-num">&mdash;</span>
+  <h2>Sources</h2>
+  <p>Verified against the live LiveKit documentation and GitHub, August 2026.</p>
+  <ul>
+    <li><a href="https://github.com/livekit/livekit">github.com/livekit/livekit</a> — the open-source media server (Go, Pion, SFU)</li>
+    <li><a href="https://docs.livekit.io/agents/build/">Agents framework introduction</a> — "add any Python or Node.js program to LiveKit rooms as full realtime participants"</li>
+    <li><a href="https://docs.livekit.io/agents/server/">Agent server overview</a> and <a href="https://docs.livekit.io/agents/server/lifecycle/">lifecycle</a> — worker, job, dispatch, entrypoint, isolation, the ~15s re-dispatch</li>
+    <li><a href="https://docs.livekit.io/agents/start/builder/">Agent Builder</a> — "deploys your agents directly to LiveKit Cloud"</li>
+    <li><a href="https://docs.livekit.io/intro/cloud/">LiveKit Cloud</a> and <a href="https://livekit.com/blog/scaling-webrtc-with-distributed-mesh">the distributed mesh</a> — single-home vs multi-home, failover, what Cloud provides</li>
+    <li><a href="https://docs.livekit.io/deploy/custom/deployments/">Self-hosted deployments</a> — running the container yourself</li>
+  </ul>
+  <footer>
+    <p>The foundational companion to <a href="https://claude.ai/code/artifact/a5d683d5-c5df-4f45-9642-43b52f7c3d49">What Runs Where</a>, <a href="https://claude.ai/code/artifact/cf30cc8a-a9ed-4e69-abee-301642ef2340">Inside the Room</a>, <a href="https://claude.ai/code/artifact/c7cafc7b-638e-4917-82b6-63da043d74d4">What LiveKit Ships</a>, <a href="https://claude.ai/code/artifact/85378d63-68aa-4409-876f-ef869458ad36">The Model Decision</a> and the <a href="https://claude.ai/code/artifact/280e533f-f812-4e14-b135-cf8bb95adba2">AnyCompany Voice Agent Playbook</a>.</p>
+  </footer>
+</section>
+
+</div>
+</main>

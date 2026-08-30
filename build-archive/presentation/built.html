@@ -1,0 +1,340 @@
+<title>What We Actually Built</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE;
+  --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26;
+  --gcp:#4285F4; --gcp-soft:#E6EEFD;
+  --shadow:0 1px 2px rgba(23,27,33,.05), 0 4px 14px rgba(23,27,33,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F;
+    --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+    --gcp:#7BAAF7; --gcp-soft:#152238;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F;
+  --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+  --gcp:#7BAAF7; --gcp-soft:#152238;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:18px; line-height:1.68; -webkit-font-smoothing:antialiased}
+h1,h2,h3,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+a{color:var(--teal); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px}
+
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:56px; padding-bottom:40px}
+.kicker{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 16px}
+h1{font-size:clamp(34px,6vw,54px); line-height:1.02; letter-spacing:-.03em; font-weight:700; margin:0 0 20px; text-wrap:balance}
+.dek{font-size:20px; color:var(--ink-2); margin:0 0 24px}
+.startline{border-top:1px solid var(--rule); padding-top:16px; font-size:16px; color:var(--ink-2)}
+.startline b{color:var(--ink); font-weight:600}
+
+main{padding:8px 0 80px}
+.ch{margin:0 0 12px; padding:44px 0 0}
+.ch-num{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--teal); display:block; margin-bottom:10px}
+h2{font-size:clamp(24px,3.5vw,31px); line-height:1.14; letter-spacing:-.02em; margin:0 0 18px; font-weight:700; text-wrap:balance}
+h3{font-size:18px; margin:28px 0 8px; font-weight:600}
+p{margin:0 0 16px}
+ul,ol{margin:0 0 16px; padding-left:23px}
+li{margin:0 0 8px}
+li::marker{color:var(--ink-3)}
+code:not(pre code){background:var(--surface-2); padding:.1em .38em; border-radius:2px; font-size:.84em; border:1px solid var(--rule)}
+
+.keep{margin:26px 0; padding:16px 20px; background:var(--teal-soft); border-left:3px solid var(--teal); border-radius:0 3px 3px 0}
+.keep .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:7px; font-weight:600}
+.keep p{margin:0; font-size:16.5px}
+.aside{margin:26px 0; padding:16px 19px; background:var(--surface); border:1px solid var(--rule); border-radius:3px}
+.aside .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:7px; font-weight:600}
+.aside p{margin:0; font-size:16px}
+
+figure{margin:30px 0; width:100%}
+@media(min-width:920px){figure{width:calc(100% + 150px); margin-left:-75px}}
+.figbox{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; min-width:560px; height:auto; color:var(--ink)}
+figcaption{font-size:14px; color:var(--ink-2); margin:11px auto 0; line-height:1.5; max-width:700px}
+figcaption b{color:var(--ink); font-weight:600}
+.legend{display:flex; flex-wrap:wrap; gap:16px; margin:14px 0 0; padding:0; list-style:none; font-size:12.5px}
+.legend li{display:flex; align-items:center; gap:7px; margin:0; font-family:Archivo,sans-serif; color:var(--ink-2)}
+.sw{width:22px; height:0; border-top-width:2.5px; border-top-style:solid; flex:none}
+.sw-media{border-color:var(--teal)} .sw-data{border-color:var(--slate); border-top-style:dashed} .sw-mcp{border-color:var(--gcp)}
+
+.tablebox{overflow-x:auto; margin:22px 0; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:500px; font-size:15px}
+th,td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace; font-size:12.5px; white-space:nowrap}
+td.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--good); font-weight:600}
+footer{border-top:1px solid var(--rule); margin-top:44px; padding:24px 0 50px; color:var(--ink-3); font-size:14px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">Not a reference · this is what runs on your Argolis right now</p>
+    <h1>What We Actually Built</h1>
+    <p class="dek">The whole system now runs in the cloud — agent included. Here's the updated architecture, the call flow, and why the agent landed on Cloud Run.</p>
+    <p class="startline"><b>Every box below exists.</b> Project <code>bq-demos-469816</code>, all labelled <code>aug24</code>, torn down with one script when you're done.</p>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<!-- ARCHITECTURE -->
+<section class="ch">
+  <span class="ch-num">01</span>
+  <h2>The architecture</h2>
+
+  <p>Three zones. The customer on the left. LiveKit in the middle — the room and the models. Your GCP on the right — the agent's backend, the MCP boundary, and the data. The agent worker sits between LiveKit and GCP, because it talks to both.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 900 470" role="img" aria-label="Architecture: a browser or phone connects over WebRTC to a LiveKit Cloud room with hosted models; the agent worker joins that room and calls a GCP MCP server on Cloud Run, which reads and writes Firestore, authenticating with a Workload Identity service account.">
+        <defs>
+          <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="a-gcp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--gcp)"/></marker>
+          <marker id="a-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+        </defs>
+
+        <!-- customer -->
+        <rect x="20" y="180" width="150" height="90" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="95" y="210" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--ink)">Customer</text>
+        <text x="95" y="230" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">browser</text>
+        <text x="95" y="246" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">or phone</text>
+
+        <!-- LiveKit zone -->
+        <rect x="210" y="40" width="240" height="390" rx="6" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.2"/>
+        <text x="230" y="66" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--rust)" letter-spacing="1">LIVEKIT CLOUD</text>
+        <text x="230" y="82" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">the room + the models</text>
+        <rect x="230" y="150" width="200" height="70" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="330" y="180" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--ink)">Room / SFU</text>
+        <text x="330" y="199" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">everyone meets here</text>
+        <rect x="230" y="240" width="200" height="70" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="330" y="270" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--ink)">Inference</text>
+        <text x="330" y="289" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">STT · LLM · TTS + turns</text>
+
+        <!-- agent worker (straddles) -->
+        <rect x="486" y="150" width="150" height="90" rx="4" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="561" y="180" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--teal)">Agent worker</text>
+        <text x="561" y="199" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">Python · joins room</text>
+        <text x="561" y="214" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">= MCP client</text>
+        <text x="561" y="230" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--gcp)">Cloud Run · aug24-worker</text>
+
+        <!-- GCP zone -->
+        <rect x="670" y="40" width="212" height="390" rx="6" fill="var(--gcp-soft)" stroke="var(--gcp)" stroke-width="1.3"/>
+        <text x="690" y="66" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--gcp)" letter-spacing="1">YOUR GCP</text>
+        <text x="690" y="82" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">bq-demos-469816 · aug24</text>
+
+        <rect x="690" y="150" width="172" height="70" rx="3" fill="var(--surface)" stroke="var(--gcp)"/>
+        <text x="776" y="176" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">MCP server</text>
+        <text x="776" y="193" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">Cloud Run · aug24-mcp</text>
+        <text x="776" y="207" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">lookup_order · file_ticket</text>
+
+        <rect x="690" y="248" width="172" height="66" rx="3" fill="var(--surface)" stroke="var(--gcp)"/>
+        <text x="776" y="274" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">Firestore</text>
+        <text x="776" y="291" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">aug24 db · orders, tickets</text>
+
+        <rect x="690" y="342" width="172" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="776" y="366" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Workload Identity</text>
+        <text x="776" y="383" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">aug24-agent SA · no keys</text>
+
+        <!-- edges -->
+        <line x1="170" y1="215" x2="226" y2="200" stroke="var(--teal)" stroke-width="2" marker-end="url(#a-teal)"/>
+        <text x="196" y="200" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--teal)">WebRTC</text>
+        <line x1="430" y1="192" x2="482" y2="192" stroke="var(--teal)" stroke-width="2" marker-start="url(#a-teal)" marker-end="url(#a-teal)"/>
+        <text x="456" y="184" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--teal)">media</text>
+
+        <path d="M636,185 L686,185" stroke="var(--gcp)" stroke-width="2" fill="none" marker-end="url(#a-gcp)"/>
+        <text x="661" y="177" text-anchor="middle" font-family="Archivo,sans-serif" font-size="8.5" fill="var(--gcp)">MCP / HTTPS</text>
+
+        <path d="M776,220 L776,246" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" fill="none" marker-end="url(#a-slate)"/>
+        <text x="812" y="237" font-family="Archivo,sans-serif" font-size="9" fill="var(--slate)">reads/writes</text>
+        <path d="M776,314 L776,340" stroke="var(--slate)" stroke-width="1.4" stroke-dasharray="4 3" fill="none" marker-end="url(#a-slate)"/>
+        <text x="800" y="330" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">auth</text>
+      </svg>
+      <ul class="legend">
+        <li><span class="sw sw-media"></span>realtime media (WebRTC)</li>
+        <li><span class="sw sw-mcp"></span>MCP tool call (HTTPS)</li>
+        <li><span class="sw sw-data"></span>data &amp; auth</li>
+      </ul>
+    </div>
+    <figcaption><b>The system, as deployed.</b> The agent worker is the hinge: it joins the LiveKit room on the left (media) and is an MCP client to your GCP on the right (tools). The worker now runs on Cloud Run in the same region as the MCP server and Firestore — so the agent and its backend are co-located, which is what collapsed the network latency (below).</figcaption>
+  </figure>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Box</th><th>What it is</th><th>Whose</th></tr></thead>
+      <tbody>
+        <tr><td>Room / SFU + Inference</td><td class="mono">wss://personal-…livekit.cloud</td><td>LiveKit</td></tr>
+        <tr><td>Agent worker</td><td class="mono">aug24-worker · Cloud Run</td><td>you (GCP)</td></tr>
+        <tr><td>MCP server</td><td class="mono">aug24-mcp · Cloud Run</td><td>you (GCP)</td></tr>
+        <tr><td>Database</td><td class="mono">Firestore · aug24</td><td>you (GCP)</td></tr>
+        <tr><td>Identity</td><td class="mono">aug24-agent SA</td><td>you (GCP)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FLOW -->
+<section class="ch">
+  <span class="ch-num">02</span>
+  <h2>The flow of one call</h2>
+
+  <p>This is the actual sequence from your test — "what's the status of order 44721" — read top to bottom. The two starred steps are the same moment seen from both sides: the agent's <em>"executing tool"</em> and Cloud Run's <em>CallToolRequest</em>, at the same second.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 900 500" role="img" aria-label="Sequence diagram of one call: the customer speaks, LiveKit transcribes, the LLM decides to call lookup_order, the agent sends an MCP request to Cloud Run, Cloud Run reads Firestore, the answer returns through the LLM and TTS, and the customer hears the status.">
+        <!-- lanes -->
+        <g font-family="Archivo,sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+          <text x="90" y="30" fill="var(--ink)">Customer</text>
+          <text x="290" y="30" fill="var(--rust)">LiveKit room</text>
+          <text x="490" y="30" fill="var(--teal)">Agent worker</text>
+          <text x="700" y="30" fill="var(--gcp)">GCP (Cloud Run</text>
+          <text x="700" y="44" fill="var(--gcp)">+ Firestore)</text>
+        </g>
+        <g stroke="var(--rule)" stroke-width="1">
+          <line x1="90" y1="54" x2="90" y2="470"/>
+          <line x1="290" y1="54" x2="290" y2="470"/>
+          <line x1="490" y1="54" x2="490" y2="470"/>
+          <line x1="700" y1="54" x2="700" y2="470"/>
+        </g>
+
+        <!-- steps -->
+        <g font-family="Archivo,sans-serif" font-size="10.5">
+          <!-- 1 speak -->
+          <line x1="90" y1="80" x2="286" y2="80" stroke="var(--teal)" stroke-width="2" marker-end="url(#f-teal)"/>
+          <text x="188" y="74" text-anchor="middle" fill="var(--teal)">"...order 44721" (voice)</text>
+          <!-- 2 STT+turn -->
+          <rect x="256" y="94" width="68" height="30" rx="3" fill="var(--rust-soft)" stroke="var(--rust)"/>
+          <text x="290" y="113" text-anchor="middle" font-size="9" fill="var(--rust)">STT + turn</text>
+          <!-- 3 text to agent -->
+          <line x1="290" y1="138" x2="486" y2="138" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#f-slate)"/>
+          <text x="388" y="132" text-anchor="middle" fill="var(--ink-2)">transcript</text>
+          <!-- 4 LLM decides -->
+          <rect x="448" y="152" width="84" height="32" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/>
+          <text x="490" y="166" text-anchor="middle" font-size="9" fill="var(--teal)">LLM: call</text>
+          <text x="490" y="177" text-anchor="middle" font-size="9" fill="var(--teal)">lookup_order</text>
+          <!-- 5 MCP request ★ -->
+          <line x1="490" y1="200" x2="696" y2="200" stroke="var(--gcp)" stroke-width="2.4" marker-end="url(#f-gcp)"/>
+          <text x="593" y="194" text-anchor="middle" fill="var(--gcp)" font-weight="700">&#9733; MCP CallToolRequest</text>
+          <text x="593" y="214" text-anchor="middle" font-size="9" fill="var(--ink-3)">POST /mcp   02:55:20</text>
+          <!-- 6 firestore read -->
+          <rect x="648" y="228" width="104" height="30" rx="3" fill="var(--gcp-soft)" stroke="var(--gcp)"/>
+          <text x="700" y="247" text-anchor="middle" font-size="9" fill="var(--gcp)">read Firestore ~55ms</text>
+          <!-- 7 result back -->
+          <line x1="696" y1="274" x2="494" y2="274" stroke="var(--gcp)" stroke-width="2" marker-end="url(#f-gcp)"/>
+          <text x="595" y="268" text-anchor="middle" fill="var(--gcp)">{shipped, Thermostat V2}</text>
+          <text x="595" y="288" text-anchor="middle" font-size="9" fill="var(--good)">round trip now intra-region (~4-60ms)</text>
+          <!-- 8 LLM composes -->
+          <rect x="448" y="302" width="84" height="30" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/>
+          <text x="490" y="321" text-anchor="middle" font-size="9" fill="var(--teal)">LLM composes</text>
+          <!-- 9 TTS -->
+          <line x1="490" y1="348" x2="294" y2="348" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#f-slate)"/>
+          <text x="392" y="342" text-anchor="middle" fill="var(--ink-2)">reply text</text>
+          <rect x="256" y="362" width="68" height="30" rx="3" fill="var(--rust-soft)" stroke="var(--rust)"/>
+          <text x="290" y="381" text-anchor="middle" font-size="9" fill="var(--rust)">TTS</text>
+          <!-- 10 hears -->
+          <line x1="286" y1="416" x2="90" y2="416" stroke="var(--teal)" stroke-width="2" marker-end="url(#f-teal)"/>
+          <text x="188" y="410" text-anchor="middle" fill="var(--teal)">"it's shipped" (voice)</text>
+          <text x="188" y="446" text-anchor="middle" font-size="9.5" fill="var(--good)">whole turn under ~1s</text>
+        </g>
+
+        <defs>
+          <marker id="f-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="f-gcp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--gcp)"/></marker>
+          <marker id="f-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+        </defs>
+      </svg>
+    </div>
+    <figcaption><b>One turn, end to end.</b> Voice never touches GCP directly — it flows through the LiveKit room to the agent, and only the <em>tool call</em> (the starred MCP request) crosses into your cloud. That's the whole point of the boundary: the media path and the data path are separate.</figcaption>
+  </figure>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Leg</th><th>Measured</th></tr></thead>
+      <tbody>
+        <tr><td>GCP server work (MCP + Firestore read)</td><td class="num">~55 ms</td></tr>
+        <tr><td>From laptop (before) — round trip</td><td class="num">~130 ms</td></tr>
+        <tr><td>Co-located MCP protocol hop (now, measured)</td><td class="num">~4 ms</td></tr>
+        <tr><td>Co-located tool call (now) — work + hop</td><td class="num">~60 ms</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="keep">
+    <span class="lbl">The two things this diagram proves</span>
+    <p>First: the <strong>agent is the bridge</strong> — media on one side, MCP tool calls to your cloud on the other, and they're separate paths. Second: <strong>co-location paid off</strong> — with the agent now on Cloud Run beside the MCP server, the network hop fell from ~70ms to ~4ms, measured. The compute choice (Cloud Run vs GKE) is chapter 3.</p>
+  </div>
+
+  <div class="aside">
+    <span class="lbl">Say it at the whiteboard</span>
+    <p>"Voice goes through the LiveKit room to my agent. Only the tool call crosses into GCP — an MCP request to Cloud Run that reads Firestore, about 55 milliseconds of actual work. The media path and the data path never mix, which is exactly why the MCP boundary sits where it does."</p>
+  </div>
+
+</section>
+
+<!-- COMPUTE CHOICE -->
+<section class="ch">
+  <span class="ch-num">03</span>
+  <h2>Why Cloud Run — and when you'd move to GKE</h2>
+
+  <p>A voice session has to stay on one instance for its whole life — you cannot move a live call to another machine. That "stickiness" sounds like it should decide the compute, so it is worth being precise about where it actually comes from.</p>
+
+  <div class="keep">
+    <span class="lbl">The surprise</span>
+    <p>LiveKit provides the stickiness itself, at the dispatch layer. When a call starts, LiveKit hands the job to one worker and the session lives on that worker until the call ends — it is never re-routed. So session-to-worker affinity is handled above the cloud, which is why Cloud Run worked at all. One instance holds many concurrent sessions, each pinned where it started.</p>
+  </div>
+
+  <p>So what is left for the compute layer to get wrong? The <strong>instance lifecycle</strong> — scale-in and deploys — and that is exactly where the two options differ.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th></th><th>Cloud Run (what we used)</th><th>GKE (production)</th></tr></thead>
+      <tbody>
+        <tr><td>Speed to stand up</td><td>seconds, one command</td><td>~10 min to provision a cluster</td></tr>
+        <tr><td>Keeps the worker alive</td><td>yes, with <code>--no-cpu-throttling</code> + <code>--min-instances=1</code></td><td>yes, natively</td></tr>
+        <tr><td>Session stickiness</td><td>fine — LiveKit handles it</td><td>fine — LiveKit handles it</td></tr>
+        <tr><td><b>Graceful drain on deploy</b></td><td><b>no guarantee</b> — can kill an instance mid-call</td><td><b>yes</b> — grace period + preStop + worker drain-timeout</td></tr>
+        <tr><td>Control over scale-in</td><td>limited; not call-aware</td><td>full; respect live calls</td></tr>
+        <tr><td>Best for</td><td>demo, POC, low-moderate scale</td><td>a real contact centre</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The one row that matters is <strong>graceful drain</strong>. On GKE you set <code>terminationGracePeriodSeconds</code> high, add a preStop hook, and pair it with the worker's <code>--drain-timeout</code>: on a deploy the pod stops taking new calls, lets the active ones finish, then terminates — no live call is ever cut. Cloud Run's shutdown is short and not call-aware, so at scale a deploy or scale-in can drop a call mid-sentence. That is the documented "agent goes quiet mid-conversation" failure.</p>
+
+  <div class="aside">
+    <span class="lbl">Say it at the whiteboard</span>
+    <p>"I put the agent on Cloud Run to get it live fast, and it works because LiveKit handles session stickiness at the dispatch layer and I kept the instance warm with no-cpu-throttling and min-instances. For production I'd move it to GKE — not for stickiness, which LiveKit already gives me, but for graceful draining: on GKE a deploy lets live calls finish before the pod dies. Cloud Run can't guarantee that at scale. There's also Cloud Run Worker Pools as a newer middle option — I'd verify its drain behaviour before betting a contact centre on it."</p>
+  </div>
+
+  <footer>
+    <p>Built and measured on <code>bq-demos-469816</code>, August 2026. Companion to <a href="https://claude.ai/code/artifact/5fda0bed-ea51-4522-9650-235aba50cab3">LiveKit, From the Ground Up</a>, <a href="https://claude.ai/code/artifact/a5d683d5-c5df-4f45-9642-43b52f7c3d49">What Runs Where</a> and the <a href="https://claude.ai/code/artifact/280e533f-f812-4e14-b135-cf8bb95adba2">AnyCompany Voice Agent Playbook</a>. All resources labelled <code>aug24</code>; one script tears them down.</p>
+  </footer>
+</section>
+
+</div>
+</main>

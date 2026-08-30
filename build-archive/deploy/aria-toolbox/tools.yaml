@@ -1,0 +1,198 @@
+# Aria Home — Cloud SQL tools, served by Google's MCP Toolbox for Databases.
+#
+# Why this instead of a hand-written data API: the account, order and device
+# registry reads are all plain SQL. Toolbox turns each one into an MCP tool from
+# this file, so there is no Python data layer to write, review or keep in sync
+# with the schema — and every statement is parameterised, so the model supplies
+# values and never composes SQL.
+#
+# The agent attaches two MCP servers:
+#   this one          -> Cloud SQL   : who the customer is, what they own, what they bought
+#   aug24-mcp         -> Firestore   : what each device is reporting right now, plus policy RAG
+#
+# Run:  ./toolbox --tools-file tools.yaml
+# Serves MCP at http://0.0.0.0:5000/mcp
+
+sources:
+  aria_sql:
+    kind: cloud-sql-postgres
+    project: bq-demos-469816
+    region: us-central1
+    instance: aria-home
+    database: aria
+    user: ${DB_USER:aria}
+    password: ${DB_PASS}
+
+tools:
+
+  # ── identification: the first thing every call does ──────────────────────
+  lookup_account_by_phone:
+    kind: postgres-sql
+    source: aria_sql
+    description: >
+      Look up an Aria Home customer from the phone number they are calling on.
+      Use this FIRST on any inbound phone call, before asking them anything.
+      Returns their name, account number and subscription. Matching is on the
+      last ten digits, so any format works.
+    parameters:
+      - name: phone
+        type: string
+        description: The caller's phone number. Any format; digits are extracted.
+    statement: |
+      SELECT c.customer_id, c.account_number, c.first_name, c.last_name,
+             s.tier AS subscription_tier, s.status AS subscription_status,
+             s.renews_on
+      FROM customers c
+      LEFT JOIN subscriptions s USING (customer_id)
+      WHERE RIGHT(regexp_replace(c.phone_e164, '\D', '', 'g'), 10)
+          = RIGHT(regexp_replace($1, '\D', '', 'g'), 10)
+      LIMIT 1;
+
+  lookup_account_by_number:
+    kind: postgres-sql
+    source: aria_sql
+    description: >
+      Look up an Aria Home customer by their account number, which they say as
+      something like "A H 4 8 2 1". Use this when there is no phone number, or
+      when the phone lookup found nothing. Any spacing or punctuation is fine —
+      only the digits are compared, so "AH-4821", "ah 4821" and "4821" all work.
+    parameters:
+      - name: account_number
+        type: string
+        description: The account number as the caller said it, e.g. "AH-4821".
+    statement: |
+      SELECT c.customer_id, c.account_number, c.first_name, c.last_name,
+             s.tier AS subscription_tier, s.status AS subscription_status,
+             s.renews_on
+      FROM customers c
+      LEFT JOIN subscriptions s USING (customer_id)
+      WHERE regexp_replace(c.account_number, '\D', '', 'g')
+          = regexp_replace($1, '\D', '', 'g')
+      LIMIT 1;
+
+  # ── what they own (registry only — live state lives in Firestore) ────────
+  list_devices:
+    kind: postgres-sql
+    source: aria_sql
+    description: >
+      List every device registered to a customer. Returns the device_id, name,
+      type and room — NOT whether it is on. To find out what a device is doing
+      right now, take the device_id from here and call get_device_state.
+    parameters:
+      - name: customer_id
+        type: integer
+        description: The customer_id returned by one of the lookup_account tools.
+    statement: |
+      SELECT device_id, name, device_type, room, installed_on
+      FROM devices WHERE customer_id = $1 ORDER BY device_id;
+
+  find_device:
+    kind: postgres-sql
+    source: aria_sql
+    description: >
+      Find one of a customer's devices by room, type or name — however they
+      referred to it ("the living room one", "my thermostat", "front door
+      camera"). Returns the device_id you then pass to get_device_state or
+      get_room_temperature to read its live state.
+    parameters:
+      - name: customer_id
+        type: integer
+        description: The customer_id from lookup_account.
+      - name: search
+        type: string
+        description: A room, device type, or device name.
+    statement: |
+      SELECT device_id, name, device_type, room
+      FROM devices
+      WHERE customer_id = $1
+        AND (LOWER(room) LIKE '%' || LOWER($2) || '%'
+             OR LOWER(device_type) LIKE '%' || LOWER($2) || '%'
+             OR LOWER(name) LIKE '%' || LOWER($2) || '%')
+      ORDER BY device_id LIMIT 1;
+
+  # ── orders ───────────────────────────────────────────────────────────────
+  get_recent_order:
+    kind: postgres-sql
+    source: aria_sql
+    description: >
+      Get a customer's most recent order. Use this for "where is my order?" or
+      "what's the status of my last order?" when they do not give a number.
+    parameters:
+      - name: customer_id
+        type: integer
+        description: The customer_id from lookup_account.
+    statement: |
+      SELECT order_id, item, status, detail, placed_on, delivers_on
+      FROM orders WHERE customer_id = $1
+      ORDER BY placed_on DESC LIMIT 1;
+
+  list_orders:
+    kind: postgres-sql
+    source: aria_sql
+    description: >
+      List a customer's recent orders, newest first. Use this when they ask
+      about more than one order, or about an order that is not the latest.
+    parameters:
+      - name: customer_id
+        type: integer
+        description: The customer_id from lookup_account.
+    statement: |
+      SELECT order_id, item, status, detail, placed_on, delivers_on
+      FROM orders WHERE customer_id = $1
+      ORDER BY placed_on DESC LIMIT 10;
+
+  lookup_order:
+    kind: postgres-sql
+    source: aria_sql
+    description: >
+      Look up one order by its number, when the customer reads it out. Use
+      exactly the digits they say and never pad them to a fixed length.
+    parameters:
+      - name: order_id
+        type: string
+        description: The order number as spoken, digits only, e.g. "58120".
+    statement: |
+      SELECT o.order_id, o.item, o.status, o.detail, o.placed_on, o.delivers_on,
+             c.account_number
+      FROM orders o JOIN customers c USING (customer_id)
+      WHERE o.order_id = regexp_replace($1, '\D', '', 'g')
+      LIMIT 1;
+
+  # ── escalation ───────────────────────────────────────────────────────────
+  file_ticket:
+    kind: postgres-sql
+    source: aria_sql
+    description: >
+      File a support ticket for a human to pick up. Safe to call twice — an
+      identical open ticket for the same customer and order is reused rather
+      than duplicated, so retrying after a timeout will not spam the queue.
+      Read the returned ticket_id back one digit at a time.
+    parameters:
+      - name: customer_id
+        type: integer
+        description: The customer_id from lookup_account.
+      - name: order_id
+        type: string
+        description: The related order number, or an empty string if none.
+      - name: summary
+        type: string
+        description: One sentence describing what the customer needs.
+    statement: |
+      INSERT INTO support_tickets (customer_id, order_id, summary)
+      VALUES ($1, NULLIF($2, ''), $3)
+      ON CONFLICT (customer_id, order_id, summary) WHERE status = 'open'
+        DO UPDATE SET summary = EXCLUDED.summary
+      RETURNING ticket_id, status, (xmax <> 0) AS already_open;
+
+toolsets:
+  # What the voice agent attaches. Deliberately read-only apart from ticketing:
+  # nothing here can change a subscription, cancel an order or unlock a door.
+  aria_support:
+    - lookup_account_by_phone
+    - lookup_account_by_number
+    - list_devices
+    - find_device
+    - get_recent_order
+    - list_orders
+    - lookup_order
+    - file_ticket

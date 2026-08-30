@@ -1,0 +1,280 @@
+<title>The LiveKit Side</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F3F4F5; --card:#FFFFFF; --card-2:#EDEFF2; --ink:#15181D; --ink-2:#4C5560; --ink-3:#828C98; --rule:#D9DDE2;
+  --teal:#0E7C7B; --rust:#B4541E; --gcp:#3F7DE0; --purple:#7A4D9E; --good:#2E6F4E; --warn:#8A6D1F;
+  --sh:0 1px 2px rgba(21,24,29,.05),0 3px 10px rgba(21,24,29,.05);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0C1015; --card:#141A20; --card-2:#1B222A; --ink:#E7EAED; --ink-2:#A4AFBB; --ink-3:#717C88; --rule:#28303A;
+  --teal:#4FB3B0; --rust:#DB8A57; --gcp:#78A8F6; --purple:#B58BD6; --good:#5FB183; --warn:#C8A951;
+  --sh:0 1px 2px rgba(0,0,0,.3),0 3px 10px rgba(0,0,0,.25);
+}}
+:root[data-theme="dark"]{
+  --paper:#0C1015; --card:#141A20; --card-2:#1B222A; --ink:#E7EAED; --ink-2:#A4AFBB; --ink-3:#717C88; --rule:#28303A;
+  --teal:#4FB3B0; --rust:#DB8A57; --gcp:#78A8F6; --purple:#B58BD6; --good:#5FB183; --warn:#C8A951;
+  --sh:0 1px 2px rgba(0,0,0,.3),0 3px 10px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Source Serif 4",Georgia,serif;font-size:14.5px;line-height:1.48;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,.ui{font-family:Archivo,Arial,sans-serif}
+code,.mono{font-family:"IBM Plex Mono",monospace}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+header{border-bottom:1px solid var(--rule);background:var(--card)}
+header .wrap{padding:28px 20px 20px}
+.kick{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px}
+h1{font-size:clamp(27px,4.6vw,42px);font-weight:800;letter-spacing:-.03em;margin:0 0 7px}
+.sub{font-size:15px;color:var(--ink-2);margin:0}
+.sub b{color:var(--ink)}
+
+main{padding:20px 0 60px}
+.band{margin:0 0 22px}
+.band > h2{font-size:12px;font-family:Archivo;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--ink);margin:0 0 12px;display:flex;align-items:center;gap:9px}
+.band > h2::before{content:"";width:14px;height:14px;border-radius:4px;flex:none}
+.b-tr > h2::before{background:var(--rust)} .b-pi > h2::before{background:var(--teal)} .b-ag > h2::before{background:var(--gcp)} .b-op > h2::before{background:var(--purple)}
+.band > h2 .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);font-weight:600;letter-spacing:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:13px}
+
+.card{background:var(--card);border:1px solid var(--rule);border-radius:7px;padding:12px 14px 13px;box-shadow:var(--sh)}
+.card h3{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px}
+.card .is{font-size:13.5px;color:var(--ink-2);margin:0 0 8px}
+.card .is b{color:var(--ink)}
+.rem{margin:0;padding:0;list-style:none}
+.rem li{position:relative;padding:0 0 4px 15px;font-size:13px;line-height:1.4}
+.rem li::before{content:"▸";position:absolute;left:0;color:var(--ink-3);font-size:10px;top:2px}
+.say{background:var(--card-2);border-left:3px solid var(--teal);border-radius:0 4px 4px 0;padding:6px 10px;margin:8px 0 0;font-size:12.5px;font-style:italic}
+.say b{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:2px}
+.dnf{font-size:12px;color:var(--warn);margin:8px 0 0}
+.dnf b{font-family:Archivo;font-weight:800;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase}
+code{background:var(--card-2);border:1px solid var(--rule);border-radius:3px;padding:.04em .3em;font-size:11px}
+.kv{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0 0}
+.kv td{padding:2.5px 4px;border-bottom:1px solid var(--rule);vertical-align:top}
+.kv tr:last-child td{border-bottom:0}
+.kv td:first-child{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-2);white-space:nowrap;width:1%;padding-right:9px}
+.num{font-family:"IBM Plex Mono",monospace;color:var(--good);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.foot{border-top:1px solid var(--rule);margin-top:8px;padding:16px 0 0;color:var(--ink-3);font-size:12px}
+</style>
+
+<header><div class="wrap">
+  <p class="kick">The LiveKit side · every concept, part by part · your weak side, mastered</p>
+  <h1>The LiveKit Side</h1>
+  <p class="sub"><b>Everything LiveKit owns</b> — transport, the voice pipeline, the Agents framework, and operations. GCP is your home turf; this is the half to have cold.</p>
+</div></header>
+
+<main><div class="wrap">
+
+<!-- ============ TRANSPORT ============ -->
+<section class="band b-tr">
+  <h2><span class="n">A</span>Transport &amp; connection</h2>
+  <div class="grid">
+
+    <div class="card">
+      <h3>WebRTC — why, not WebSocket</h3>
+      <p class="is">Real-time media transport, built for voice.</p>
+      <ul class="rem">
+        <li><b>TCP/WS</b> → head-of-line blocking: one lost packet stalls the rest.</li>
+        <li><b>WebRTC/UDP</b> → skip a lost packet &gt; wait for it.</li>
+        <li>Opus codec · timestamps · jitter buffer · adaptive bitrate.</li>
+      </ul>
+      <p class="dnf"><b>firewall</b> ICE probes: STUN → direct → <b>TURN on 443</b> (looks like HTTPS). ~60–70% relay in corp nets — LiveKit runs it.</p>
+    </div>
+
+    <div class="card">
+      <h3>Room · participant · track</h3>
+      <p class="is">The <b>data model</b>, and the SFU that routes it.</p>
+      <ul class="rem">
+        <li><b>Room</b> = the session container.</li>
+        <li><b>Participant</b> = caller, agent, human, SIP caller (<code>kind</code>: standard/agent/sip).</li>
+        <li><b>Track</b> = a media stream you publish; others subscribe.</li>
+        <li><b>SFU</b> = selective forwarding (routes, doesn't mix); self-heals via session migration.</li>
+      </ul>
+      <div class="say"><b>say</b>The agent is a participant, not a backend the room calls.</div>
+    </div>
+
+    <div class="card">
+      <h3>Tokens &amp; grants</h3>
+      <p class="is">Signed <b>JWT</b> = your key to one room.</p>
+      <ul class="rem">
+        <li>HMAC-SHA256 w/ API secret · minted <b>server-side</b>.</li>
+        <li>Carries: <code>identity</code> (UUID) · <code>room</code>+<code>roomJoin</code> · <code>canPublish/Subscribe</code> · <code>exp</code>.</li>
+        <li>Agent dispatch: <code>RoomConfiguration(agents=[RoomAgentDispatch(...)])</code>.</li>
+      </ul>
+      <p class="dnf"><b>don't forget</b> secret can't be in a browser · no PII in identity · sandbox token server = dev only.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ PIPELINE ============ -->
+<section class="band b-pi">
+  <h2><span class="n">B</span>The voice pipeline</h2>
+  <div class="grid">
+
+    <div class="card">
+      <h3>VAD → STT → LLM → TTS</h3>
+      <p class="is">Four components; each <b>streams &amp; overlaps</b>.</p>
+      <ul class="rem">
+        <li><b>VAD</b> — speech present now? drives barge-in (Silero).</li>
+        <li><b>STT</b> — audio→text; interim / final / <b>preflight</b>.</li>
+        <li><b>LLM</b> — what to say + which tool; streams tokens.</li>
+        <li><b>TTS</b> — text→voice; streams from first words.</li>
+      </ul>
+      <div class="say"><b>say</b>Cascaded — swap any stage, failover per stage, clean transcript.</div>
+    </div>
+
+    <div class="card">
+      <h3>Turn detection &amp; barge-in</h3>
+      <p class="is">Did they finish the <b>thought</b>? (not just a pause)</p>
+      <ul class="rem">
+        <li><b>VAD</b> = speech present · <b>turn model</b> = thought complete.</li>
+        <li>LiveKit's <b>own open-weights</b> model (fine-tuned Qwen2.5-0.5B). ~20 ms.</li>
+        <li>False-cutoff @300 ms: <b>9.9%</b> vs 12.9% Flux vs 27.7% VAD-only.</li>
+        <li><b>Barge-in</b>: keep listening while speaking → cancel TTS, flush, back to STT.</li>
+      </ul>
+      <p class="dnf"><b>don't forget</b> the turn detector is the ONE model LiveKit owns — everything else is third-party they serve.</p>
+    </div>
+
+    <div class="card">
+      <h3>Latency &amp; metrics</h3>
+      <table class="kv">
+        <tr><td>VAD</td><td class="num">15–30 ms</td></tr>
+        <tr><td>STT</td><td class="num">200–600 ms</td></tr>
+        <tr><td>LLM</td><td class="num">100 ms–1 s</td></tr>
+        <tr><td>TTS</td><td class="num">100–300 ms</td></tr>
+      </table>
+      <ul class="rem" style="margin-top:6px">
+        <li>Targets: &lt;500 ms ideal · <b>TTFA &lt;1 s solid</b>.</li>
+        <li><b>TTFA</b> = felt · <b>TTFT</b> = diagnostic · <b>EOU</b> = turn delay.</li>
+        <li>Also: interrupt rate, tokens/cost, fallbacks.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Preemptive generation</h3>
+      <p class="is"><code>preemptive_generation=True</code></p>
+      <ul class="rem">
+        <li>LLM starts thinking on a stable <b>preflight</b> transcript, before end-of-turn.</li>
+        <li>Waits for clear EOU to <em>speak</em> — but thinking already started. Saves 100s of ms.</li>
+      </ul>
+      <p class="dnf"><b>skip for</b> mid-sentence direction changes · multi-part instructions · medical/legal/financial.</p>
+    </div>
+
+    <div class="card">
+      <h3>Resilience — FallbackAdapter</h3>
+      <p class="is">Per-component failover, built in.</p>
+      <ul class="rem">
+        <li><code>stt.FallbackAdapter([primary, secondary])</code> — same for LLM/TTS.</li>
+        <li>Retries in priority order, <b>never drops the call</b>. User never knows.</li>
+        <li>e.g. AssemblyAI→Deepgram · OpenAI→Gemini · Cartesia→InWorld.</li>
+      </ul>
+      <div class="say"><b>say</b>The structural reason to stay cascaded — I fail over per component.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ AGENTS FRAMEWORK ============ -->
+<section class="band b-ag">
+  <h2><span class="n">C</span>The Agents framework</h2>
+  <div class="grid">
+
+    <div class="card">
+      <h3>Worker → dispatch → job</h3>
+      <p class="is">How the agent gets <b>into</b> the room.</p>
+      <ul class="rem">
+        <li>Agent code registers as a <b>worker</b>, waits for jobs.</li>
+        <li>User joins room → LiveKit <b>dispatches a job</b> to an available worker.</li>
+        <li>Worker starts an <b>AgentSession subprocess</b> that joins the room.</li>
+        <li>Run modes: <code>console</code> (local, no room) · <code>dev</code> · <code>start</code> (prod).</li>
+      </ul>
+      <p class="dnf"><b>don't forget</b> stateful load balancing pins a session to one worker for its life.</p>
+    </div>
+
+    <div class="card">
+      <h3>Tools — 3 kinds</h3>
+      <table class="kv">
+        <tr><td>function</td><td><code>@function_tool</code>, in-process — hot path</td></tr>
+        <tr><td>MCP</td><td>separate service — external, shared, own deploy</td></tr>
+        <tr><td>provider</td><td>built into LLM — web search, code exec</td></tr>
+      </table>
+      <ul class="rem" style="margin-top:6px">
+        <li><b>Docstring is critical</b> — LLM reads it to pick the tool.</li>
+        <li>Keep &lt;2 s or <code>session.say("let me look…")</code> · <code>ToolError</code> on fail.</li>
+        <li>Disable interruptions for irreversible actions · <code>max_tool_steps</code> (default 3).</li>
+        <li>MCP: fetched at connect, registered alongside local tools.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Tasks · workflows · handoff</h3>
+      <ul class="rem">
+        <li><b>Task</b> = scoped unit returning a result (consent → bool); <code>on_enter</code>.</li>
+        <li><b>Handoff</b> = tool returns <code>(NewAgent, "msg")</code>; pass <code>chat_ctx</code> to keep history.</li>
+        <li><b>Task group</b> = steps in sequence (email→address); can go back to correct.</li>
+        <li><b>Consent</b> = recording permission (often legally required); <code>record=False</code> if declined.</li>
+        <li><b>Human</b> = SIP: disallow interruptions → <code>publish SIP participant</code>.</li>
+      </ul>
+      <p class="dnf"><b>flow</b> consent → triage → specialist → manager → human (last resort). Context preserved each hop.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ OPERATIONS ============ -->
+<section class="band b-op">
+  <h2><span class="n">D</span>Models &amp; operations</h2>
+  <div class="grid">
+
+    <div class="card">
+      <h3>LiveKit Inference &amp; models</h3>
+      <p class="is">Managed STT/LLM/TTS — zero-config, one gateway.</p>
+      <ul class="rem">
+        <li>Providers: OpenAI, Google, AssemblyAI, Deepgram, Cartesia, ElevenLabs…</li>
+        <li><b>Zero data retention by default</b> — nothing logged/trained on. (Medical win.)</li>
+        <li>Cascaded vs <b>realtime</b> (speech-to-speech) vs <b>half-cascade</b> (realtime ear + TTS mouth).</li>
+      </ul>
+      <p class="dnf"><b>don't forget</b> a Google model here is served by LiveKit, not your Vertex.</p>
+    </div>
+
+    <div class="card">
+      <h3>Observability</h3>
+      <p class="is">Built into LiveKit Cloud.</p>
+      <ul class="rem">
+        <li><b>Transcript + traces + logs</b>, all on one synced timeline w/ audio playback.</li>
+        <li>Traces = per-turn spans (STT/LLM/TTS/tools) → find the bottleneck.</li>
+        <li>Enable at project level · <b>OTel-compatible</b> · US, 30-day retention.</li>
+        <li><code>record=False</code> per session for sensitive data.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Deploy · Agent Builder</h3>
+      <ul class="rem">
+        <li><code>lk agent create</code> → registers, writes <code>livekit.toml</code>, auto Dockerfile, builds, deploys.</li>
+        <li>LiveKit Cloud hosting = autoscale + load-balance + global net + observability.</li>
+        <li>Regions: US East, EU Central.</li>
+        <li><b>Agent Builder</b> = no-code UI → generates the same SDK code ("a pathway to code").</li>
+      </ul>
+      <p class="dnf"><b>your build</b> you chose GKE over LiveKit hosting for graceful drain + data-boundary — name that tradeoff.</p>
+    </div>
+
+    <div class="card">
+      <h3>SIP / telephony &amp; extras</h3>
+      <ul class="rem">
+        <li><b>SIP</b> = signaling (who/where) · <b>RTP</b> = the audio. Trunk + dispatch rule → SIP participant joins the room.</li>
+        <li>Transfer: cold (REFER) vs warm (same-room). <code>publish SIP participant</code> to bridge a human.</li>
+        <li><b>Background Voice Cancellation</b> — LiveKit noise/background-speaker suppression tuned for agents.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<div class="foot"><div class="wrap">Companion to <b>The AnyCompany Build</b>. The LiveKit half — verified against LiveKit docs + the official Agents workshop. GCP boxes (Cloud Run, GKE, Firestore, Vertex) live in the Build.</div></div>
+
+</div></main>

@@ -1,0 +1,1025 @@
+<title>The AnyCompany Build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F4F5F6; --surface:#FFFFFF; --surface-2:#EAEDF0; --surface-3:#DFE3E7;
+  --ink:#161A20; --ink-2:#48515D; --ink-3:#77828E; --rule:#D4D9DF;
+  --teal:#0E7C7B; --teal-soft:#DFEFEE;
+  --rust:#B4541E; --rust-soft:#F7E8DE;
+  --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26; --warn:#8A6D1F;
+  --gcp:#3F7DE0; --gcp-soft:#E5EDFC;
+  --purple:#7A4D9E; --purple-soft:#EFE6F6;
+  --shadow:0 1px 2px rgba(22,26,32,.05), 0 4px 14px rgba(22,26,32,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1116; --surface:#151A20; --surface-2:#1C232A; --surface-3:#252E37;
+    --ink:#E8EBEE; --ink-2:#A7B2BE; --ink-3:#7B8793; --rule:#29313A;
+    --teal:#4FB3B0; --teal-soft:#122F2E;
+    --rust:#DB8A57; --rust-soft:#2D1E15;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E; --warn:#C8A951;
+    --gcp:#78A8F6; --gcp-soft:#142137;
+    --purple:#B58BD6; --purple-soft:#221733;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1116; --surface:#151A20; --surface-2:#1C232A; --surface-3:#252E37;
+  --ink:#E8EBEE; --ink-2:#A7B2BE; --ink-3:#7B8793; --rule:#29313A;
+  --teal:#4FB3B0; --teal-soft:#122F2E;
+  --rust:#DB8A57; --rust-soft:#2D1E15;
+  --slate:#93A2B0; --good:#5FB183; --bad:#E0796E; --warn:#C8A951;
+  --gcp:#78A8F6; --gcp-soft:#142137;
+  --purple:#B58BD6; --purple-soft:#221733;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:18px; line-height:1.68; -webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+a{color:var(--teal); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+.wrap{max-width:780px; margin:0 auto; padding:0 24px}
+
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:58px; padding-bottom:40px}
+.kicker{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 16px}
+h1{font-size:clamp(36px,6.4vw,58px); line-height:1.0; letter-spacing:-.032em; font-weight:800; margin:0 0 18px; text-wrap:balance}
+.dek{font-size:20px; color:var(--ink-2); margin:0 0 22px}
+.startline{border-top:1px solid var(--rule); padding-top:15px; font-size:15.5px; color:var(--ink-2)}
+.startline b{color:var(--ink); font-weight:600}
+
+.toc{background:var(--surface); border-bottom:1px solid var(--rule); position:sticky; top:0; z-index:5}
+.toc .wrap{padding:14px 24px}
+.toc ol{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(2,1fr); gap:4px 30px; font-size:13.5px}
+@media(max-width:620px){.toc ol{grid-template-columns:1fr}}
+.toc li{margin:0; font-family:Archivo,sans-serif}
+.toc a{color:var(--ink-2); text-decoration:none} .toc a:hover{color:var(--teal)}
+.toc .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3); margin-right:7px}
+
+main{padding:8px 0 80px}
+.ch{margin:0 0 12px; padding:48px 0 0; scroll-margin-top:64px}
+.ch-num{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--teal); display:block; margin-bottom:9px}
+h2{font-size:clamp(25px,3.8vw,34px); line-height:1.11; letter-spacing:-.024em; margin:0 0 18px; font-weight:800; text-wrap:balance}
+h3{font-size:19px; margin:30px 0 8px; font-weight:700; letter-spacing:-.01em}
+h4{font-size:14px; margin:0 0 6px; font-weight:700; letter-spacing:.01em; color:var(--ink)}
+p{margin:0 0 15px}
+ul,ol{margin:0 0 15px; padding-left:23px} li{margin:0 0 8px} li::marker{color:var(--ink-3)}
+code:not(pre code){background:var(--surface-2); padding:.1em .38em; border-radius:2px; font-size:.82em; border:1px solid var(--rule)}
+strong{font-weight:600}
+.lead{font-size:19.5px; color:var(--ink-2)}
+
+.say{border-left:3px solid var(--teal); background:var(--teal-soft); padding:15px 18px; margin:22px 0; border-radius:0 3px 3px 0}
+.say .lbl{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:7px; font-weight:600}
+.say p{margin:0; font-size:16.5px} .say p+p{margin-top:10px}
+.note{border:1px solid var(--rule); border-left:3px solid var(--rust); background:var(--surface); padding:14px 17px; margin:20px 0; border-radius:0 3px 3px 0}
+.note .lbl{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--rust); display:block; margin-bottom:6px; font-weight:600}
+.note p{margin:0; font-size:16px}
+
+.cards{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:22px 0}
+@media(max-width:600px){.cards{grid-template-columns:1fr}}
+.card{border:1px solid var(--rule); border-radius:4px; background:var(--surface); padding:14px 16px}
+.card h4{margin-bottom:5px} .card p{margin:0; font-size:14.5px; color:var(--ink-2)}
+.card .tag{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:8px}
+
+pre{margin:14px 0; padding:15px 16px; background:var(--surface-2); border:1px solid var(--rule); border-radius:4px; overflow-x:auto; font-size:12.5px; line-height:1.6}
+pre code{background:none; border:0; padding:0; font-size:12.5px; color:var(--ink)}
+.tok-c{color:var(--ink-3)} .tok-k{color:var(--gcp)} .tok-v{color:var(--teal)}
+.primer{border:1px solid var(--rule); border-left:3px solid var(--gcp); background:var(--surface); border-radius:0 4px 4px 0; padding:18px 20px; margin:20px 0; box-shadow:var(--shadow)}
+.primer .plabel{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--gcp); display:block; margin-bottom:6px; font-weight:600}
+.primer h3{margin:0 0 10px; font-size:20px}
+.primer p:last-child{margin-bottom:0}
+.dl{margin:12px 0 0; display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-size:15px}
+.dl dt{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--gcp); font-weight:600; white-space:nowrap}
+.dl dd{margin:0; color:var(--ink-2)}
+@media(max-width:520px){.dl{grid-template-columns:1fr; gap:2px 0} .dl dd{margin-bottom:8px}}
+
+figure{margin:30px 0; width:100%}
+@media(min-width:940px){figure{width:calc(100% + 150px); margin-left:-75px}}
+.figbox{border:1px solid var(--rule); border-radius:4px; background:var(--surface); padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; min-width:600px; height:auto; color:var(--ink)}
+figcaption{font-size:14px; color:var(--ink-2); margin:11px auto 0; line-height:1.5; max-width:720px}
+figcaption b{color:var(--ink); font-weight:600}
+.legend{display:flex; flex-wrap:wrap; gap:15px; margin:14px 0 0; padding:0; list-style:none; font-size:12px}
+.legend li{display:flex; align-items:center; gap:7px; margin:0; font-family:Archivo,sans-serif; color:var(--ink-2)}
+.sw{width:22px; height:0; border-top-width:2.5px; border-top-style:solid; flex:none}
+.sw-media{border-color:var(--teal)} .sw-web{border-color:var(--slate); border-top-style:dashed} .sw-mcp{border-color:var(--gcp)} .sw-hand{border-color:var(--purple)}
+
+.tablebox{overflow-x:auto; margin:22px 0; border:1px solid var(--rule); border-radius:4px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:520px; font-size:14.5px}
+th,td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace; font-size:12.5px; white-space:nowrap}
+td.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; color:var(--good); font-weight:600; white-space:nowrap}
+
+.build,.draw{counter-reset:step; margin:22px 0 15px; padding:0; list-style:none}
+.build li,.draw li{position:relative; padding:0 0 16px 44px; margin:0; border-left:2px solid var(--rule); margin-left:14px}
+.build li:last-child,.draw li:last-child{border-left-color:transparent}
+.build li::before,.draw li::before{counter-increment:step; content:counter(step); position:absolute; left:-15px; top:-2px; width:28px; height:28px; border-radius:50%; background:var(--teal); color:#fff; font-family:Archivo,sans-serif; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center}
+.draw li::before{background:var(--rust)}
+.build h4,.draw h4{margin-bottom:3px}
+.build p,.draw p{margin:0; font-size:15px; color:var(--ink-2)}
+.build .cmd{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--teal); margin-top:4px; display:block}
+.draw .quote{display:block; margin-top:6px; font-family:"Source Serif 4",serif; font-style:italic; font-size:15.5px; color:var(--ink); border-left:2px solid var(--rust); padding-left:11px}
+
+footer{border-top:1px solid var(--rule); margin-top:46px; padding:24px 0 50px; color:var(--ink-3); font-size:14px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">The capstone · principal-level, end to end · built and measured</p>
+    <h1>The AnyCompany Build</h1>
+    <p class="dek">The whole voice-agent system — how it's built, where every request goes, how to draw it box by box, and what a principal SE says about models, latency, redundancy, and scale when Mike pushes.</p>
+    <p class="startline"><b>Not a sketch — a running system.</b> Web app, agent on GKE, MCP boundary, Firestore, and a live Vertex RAG corpus, all deployed and measured on <code>bq-demos-469816</code>.</p>
+  </div>
+</header>
+
+<nav class="toc"><div class="wrap"><ol>
+  <li><span class="n">01</span><a href="#access">How a user gets in</a></li>
+  <li><span class="n">02</span><a href="#primers">Primers: token, room, firewall</a></li>
+  <li><span class="n">03</span><a href="#arch">The full architecture</a></li>
+  <li><span class="n">04</span><a href="#draw">The whiteboard: draw order</a></li>
+  <li><span class="n">05</span><a href="#build">How to build it</a></li>
+  <li><span class="n">06</span><a href="#models">The model layer</a></li>
+  <li><span class="n">07</span><a href="#tools">Function tools vs MCP</a></li>
+  <li><span class="n">08</span><a href="#life">One request, end to end</a></li>
+  <li><span class="n">09</span><a href="#latency">Latency optimization</a></li>
+  <li><span class="n">10</span><a href="#scale">Scale &amp; observability</a></li>
+  <li><span class="n">11</span><a href="#cost">Cost &amp; economics</a></li>
+  <li><span class="n">12</span><a href="#redundancy">Redundancy &amp; reliability</a></li>
+  <li><span class="n">13</span><a href="#why">Why LiveKit vs the field</a></li>
+  <li><span class="n">14</span><a href="#talk">How to talk about it</a></li>
+</ol></div></nav>
+
+<main>
+<div class="wrap">
+
+<!-- 01 ACCESS -->
+<section class="ch" id="access">
+  <span class="ch-num">01 · Access</span>
+  <h2>How a user gets in — two connections, not one</h2>
+
+  <p class="lead">Say this first, because it's the thing everyone gets wrong: a user makes <strong>two separate connections</strong>, over two protocols, to two different places. Keeping them apart is the key to reading the whole system.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 220" role="img" aria-label="A user makes two connections: HTTPS to the web app to load the page and get a room token, and WebRTC to LiveKit for the actual voice. The web app is never on the voice path.">
+        <defs>
+          <marker id="ac-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="ac-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+        </defs>
+        <rect x="20" y="82" width="130" height="56" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="85" y="106" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink)">User</text>
+        <text x="85" y="123" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">browser (or phone)</text>
+        <path d="M150,98 L420,60" stroke="var(--slate)" stroke-width="1.8" stroke-dasharray="5 3" fill="none" marker-end="url(#ac-s)"/>
+        <text x="270" y="58" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--slate)">1 · HTTPS — load page + get token</text>
+        <rect x="430" y="38" width="180" height="46" rx="4" fill="var(--surface)" stroke="var(--slate)"/>
+        <text x="520" y="58" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Web app (Cloud Run)</text>
+        <text x="520" y="73" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">serves UI · mints room token</text>
+        <path d="M150,122 L420,150" stroke="var(--teal)" stroke-width="2.2" fill="none" marker-end="url(#ac-t)"/>
+        <text x="270" y="152" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--teal)">2 · WebRTC — the voice</text>
+        <circle cx="520" cy="150" r="40" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.3"/>
+        <text x="520" y="146" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="700" fill="var(--teal)">LiveKit</text>
+        <text x="520" y="162" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">room</text>
+        <text x="650" y="96" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">The token from (1)</text>
+        <text x="650" y="112" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">authorizes (2).</text>
+        <text x="650" y="132" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">The web app is NEVER</text>
+        <text x="650" y="148" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">on the voice path.</text>
+      </svg>
+    </div>
+    <figcaption><b>The access flow.</b> First the browser loads the page and asks the web app for a room token over plain HTTPS. Then it uses that token to open a WebRTC connection straight to LiveKit for the voice. Two paths — and a phone caller skips path 1 entirely, dialing in over SIP.</figcaption>
+  </figure>
+
+  <p>Why a token server at all? Because a room token is signed with your <strong>LiveKit API secret</strong>, and that secret can never live in a browser — anyone could grab it and mint their own. So a small server holds the secret and hands out short-lived, scoped tokens. That's the only reason the "Web app + token" box sits on the critical path.</p>
+
+  <div class="note">
+    <span class="lbl">The load-balancer question, answered</span>
+    <p>The web app sits behind a load balancer (Cloud Run's built-in front end, or an explicit HTTP(S) LB + Cloud CDN for a custom domain). But that LB only ever fronts <em>path 1</em> — web and token traffic. The voice in <em>path 2</em> goes browser-straight-to-LiveKit and never touches your load balancer. Confusing the two is the classic tell that someone hasn't built this.</p>
+  </div>
+</section>
+
+<!-- 02 PRIMERS -->
+<section class="ch" id="primers">
+  <span class="ch-num">02 · Primers</span>
+  <h2>The vocabulary you need first</h2>
+
+  <p class="lead">Before the architecture makes sense, four words have to be concrete: <strong>token, room, participant, track</strong>. Here's each in a paragraph — verified against LiveKit's own docs — so nothing downstream is hand-wavy.</p>
+
+  <div class="primer">
+    <span class="plabel">Primer 1 · the one you asked about</span>
+    <h3>The access token — your key to the room</h3>
+    <p>To join a room, a client must hand LiveKit an <strong>access token</strong>. It's a <strong>JWT</strong> — a small signed blob of JSON — <strong>signed with your LiveKit API secret</strong> so it can't be forged. It encodes <em>who</em> you are, <em>which</em> room you may enter, <em>what</em> you're allowed to do there, and <em>when</em> it expires. That's the whole "what kind of token" answer: not a password, not an OAuth token — a short-lived, self-describing permission slip your server signs.</p>
+    <p>Here's a real decoded one (this is the exact shape from LiveKit's docs):</p>
+<pre><code>{
+  <span class="tok-k">"iss"</span>: <span class="tok-v">"APIMmxiL8rqu…"</span>,   <span class="tok-c">// your API key — identifies who issued it</span>
+  <span class="tok-k">"sub"</span>: <span class="tok-v">"user-7f3a"</span>,       <span class="tok-c">// participant identity — use a UUID, never a real name</span>
+  <span class="tok-k">"exp"</span>: <span class="tok-v">1621657263</span>,      <span class="tok-c">// expires — gates the FIRST connect only, not reconnects</span>
+  <span class="tok-k">"video"</span>: {
+    <span class="tok-k">"room"</span>: <span class="tok-v">"support-42"</span>,  <span class="tok-c">// which room this token is good for</span>
+    <span class="tok-k">"roomJoin"</span>: <span class="tok-v">true</span>,     <span class="tok-c">// may join it</span>
+    <span class="tok-k">"canPublish"</span>: <span class="tok-v">true</span>,   <span class="tok-c">// may send its microphone audio</span>
+    <span class="tok-k">"canSubscribe"</span>: <span class="tok-v">true</span>  <span class="tok-c">// may hear the agent</span>
+  }
+}</code></pre>
+    <p>The permissions live in the <code>video</code> grant. For a voice call the four that matter are <code>roomJoin</code> + <code>room</code> (join <em>this</em> room), <code>canPublish</code> (send mic audio), and <code>canSubscribe</code> (hear the agent). There are more — <code>roomAdmin</code>, <code>canPublishData</code>, a separate <code>sip</code> grant for telephony — but those four get a browser talking to an agent.</p>
+    <dl class="dl">
+      <dt>Who mints it</dt><dd>Your token server (the web app on Cloud Run) — because it holds the API secret. <strong>Never the browser</strong>; a leaked secret lets anyone forge tokens into your rooms.</dd>
+      <dt>How long</dt><dd>Short-lived — you set the TTL. Expiry only blocks the <em>initial</em> connect; once joined, a mid-call reconnect isn't kicked out.</dd>
+      <dt>Summoning the agent</dt><dd>You can bake <code>RoomConfiguration(agents=[RoomAgentDispatch(agent_name="…")])</code> into the token — that's how a browser's join token also tells LiveKit <em>which named agent</em> to dispatch into the room.</dd>
+      <dt>PII rule</dt><dd>Identity and room name land in logs and traces unredacted — put an opaque UUID there, and map it to the real customer in your own backend.</dd>
+    </dl>
+  </div>
+
+  <div class="primer">
+    <span class="plabel">Primer 1½ · a REAL token from the running system</span>
+    <h3>Watch the token get made — end to end</h3>
+    <p>This isn't a textbook example — it's an actual token this build minted, decoded live. Here's the full round trip.</p>
+
+    <p style="margin-bottom:6px"><b>① The browser asks the web app for a token</b> — one HTTPS call, on page load:</p>
+<pre><code>GET https://aug24-web…run.app<span class="tok-k">/token</span>
+<span class="tok-c">→ { "token": "eyJ…", "url": "wss://…livekit.cloud", "room": "web-7deb67a2" }</span></code></pre>
+
+    <p style="margin:12px 0 6px"><b>② The server mints it</b> — holding the secret the browser never sees:</p>
+<pre><code>identity = <span class="tok-v">f"caller-{uuid4().hex[:6]}"</span>          <span class="tok-c"># opaque UUID — no PII</span>
+grant = VideoGrants(<span class="tok-k">room_join</span>=True, <span class="tok-k">room</span>=room,
+                    <span class="tok-k">can_publish</span>=True, <span class="tok-k">can_subscribe</span>=True)
+rc = RoomConfiguration(                       <span class="tok-c"># summon the named agent</span>
+        agents=[RoomAgentDispatch(<span class="tok-k">agent_name</span>=<span class="tok-v">"anycompany-agent"</span>)])
+jwt = (AccessToken(KEY, <span class="tok-v">SECRET</span>)               <span class="tok-c"># SECRET signs it — server-side only</span>
+       .with_identity(identity).with_grants(grant)
+       .with_room_config(rc).with_ttl(<span class="tok-v">15 min</span>)).to_jwt()</code></pre>
+
+    <p style="margin:12px 0 6px"><b>③ What that token actually contained</b> — decoded from the real JWT:</p>
+<pre><code>{
+  <span class="tok-k">"sub"</span>:   <span class="tok-v">"caller-436977"</span>,        <span class="tok-c">// identity — a UUID, not a name ✓</span>
+  <span class="tok-k">"iss"</span>:   <span class="tok-v">"APIJbdxTYB25y4B"</span>,     <span class="tok-c">// your API key (the public half)</span>
+  <span class="tok-k">"video"</span>: {
+    <span class="tok-k">"roomJoin"</span>: true,           <span class="tok-c">// may enter</span>
+    <span class="tok-k">"room"</span>: <span class="tok-v">"web-7deb67a2"</span>,      <span class="tok-c">// THIS room only</span>
+    <span class="tok-k">"canPublish"</span>: true,         <span class="tok-c">// may send mic audio</span>
+    <span class="tok-k">"canSubscribe"</span>: true        <span class="tok-c">// may hear the agent</span>
+  },
+  <span class="tok-k">"roomConfig"</span>: { <span class="tok-k">"agents"</span>: [{ <span class="tok-k">"agentName"</span>: <span class="tok-v">"anycompany-agent"</span> }] },
+  <span class="tok-k">"nbf"</span>: 1787667175,             <span class="tok-c">// valid-from</span>
+  <span class="tok-k">"exp"</span>: 1787668075              <span class="tok-c">// expires — exactly 900s = 15 min later</span>
+}
+<span class="tok-c">— signed: HMAC-SHA256(header.payload, SECRET)  ← makes it unforgeable</span></code></pre>
+
+    <p style="margin:12px 0 6px"><b>④ The browser connects with it</b> — token in hand, straight into LiveKit over WebRTC:</p>
+<pre><code>const { token, url } = await fetch(<span class="tok-v">'/token'</span>).then(r =&gt; r.json());
+await room.connect(url, token);   <span class="tok-c">// becomes a participant; agent is dispatched</span></code></pre>
+
+    <p style="margin-top:12px">That's the entire "how does a user get in." The customer clicks <em>Start call</em> and sees none of it — the page fetches the token and connects. The <code>roomConfig.agents</code> line is the quiet magic: it's how a <em>browser's</em> token also tells LiveKit to pull your agent into the room, with no separate signaling.</p>
+  </div>
+
+  <div class="primer">
+    <span class="plabel">Primer 2 · the data model</span>
+    <h3>Room, participant, track</h3>
+    <p>Three nested ideas, and once they click the whole system reads cleanly:</p>
+    <dl class="dl">
+      <dt>Room</dt><dd>The session container. Everything happens inside exactly one room — it's the thing the token grants you into.</dd>
+      <dt>Participant</dt><dd>Anyone or anything <em>in</em> the room: the caller, the agent, a human specialist, a phone caller over SIP. Each carries a <code>kind</code> — <code>standard</code>, <code>sip</code>, <code>agent</code>. This is why "the agent is a participant, not a backend" is literally true: it joins with <code>kind: agent</code>.</dd>
+      <dt>Track</dt><dd>A live media stream a participant <em>publishes</em>. The caller publishes their microphone track; the agent publishes its synthesized-voice track; each <em>subscribes</em> to the other's.</dd>
+    </dl>
+    <p style="margin-top:12px">So "join the room" unpacks to: <em>present a token with <code>roomJoin</code> → become a participant → publish your mic track and subscribe to the agent's voice track.</em> That one sentence is the entire connection.</p>
+  </div>
+
+  <div class="primer">
+    <span class="plabel">Primer 3 · why this transport</span>
+    <h3>Why WebRTC, not a WebSocket</h3>
+    <p>Voice needs low latency and tolerance for lost packets. <strong>WebRTC</strong> runs over UDP with the Opus codec, a jitter buffer, and packet-loss concealment — so a dropped packet becomes a tiny, inaudible glitch rather than a stall. A WebSocket rides TCP, which <em>retransmits</em> lost packets and head-of-line-blocks behind them, adding delay you can actually hear in a conversation. That's why the voice path (path 2) is WebRTC while the page-load and token path (path 1) is ordinary HTTPS.</p>
+  </div>
+
+  <div class="primer">
+    <span class="plabel">Primer 4 · the firewall question — you WILL get asked this</span>
+    <h3>How the connection punches through NAT &amp; corporate firewalls</h3>
+    <p>"Will this work inside our locked-down enterprise network?" is a top-three real customer question, and WebRTC has a specific answer: <strong>ICE</strong>. When a client connects, ICE probes every possible path and uses the best one that works, in this priority order:</p>
+    <dl class="dl">
+      <dt>STUN</dt><dd>A quick lookup that tells the client its own public IP behind the router, so a <strong>direct UDP</strong> path can be tried first (the fastest). LiveKit clients use Google's public STUN by default.</dd>
+      <dt>Direct TCP</dt><dd>If UDP is blocked, fall back to a direct TCP path.</dd>
+      <dt>TURN relay</dt><dd>If both direct paths fail — symmetric NAT, a strict corporate firewall — media is <strong>relayed</strong> through a TURN server. Crucially, <strong>TURN over TCP on port 443 looks exactly like HTTPS</strong>, so it slips through nearly every corporate firewall.</dd>
+    </dl>
+    <p style="margin-top:12px">The honest number to know: in managed corporate environments, <strong>60–70% of connections end up on TURN relay</strong> rather than direct. So the answer to the firewall question is: "yes — it degrades to a TURN relay on 443 that's indistinguishable from web traffic, and LiveKit Cloud runs that relay layer for you."</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">API key vs secret — don't mix them up</span>
+    <p>Your project has an <strong>API key</strong> (a public identifier — it appears in the token as <code>iss</code>) and an <strong>API secret</strong> (the private signing key). The key can be public; the secret signs tokens and lives server-side only. If someone asks "how is the browser trusted," the answer is: it isn't — your server proves trust by signing the token with the secret, and the browser just carries the result.</p>
+  </div>
+</section>
+
+<!-- 03 ARCH -->
+<section class="ch" id="arch">
+  <span class="ch-num">03 · Architecture</span>
+  <h2>The full architecture</h2>
+
+  <p>Here it is whole, with every component in its real home and every kind of traffic drawn distinctly — including the human handoff. Read it left to right: the user, the two entry paths, LiveKit in the middle, your GCP on the right, and the specialist who can join the same room.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 900 520" role="img" aria-label="Full architecture: user connects via web app on Cloud Run for tokens and WebRTC to LiveKit for voice; the agent on GKE calls an MCP server on Cloud Run reading Firestore and a Vertex RAG corpus; a human specialist can join the same room on handoff.">
+        <defs>
+          <marker id="f-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="f-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--gcp)"/></marker>
+          <marker id="f-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+          <marker id="f-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--purple)"/></marker>
+        </defs>
+        <rect x="16" y="196" width="120" height="76" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="76" y="228" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink)">User</text>
+        <text x="76" y="246" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">browser / phone</text>
+        <rect x="196" y="120" width="210" height="240" rx="6" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.2"/>
+        <text x="216" y="145" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--rust)" letter-spacing=".6">LIVEKIT CLOUD</text>
+        <rect x="216" y="162" width="170" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="301" y="188" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink)">Room / SFU</text>
+        <text x="301" y="205" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">global mesh · nearest edge</text>
+        <rect x="216" y="232" width="170" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="301" y="258" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink)">Inference</text>
+        <text x="301" y="275" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">STT · LLM · TTS · turns</text>
+        <rect x="200" y="26" width="200" height="56" rx="4" fill="var(--surface)" stroke="var(--slate)"/>
+        <text x="300" y="49" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Web app + token</text>
+        <text x="300" y="65" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--ink-3)">Cloud Run · aug24-web</text>
+        <!-- human handoff -->
+        <rect x="205" y="404" width="190" height="52" rx="4" fill="var(--purple-soft)" stroke="var(--purple)" stroke-width="1.3"/>
+        <text x="300" y="426" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--purple)">Human specialist</text>
+        <text x="300" y="442" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">joins the SAME room on handoff</text>
+        <path d="M301,404 L301,362" stroke="var(--purple)" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#f-p)"/>
+        <text x="316" y="386" font-family="Archivo,sans-serif" font-size="9" fill="var(--purple)">handoff</text>
+        <rect x="470" y="26" width="414" height="428" rx="6" fill="var(--gcp-soft)" stroke="var(--gcp)" stroke-width="1.3"/>
+        <text x="490" y="50" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--gcp)" letter-spacing=".6">YOUR GCP · bq-demos-469816</text>
+        <rect x="490" y="150" width="180" height="66" rx="4" fill="var(--surface)" stroke="var(--gcp)" stroke-width="1.4"/>
+        <text x="580" y="176" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--gcp)">Agent worker</text>
+        <text x="580" y="193" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-2)">the brain · runs the loop</text>
+        <text x="580" y="207" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--gcp)">GKE · graceful drain</text>
+        <rect x="710" y="150" width="158" height="66" rx="4" fill="var(--surface)" stroke="var(--gcp)"/>
+        <text x="789" y="176" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">MCP server</text>
+        <text x="789" y="192" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--ink-3)">Cloud Run · aug24-mcp</text>
+        <text x="789" y="206" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">lookup · ticket · search</text>
+        <rect x="710" y="248" width="158" height="56" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="789" y="272" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">Firestore</text>
+        <text x="789" y="288" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">orders · tickets</text>
+        <rect x="710" y="330" width="158" height="60" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="789" y="354" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">Vertex RAG</text>
+        <text x="789" y="370" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">return-policy corpus</text>
+        <text x="789" y="383" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--ink-3)">europe-west3</text>
+        <path d="M136,208 L196,60 L198,60" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="5 3" fill="none" marker-end="url(#f-s)"/>
+        <text x="150" y="120" font-family="Archivo,sans-serif" font-size="9" fill="var(--slate)">HTTPS+token</text>
+        <line x1="136" y1="228" x2="194" y2="220" stroke="var(--teal)" stroke-width="2.2" marker-end="url(#f-t)"/>
+        <text x="150" y="248" font-family="Archivo,sans-serif" font-size="9" fill="var(--teal)">WebRTC</text>
+        <line x1="406" y1="200" x2="486" y2="185" stroke="var(--teal)" stroke-width="2.2" marker-start="url(#f-t)" marker-end="url(#f-t)"/>
+        <text x="446" y="180" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--teal)">media</text>
+        <line x1="670" y1="183" x2="706" y2="183" stroke="var(--gcp)" stroke-width="2" marker-end="url(#f-g)"/>
+        <text x="688" y="176" text-anchor="middle" font-family="Archivo,sans-serif" font-size="8" fill="var(--gcp)">MCP</text>
+        <line x1="789" y1="216" x2="789" y2="246" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#f-s)"/>
+        <path d="M770,216 L740,320 L760,330" stroke="var(--slate)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#f-s)"/>
+      </svg>
+      <ul class="legend">
+        <li><span class="sw sw-media"></span>realtime media (WebRTC)</li>
+        <li><span class="sw sw-mcp"></span>MCP tool call</li>
+        <li><span class="sw sw-web"></span>web / data</li>
+        <li><span class="sw sw-hand"></span>human handoff</li>
+      </ul>
+    </div>
+    <figcaption><b>The system, as deployed.</b> Every box on the right runs on your GCP. The agent (GKE) is the hinge — it joins the LiveKit room for media and is an MCP client to your cloud for tools. When it can't resolve, a human specialist joins the <em>same</em> room, so the context and transcript carry over intact.</figcaption>
+  </figure>
+
+  <div class="note">
+    <span class="lbl">Why RAG isn't called from LiveKit — the question Mike will ask</span>
+    <p>LiveKit is the <strong>media plane</strong>: it moves audio and runs the models. It is a third-party managed service and never touches your data. The <strong>agent</strong> is your code, the brain — it's the only thing that knows about your business systems. So the chain is: the LLM <em>decides</em> "I need a knowledge lookup" and emits a tool call → the <strong>agent</strong> (running in your GCP, with your IAM) executes it → agent → MCP → Vertex RAG. LiveKit is never in that path. You'd never hand a media vendor direct credentials to your corpus; the agent, inside your trust boundary with Workload Identity, is where the media plane and your data plane meet.</p>
+  </div>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Component</th><th>Runs on</th><th>Why there — the principal-level reason</th></tr></thead>
+      <tbody>
+        <tr><td>Web app + token</td><td class="mono">Cloud Run</td><td>stateless, request-shaped, scales to zero — perfect front door</td></tr>
+        <tr><td>Room / SFU + models</td><td class="mono">LiveKit Cloud</td><td>managed media plane + inference; the part you don't run</td></tr>
+        <tr><td><b>Agent worker</b></td><td class="mono">GKE</td><td>long-lived, stateful, holds live calls — needs graceful drain</td></tr>
+        <tr><td>MCP server</td><td class="mono">Cloud Run</td><td>request-shaped; the one place external-system retry logic lives</td></tr>
+        <tr><td>Data</td><td class="mono">Firestore</td><td>orders + tickets; serverless, multi-region capable</td></tr>
+        <tr><td>Knowledge</td><td class="mono">Vertex RAG</td><td>return-policy PDF, embedded + indexed, retrieved per question</td></tr>
+        <tr><td>Human handoff</td><td class="mono">same room</td><td>specialist joins the live room — context + transcript preserved</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The GCP footprint — why each service, and the glue</h3>
+  <p>The boxes above are the compute and data; a principal answer also names the <em>glue</em> — identity, secrets, networking, and how it ships. This is the "here's how it lands in your existing Google Cloud" pitch, which is exactly the pre-sales move.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>GCP piece</th><th>Role</th><th>The principal reason</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">Cloud Run</td><td>web + token server, MCP server</td><td>stateless, request-shaped, scale-to-zero, built-in TLS + LB. The front door and the tool boundary.</td></tr>
+        <tr><td class="mono">GKE</td><td>the agent worker</td><td>long-lived stateful calls need <b>graceful drain</b> on deploy — the one thing Cloud Run can't guarantee.</td></tr>
+        <tr><td class="mono">Firestore</td><td>orders + tickets</td><td>serverless, multi-region capable; no cluster to run for a simple document store.</td></tr>
+        <tr><td class="mono">Vertex RAG Engine</td><td>the knowledge corpus</td><td>managed embed + index + retrieve; you hand it a PDF, it returns passages. No vector DB to operate.</td></tr>
+        <tr><td class="mono">Workload Identity</td><td>how the agent authenticates</td><td><b>no static service-account keys</b> — the pod assumes an identity. This is the "no secrets on disk" answer.</td></tr>
+        <tr><td class="mono">Secret Manager</td><td>LiveKit API key/secret</td><td>the signing secret lives here, injected at runtime — never baked into an image or repo.</td></tr>
+        <tr><td class="mono">Artifact Registry + Cloud Build</td><td>container image pipeline</td><td>build the agent image, scan it, deploy to GKE — a real CD path, not a laptop <code>docker push</code>.</td></tr>
+        <tr><td class="mono">Private nodes + Cloud NAT</td><td>agent egress</td><td>nodes have no public IPs (org-policy safe); Cloud NAT gives controlled outbound to LiveKit &amp; model APIs.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="lbl">The GCP-native model option — worth naming</span>
+    <p>Beyond the Deepgram/Gemini/Cartesia stack through LiveKit Inference, GCP has its own voice models you can plug in: <strong>Chirp</strong> (Google's STT), <strong>Gemini</strong> as the LLM, and <strong>Gemini Live</strong> as a speech-to-speech realtime option straight from Vertex. The honest pre-sales line: use LiveKit Inference for the zero-config managed path and per-stage failover; reach for the Vertex-native models when a customer wants everything inside their own Google Cloud data boundary. Either way, the room, the agent, and the pipeline are unchanged — you're only swapping which endpoint each stage calls.</p>
+  </div>
+
+  <div class="say">
+    <span class="lbl">Say it like this — the region point</span>
+    <p>"Everything on the right is your GCP: Cloud Run for the front door and the tool boundary, GKE for the worker because live calls need graceful drain, Firestore and Vertex RAG for data and knowledge. The glue is Workload Identity so there are no static keys, Secret Manager for the LiveKit secret, and private nodes with Cloud NAT for controlled egress. And the single most important knob is <em>region</em> — I put all of this in one region that matches the LiveKit edge and sits near your users, because that co-location is the biggest latency lever in the whole system."</p>
+  </div>
+</section>
+
+<!-- 03 DRAW -->
+<section class="ch" id="draw">
+  <span class="ch-num">04 · The whiteboard</span>
+  <h2>The draw order — box by box, and what to say at each</h2>
+
+  <p class="lead">The interview is a <em>collaborative sketch</em>, so what matters isn't the finished picture — it's the order you draw the boxes and the sentence you say as each one lands. This is your layout, drawn in the sequence that makes you look like you've built it.</p>
+
+  <p>Set your legend on the board first: <strong>solid line = realtime voice, dashed = data/service calls, a distinct color = the human handoff.</strong> A readable drawing <em>is</em> the pre-sales deliverable.</p>
+
+  <ol class="draw">
+    <li>
+      <h4>Discovery — before any box</h4>
+      <p>Ask the 5 questions that change the drawing: call volume &amp; peak concurrency, inbound/outbound, existing telephony provider, where their data and CRM live, compliance/PII. Then state your assumptions aloud.</p>
+      <span class="quote">"Before I draw, let me scope it — what's your peak concurrent call volume, and where does your customer data live today?"</span>
+    </li>
+    <li>
+      <h4>The user + two entry paths</h4>
+      <p>Draw the customer on the left, then two arrows out: browser (WebRTC) and phone (SIP). Name the split immediately.</p>
+      <span class="quote">"Two ways in — a browser over WebRTC, or a phone over SIP — and they both converge into one place."</span>
+    </li>
+    <li>
+      <h4>The room</h4>
+      <p>Draw one box in the middle: the LiveKit room. This is the unifying concept — everything joins it.</p>
+      <span class="quote">"Everything meets in a room. The caller's a participant, the agent's a participant, and later a human can be one too."</span>
+    </li>
+    <li>
+      <h4>The agent as a participant</h4>
+      <p>Draw the agent joining the room — <em>not</em> as a backend behind it. This is the insight that separates people who get LiveKit from people who don't.</p>
+      <span class="quote">"The agent isn't a server the room calls — it joins the room like any other participant. That's the whole mental model."</span>
+    </li>
+    <li>
+      <h4>The pipeline inside the agent — then annotate latency</h4>
+      <p>Inside the agent box draw STT→LLM→TTS, then write the budget numbers right on it: sub-second total.</p>
+      <span class="quote">"Inside it's speech-to-text, the model, text-to-speech — and the whole loop has to close under a second or it feels broken."</span>
+    </li>
+    <li>
+      <h4>Data + tools — direct vs the MCP boundary</h4>
+      <p>Draw solid quick tools for every-call reads; draw the ticketing/knowledge box <em>dashed and external</em> through MCP. Explain the deliberate line.</p>
+      <span class="quote">"Order lookups are direct tools on the hot path. Ticketing and knowledge go through an MCP boundary — that's where my external-system retry logic lives."</span>
+    </li>
+    <li>
+      <h4>Knowledge — RAG, and who calls it</h4>
+      <p>Draw the RAG corpus behind MCP. Pre-empt the question: the agent calls it, not LiveKit.</p>
+      <span class="quote">"Policy questions hit a RAG corpus — and note the agent calls it, never LiveKit. LiveKit only carries audio; my code owns the data."</span>
+    </li>
+    <li>
+      <h4>The human handoff — in your accent color</h4>
+      <p>Draw the specialist joining the <em>same</em> room; the AI announces and steps back.</p>
+      <span class="quote">"When it can't resolve, a human joins the same room — the AI announces the handoff and steps back. Context and transcript are already there."</span>
+    </li>
+    <li>
+      <h4>The -ilities layer — last</h4>
+      <p>Only now annotate scale, failover, region, observability around the edges.</p>
+      <span class="quote">"Now the operational layer — co-located in one region, graceful drain on deploy, per-component failover, active-session autoscaling."</span>
+    </li>
+  </ol>
+
+  <div class="note">
+    <span class="lbl">Mapping to the reference diagram</span>
+    <p>This is the same skeleton as the AnyCompany reference (customer → web/SIP → LiveKit Cloud → compute + data → human handoff), redrawn in your own layout and on <strong>GCP primitives</strong> — Cloud Run for the front door and MCP, GKE for the worker, Firestore for data, Vertex RAG for knowledge. Drawing the familiar shape but landing it on their cloud is exactly the pre-sales move.</p>
+  </div>
+</section>
+
+<!-- 04 BUILD -->
+<section class="ch" id="build">
+  <span class="ch-num">05 · Construction</span>
+  <h2>How to build it — the order that de-risks</h2>
+
+  <p>You don't build this as one big bang. You build it as a sequence where each step is independently runnable, so a failure is always localized to the thing you just added. This is also the order to <em>describe</em> it in.</p>
+
+  <ol class="build">
+    <li>
+      <h4>Bare agent, talking</h4>
+      <p>Scaffold the LiveKit Agents Python project, wire STT→LLM→TTS against LiveKit Inference, talk to it in the console. No GCP yet — prove the loop.</p>
+      <span class="cmd">uv run python src/agent.py console</span>
+    </li>
+    <li>
+      <h4>Measure it</h4>
+      <p>Turn on per-turn metrics and capture <em>your own</em> latency against the published budget — so you quote real figures, not doc numbers.</p>
+    </li>
+    <li>
+      <h4>Data + direct tools</h4>
+      <p>Firestore with orders and customers; function tools for the every-call reads. These stay <em>direct</em> — the hot path.</p>
+    </li>
+    <li>
+      <h4>The MCP boundary</h4>
+      <p>Put ticket writes and knowledge search behind an MCP server on Cloud Run; wire the agent as an MCP client. Now the "external boundary" is real.</p>
+    </li>
+    <li>
+      <h4>RAG for knowledge</h4>
+      <p>Ingest the policy PDF into a Vertex RAG corpus; expose <code>search_knowledge</code> via MCP. Verify with a <em>document-unique</em> question.</p>
+    </li>
+    <li>
+      <h4>Web app + token server</h4>
+      <p>A minimal page + token endpoint on Cloud Run that mints a scoped token and dispatches the named agent. Now a browser can call.</p>
+    </li>
+    <li>
+      <h4>Move the agent to GKE</h4>
+      <p>Containerize; deploy with a 600s grace period paired to the worker drain — a deploy never drops a live call. Private nodes + Cloud NAT.</p>
+      <span class="cmd">terminationGracePeriodSeconds: 600 · --drain-timeout 600</span>
+    </li>
+    <li>
+      <h4>Then the -ilities</h4>
+      <p>Only once it runs end to end: fallbacks, multi-region, observability, load testing. Happy path first; harden second.</p>
+    </li>
+  </ol>
+</section>
+
+<!-- 05 MODELS -->
+<section class="ch" id="models">
+  <span class="ch-num">06 · The model layer</span>
+  <h2>The model layer — the choice that defines the product</h2>
+
+  <p class="lead">Three models sit in the pipeline, and the biggest architectural decision in the whole system is whether they stay <strong>three separate models</strong> (cascaded) or collapse into <strong>one</strong> (speech-to-speech). This is where a principal SE earns the room.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 860 250" role="img" aria-label="Cascaded pipeline: audio into STT, transcript into LLM, response into TTS, each with a fallback vendor; versus a single speech-to-speech model that takes audio to audio directly.">
+        <defs>
+          <marker id="m-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="m-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--rust)"/></marker>
+        </defs>
+        <text x="20" y="30" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--teal)">CASCADED — three swappable models</text>
+        <line x1="20" y1="72" x2="60" y2="72" stroke="var(--teal)" stroke-width="2" marker-end="url(#m-t)"/>
+        <rect x="62" y="52" width="120" height="42" rx="4" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="122" y="70" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">STT</text>
+        <text x="122" y="85" text-anchor="middle" font-family="Archivo,sans-serif" font-size="8.5" fill="var(--ink-3)">audio → text</text>
+        <line x1="182" y1="73" x2="222" y2="73" stroke="var(--teal)" stroke-width="2" marker-end="url(#m-t)"/>
+        <rect x="224" y="52" width="120" height="42" rx="4" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="284" y="70" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">LLM</text>
+        <text x="284" y="85" text-anchor="middle" font-family="Archivo,sans-serif" font-size="8.5" fill="var(--ink-3)">+ tools</text>
+        <line x1="344" y1="73" x2="384" y2="73" stroke="var(--teal)" stroke-width="2" marker-end="url(#m-t)"/>
+        <rect x="386" y="52" width="120" height="42" rx="4" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="446" y="70" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">TTS</text>
+        <text x="446" y="85" text-anchor="middle" font-family="Archivo,sans-serif" font-size="8.5" fill="var(--ink-3)">text → audio</text>
+        <line x1="506" y1="73" x2="548" y2="73" stroke="var(--teal)" stroke-width="2" marker-end="url(#m-t)"/>
+        <text x="560" y="77" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">voice out</text>
+        <line x1="122" y1="94" x2="122" y2="118" stroke="var(--rust)" stroke-width="1.4" stroke-dasharray="3 2" marker-end="url(#m-r)"/>
+        <line x1="284" y1="94" x2="284" y2="118" stroke="var(--rust)" stroke-width="1.4" stroke-dasharray="3 2" marker-end="url(#m-r)"/>
+        <line x1="446" y1="94" x2="446" y2="118" stroke="var(--rust)" stroke-width="1.4" stroke-dasharray="3 2" marker-end="url(#m-r)"/>
+        <rect x="72" y="120" width="100" height="30" rx="3" fill="var(--surface)" stroke="var(--rust)" stroke-dasharray="3 2"/>
+        <text x="122" y="139" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--rust)">fallback STT</text>
+        <rect x="234" y="120" width="100" height="30" rx="3" fill="var(--surface)" stroke="var(--rust)" stroke-dasharray="3 2"/>
+        <text x="284" y="139" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--rust)">fallback LLM</text>
+        <rect x="396" y="120" width="100" height="30" rx="3" fill="var(--surface)" stroke="var(--rust)" stroke-dasharray="3 2"/>
+        <text x="446" y="139" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--rust)">fallback TTS</text>
+        <text x="122" y="172" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--ink-3)">swap any stage independently</text>
+        <text x="20" y="212" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--rust)">SPEECH-TO-SPEECH — one model</text>
+        <line x1="20" y1="234" x2="60" y2="234" stroke="var(--teal)" stroke-width="2" marker-end="url(#m-t)"/>
+        <rect x="62" y="220" width="444" height="30" rx="4" fill="var(--rust-soft)" stroke="var(--rust)"/>
+        <text x="284" y="240" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="600" fill="var(--ink)">Realtime model — audio in, audio out (Gemini Live / OpenAI Realtime)</text>
+        <line x1="506" y1="234" x2="548" y2="234" stroke="var(--teal)" stroke-width="2" marker-end="url(#m-t)"/>
+        <text x="560" y="238" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">voice out</text>
+      </svg>
+    </div>
+    <figcaption><b>The defining choice.</b> Cascaded gives you three swappable models, per-stage fallback, and a text transcript you can log and control — at the cost of more hops. Speech-to-speech is lower latency and more natural prosody, but one vendor, less control, no clean transcript. For customer service, cascaded usually wins on controllability and failover.</figcaption>
+  </figure>
+
+  <div class="cards">
+    <div class="card">
+      <span class="tag">STT — speech to text</span>
+      <h4>Transcribe + endpoint</h4>
+      <p>Streams partial transcripts as the user speaks. Pick on domain accuracy and first-partial latency. A fallback vendor covers a provider brown-out.</p>
+    </div>
+    <div class="card">
+      <span class="tag">LLM — the brain</span>
+      <h4>Reason + call tools</h4>
+      <p>Decides what to say and which tool to fire. Bigger = smarter but slower first token. Size to the task; a faster model is your retry target under load.</p>
+    </div>
+    <div class="card">
+      <span class="tag">TTS — text to speech</span>
+      <h4>Speak it back</h4>
+      <p>Streams audio from the first words, so the user hears speech before the sentence finishes. Voice quality and time-to-first-audio are the levers.</p>
+    </div>
+    <div class="card">
+      <span class="tag">Turn detection</span>
+      <h4>Has the user finished?</h4>
+      <p>A semantic end-of-turn model plus VAD — VAD hears speech presence and drives barge-in; the model decides the turn is actually done. Both, not either.</p>
+    </div>
+  </div>
+
+  <h3>STT · LLM · TTS — how each stage actually works</h3>
+  <p>The cards above name the three stages; here's what each one <em>does</em>, the one metric that matters, and the model your build actually runs. The through-line: <strong>every stage streams</strong>, and streaming is what makes three sequential models close the loop in under a second.</p>
+
+  <div class="primer">
+    <span class="plabel">Stage 1 · the ears</span>
+    <h3>STT — speech to text</h3>
+    <p>Turns the caller's audio into text <em>live</em>, without waiting for them to finish. For each segment it emits a stream of transcripts in three flavors:</p>
+    <dl class="dl">
+      <dt>interim</dt><dd>preliminary, updates as more audio arrives, no formatting — for real-time captions.</dd>
+      <dt>final</dt><dd>the STT is confident this text won't change.</dd>
+      <dt>preflight</dt><dd>stable enough to act on <em>before</em> it's final — the hook that enables preemptive generation (below).</dd>
+    </dl>
+    <p style="margin-top:10px"><b>Metric that matters:</b> word-error-rate on <em>your</em> vocabulary + first-partial latency. <b>Your model:</b> <code>assemblyai/universal-3-5-pro</code>. <b>Gotcha:</b> numbers, names, acronyms, accents, noise — exactly the class of the order-number-digit bug.</p>
+  </div>
+
+  <div class="primer">
+    <span class="plabel">Stage 2 · the brain</span>
+    <h3>LLM — the model</h3>
+    <p>Takes the transcript + history + system prompt + tool definitions and decides <em>what to say</em> and <em>whether to call a tool</em>. It <strong>streams tokens</strong> as it generates, so TTS can start speaking before the reply is finished. When it needs data it emits a structured tool call, the agent runs it, feeds the result back, and the model continues grounded in that result. You can even scope <em>which</em> tools are callable per reply (e.g. surface a payment tool only at checkout).</p>
+    <p style="margin-top:10px"><b>Metric that matters:</b> TTFT — time to first token (target &lt; 800&nbsp;ms). <b>Your model:</b> <code>google/gemma-4-31b-it</code>, voice-tuned. <b>Gotcha:</b> it hallucinates (why RAG exists), it's untrusted (authorization never lives in the prompt), and the prompt must force <em>short, speakable</em> replies — no markdown, no bullet lists.</p>
+  </div>
+
+  <div class="primer">
+    <span class="plabel">Stage 3 · the mouth</span>
+    <h3>TTS — text to speech</h3>
+    <p>Turns the reply into spoken audio in your chosen voice, <strong>streaming from the first words</strong> so the caller hears speech ~100–300&nbsp;ms after the model starts. If a TTS model can't stream natively, LiveKit splits the text with a sentence tokenizer and synthesizes incrementally. Expressive models also render inline delivery markup (emotion, pacing) the model emits — which never shows in the transcript.</p>
+    <p style="margin-top:10px"><b>Metric that matters:</b> TTFB — time to first byte of audio + naturalness. <b>Your model:</b> <code>fishaudio/s2.1-pro</code> (renders the expressive markup). <b>Gotcha:</b> pronouncing names/numbers, sounding natural, and stopping <em>cleanly</em> on barge-in.</p>
+  </div>
+
+  <div class="note">
+    <span class="lbl">The advanced latency trick — preemptive generation</span>
+    <p>Here's the move that impresses: the pipeline doesn't have to wait for end-of-turn to <em>start thinking</em>. On a stable <strong>preflight</strong> transcript, LiveKit speculatively runs the LLM <em>before</em> the turn is confirmed, so the reply is ready the instant the caller actually stops — and <code>preemptive_tts</code> can speculatively run TTS too. It hides real latency behind the last moment of the caller's speech. Combined with streaming and co-location, this is how "three models in a row" still feels instant.</p>
+  </div>
+
+  <h3>Turn detection &amp; barge-in — LiveKit's crown jewel</h3>
+  <p>This is the piece competitors don't have, so know it cold. The problem: <strong>knowing when the caller has actually finished speaking.</strong> A pause isn't the end of a thought — "I need to think about that for a moment&hellip;" then silence would make a naive system barge in. LiveKit solves it with <em>two</em> layers working together:</p>
+  <dl class="dl">
+    <dt>VAD</dt><dd><strong>Voice Activity Detection</strong> (Silero) — hears whether there's <em>speech present</em> right now. Fast and dumb: it drives the barge-in trigger, but on its own it mistakes a thinking-pause for a finished turn.</dd>
+    <dt>Turn model</dt><dd>An <strong>open-weights end-of-turn model</strong> — fine-tuned from Qwen2.5-0.5B, distilled from a larger teacher so it runs low-latency on CPU. It reads the <em>semantic</em> content ("did they finish a thought?"). A newer audio variant also reads intonation, pitch, and rhythm directly from the waveform — how it was said, not just what.</dd>
+  </dl>
+  <p style="margin-top:12px">The result is measurable and it's the number to quote: at a 300&nbsp;ms budget the model hits a <strong>9.9% false-cutoff rate vs 12.9% for Deepgram Flux and 27.7% for a VAD-only approach</strong> — i.e. it interrupts people far less often at the same speed. That's the <strong>false-cutoff-vs-latency dial</strong>: tighten the threshold and you respond faster but talk over people; loosen it and you feel slow. You tune it to the use case.</p>
+
+  <div class="note">
+    <span class="lbl">Barge-in — how interruption actually works</span>
+    <p>When the caller talks over the agent, three things must happen <em>immediately</em>: turn detection stays live <strong>during</strong> playback (not just when the agent is silent), the current <strong>TTS stream is cancelled and its audio buffer flushed</strong>, and control hands straight back to the STT pipeline. Get this right and the agent feels human; get it wrong and it steamrolls the customer. It's the single most-felt piece of conversational UX — worth saying you'd tune it explicitly.</p>
+  </div>
+
+  <h3>When to recommend which</h3>
+  <ul>
+    <li><strong>Cascaded (what this build uses)</strong> — when you need per-component failover, a clean transcript for logging and eval, tight control over each stage, and freedom to swap a vendor without touching the rest. The default for contact-center work.</li>
+    <li><strong>Speech-to-speech</strong> — when natural prosody and the lowest latency matter more than control: a companion, a demo, a premium consumer experience. You trade the transcript and the failover for feel.</li>
+    <li><strong>Half-cascade — the in-between</strong> — a realtime model does the <em>listening</em> (so it hears tone and emotion) but a separate TTS <em>speaks</em> the reply (so you keep script control and a stable voice). Choose it when you want realtime's ear but a pipeline's mouth. LiveKit runs all three behind the same room, so the choice isn't religious — pick per use case, change your mind without re-architecting.</li>
+  </ul>
+
+  <h3>Which model when — pick by what the use case can't compromise</h3>
+  <p>Every model choice is really the same dial: <strong>quality vs speed vs cost</strong>. Because the pipeline is cascaded, you set that dial <em>per stage</em> — a fast STT, a mid LLM, a premium voice — instead of one global setting. Here's how that lands in real scenarios, with the models LiveKit Inference actually serves:</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Scenario</th><th>STT</th><th>LLM</th><th>TTS</th><th>The rule</th></tr></thead>
+      <tbody>
+        <tr><td><b>Medical / regulated</b></td><td>Deepgram <b>Nova-3 Medical</b> — tuned for clinical vocabulary</td><td>Gemini <b>Pro</b>-tier — accuracy over speed</td><td>any clear, plain voice</td><td>Never trade word-error-rate for latency when a drug name is on the line. ZDR is <em>default</em> — see below.</td></tr>
+        <tr><td><b>Latency-first</b><br>(phone tree, high volume)</td><td>Deepgram <b>Flux</b> / Nova-2 Phone Call</td><td>Gemini <b>Flash-Lite</b> — fast first token</td><td>Cartesia <b>Sonic</b> — fast first audio</td><td>Speed &gt; nuance. Consider <b>half-cascade or realtime</b> to cut a whole hop.</td></tr>
+        <tr><td><b>Quality-first</b><br>(premium concierge)</td><td>Deepgram <b>Nova-3</b></td><td>Gemini <b>Pro</b></td><td>Cartesia <b>Sonic-3.5</b> — best voice</td><td>Accept +100–200 ms for a better answer and a better-sounding voice.</td></tr>
+        <tr><td><b>Telephony</b></td><td>Deepgram <b>Nova-2 Phone Call</b> — tuned for narrowband 8 kHz</td><td>Gemini <b>Flash</b></td><td>Cartesia Sonic</td><td>Phone audio is compressed &amp; narrowband; a phone-tuned STT is worth real accuracy.</td></tr>
+        <tr><td><b>Multilingual</b></td><td>Deepgram <b>Nova-3</b> — 48 languages</td><td>Gemini (multilingual)</td><td>Cartesia <b>Sonic-3.5</b> — 40+ languages</td><td>Match language coverage across <em>all three</em> stages, not just the LLM.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="lbl">The medical / compliance headline — say this and watch them relax</span>
+    <p>LiveKit Inference is <strong>zero data retention by default</strong> — your prompts, audio, and model outputs pass through only to generate the reply; neither LiveKit nor the model providers log, store, or train on them. Every model, every plan, no configuration. That's the sentence that unblocks a healthcare or finance buyer, and it's true out of the box — pair it with <strong>Nova-3 Medical</strong> for clinical accuracy and you've answered both halves of "can we use this in a hospital."</p>
+  </div>
+
+  <h3>Quality vs speed, made concrete</h3>
+  <p>On the LLM specifically: <strong>Gemini Pro</strong> is the smart, slower, pricier end; <strong>Gemini Flash</strong> is the balanced middle; <strong>Gemini Flash-Lite</strong> is the fast, cheap end for simple turns. Your build actually defaults to <code>google/gemma-4-31b-it</code> — Google's open-weight Gemma, hosted by LiveKit and tuned specifically for voice latency. The move isn't picking one forever — it's starting on Flash, and only reaching for Pro on the turns that genuinely need reasoning.</p>
+
+  <div class="say">
+    <span class="lbl">Say it like this</span>
+    <p>"I don't pick one model — I pick per stage and per scenario. For a hospital I'd run Deepgram's Nova-3 Medical for clinical accuracy and a Gemini Pro-tier model, and lead with the fact that LiveKit Inference is zero-data-retention by default — nothing's logged or trained on. For a high-volume phone tree I'd flip to a phone-tuned STT and Gemini Flash-Lite for speed, maybe even half-cascade to drop a hop. Quality versus speed is one dial, and because it's cascaded I set it independently at each stage — a fast ear, a right-sized brain, and a premium voice only if the brand is what the customer's paying for."</p>
+  </div>
+</section>
+
+<!-- 07 TOOLS -->
+<section class="ch" id="tools">
+  <span class="ch-num">07 · Tools</span>
+  <h2>Function tools vs MCP — and when to use which</h2>
+
+  <p class="lead">"Tools" are how the LLM reaches out of the conversation to <em>do</em> something — look up an order, file a ticket, search knowledge. LiveKit gives you <strong>three</strong> ways to attach them, and knowing which to reach for is a real design signal.</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="tag">1 · function tools</span>
+      <h4>Defined in your agent code</h4>
+      <p>A Python function with a <code>@function_tool</code> decorator, running <em>in-process</em> with the agent. Lowest latency, full control, but it ships and versions with the agent — change it, redeploy the agent.</p>
+    </div>
+    <div class="card">
+      <span class="tag">2 · MCP servers</span>
+      <h4>A separate tool service</h4>
+      <p>Tools live in their own service; the agent connects and <em>fetches the tool list at startup</em>. Adds a network hop, but the tools are independently deployable and shareable across agents.</p>
+    </div>
+    <div class="card">
+      <span class="tag">3 · provider tools</span>
+      <h4>Built into the LLM</h4>
+      <p>Server-side tools the model runs inside a single API call — web search, code execution, file search (OpenAI, Gemini, xAI). Zero infra on your side; you just enable them.</p>
+    </div>
+    <div class="card">
+      <span class="tag">the guardrail</span>
+      <h4>max_tool_steps</h4>
+      <p>Caps consecutive tool calls per turn (default 3). Hit the cap and the agent makes one final call with tools disabled to speak a summary — stops runaway tool loops.</p>
+    </div>
+  </div>
+
+  <h3>Which to choose — the decision</h3>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Reach for</th><th>When</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><b>Function tool</b> (direct)</td><td>hot-path, every-call reads tightly coupled to this agent — order status, warranty check</td><td>lowest latency, no extra hop; the tool only this agent needs</td></tr>
+        <tr><td><b>MCP server</b></td><td>the genuinely <em>external</em> systems, tools <em>shared across agents</em>, tools owned by <em>another team</em>, or tools that change on their <em>own release cadence</em></td><td>independent deploy (change the tool without redeploying the agent), one place for retry logic, reuse — worth the hop</td></tr>
+        <tr><td><b>Provider tool</b></td><td>generic capabilities the model already has — web search, code exec</td><td>zero infrastructure; nothing to build or operate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>That's exactly the split in this build: <code>lookup_order</code> and warranty checks are <strong>function tools</strong> on the hot path, while <strong>ticket-writing and knowledge search sit behind MCP</strong> — because they're the real external-system boundary, they carry the retry logic, and the MCP server can be redeployed (a new knowledge corpus, a changed ticket schema) without ever touching the agent.</p>
+
+  <div class="say">
+    <span class="lbl">Say it like this</span>
+    <p>"I don't put everything behind MCP. Every-call reads like order lookup are direct function tools — in-process, no extra hop. I reserve MCP for the genuinely external systems: ticketing and knowledge. That boundary buys me three things — one place for retry logic, reuse across agents, and independent deploys, so I can swap the knowledge corpus or the ticket schema without redeploying the agent. And anything generic like web search I'd just enable as a provider tool rather than build at all."</p>
+  </div>
+</section>
+
+<!-- 08 LIFECYCLE -->
+<section class="ch" id="life">
+  <span class="ch-num">08 · Request lifecycle</span>
+  <h2>One request, end to end</h2>
+
+  <p>Trace a single question — "how quickly do I have to report a damaged device?" — from the user's lips to the spoken answer. The voice never enters GCP; only the tool call does.</p>
+
+  <ol>
+    <li><strong>User clicks "Start call"</strong> → browser fetches a room token from the web app (Cloud Run). The token is signed with the LiveKit secret and dispatches the named agent.</li>
+    <li><strong>Browser opens WebRTC to the LiveKit room.</strong> LiveKit dispatches a job to the agent worker on GKE, which joins the room as a participant.</li>
+    <li><strong>User speaks.</strong> STT streams a transcript; the turn-detection model decides the user has finished.</li>
+    <li><strong>The LLM decides to call <code>search_knowledge</code></strong> — a policy question, so it must look it up rather than guess.</li>
+    <li><strong>The agent (GKE) sends an MCP request to the MCP server (Cloud Run)</strong>, which calls Vertex RAG <code>retrieveContexts</code>, gets the top passage from the return-policy corpus, and returns it.</li>
+    <li><strong>The LLM composes an answer grounded in that passage</strong> → TTS → back into the room → the user hears "within 48 hours of delivery."</li>
+  </ol>
+
+  <div class="note">
+    <span class="lbl">Verified live — the two-part proof</span>
+    <p>The MCP logs on this exact turn show <code>TOOL search_knowledge('how quickly do I have to report a damaged device?') → RAG</code> then <code>RAG retrieved 1 passages from Vertex corpus</code>. The tool firing proves the path executed; the answer "48 hours" — a fact that exists only in your PDF — proves it grounded on your document, not the model's memory. That's how you prove RAG both ways.</p>
+  </div>
+</section>
+
+<!-- 07 LATENCY -->
+<section class="ch" id="latency">
+  <span class="ch-num">09 · Latency</span>
+  <h2>Latency optimization — the LiveKit-specific levers</h2>
+
+  <p>The target is <strong>under one second</strong> from the user finishing to the agent starting — roughly human conversational timing, so past it the agent feels broken. Here's the budget and the numbers you measured.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Stage</th><th>Budget</th><th>Lever</th></tr></thead>
+      <tbody>
+        <tr><td>Audio transport to edge</td><td class="num">&lt; 50 ms</td><td>LiveKit's nearest-edge mesh — free</td></tr>
+        <tr><td>End-of-turn decision</td><td class="num">~300 ms</td><td>the biggest slice — tune the turn-detector per use case</td></tr>
+        <tr><td>LLM first token</td><td class="num">200-400 ms</td><td>model size; a tool call adds a round trip</td></tr>
+        <tr><td>TTS first audio</td><td class="num">100-300 ms</td><td>streaming synthesis — speak before the sentence ends</td></tr>
+        <tr><td>Your MCP → Firestore tool call</td><td class="num">~55 ms</td><td>measured, server-side</td></tr>
+        <tr><td>&nbsp;&nbsp;co-located hop (agent + MCP same region)</td><td class="num">~4 ms</td><td>measured — vs ~70 ms cross-country</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The five levers, in order of impact</h3>
+  <ul>
+    <li><strong>Co-location is the biggest structural lever.</strong> You measured it: agent (GKE) in the same region as the MCP server dropped the tool hop from ~70 ms to ~4 ms. Agent, models, and data share a region; the region sits near the users. A mismatch is a transatlantic hop <em>per turn</em>.</li>
+    <li><strong>Align the LiveKit region with the GCP region.</strong> LiveKit inference and your agent in matching geography, or every turn pays the gap twice — audio out and audio back.</li>
+    <li><strong>Tune the turn-detector, don't just accept it.</strong> The end-of-turn decision is the biggest single slice. Too eager cuts the user off; too patient feels slow. A dial you set to the use case.</li>
+    <li><strong>Keep the hot path direct; reserve MCP for the boundary.</strong> Every-call lookups are direct tools; ticketing and knowledge go through MCP. Common path fast; boundary earns its hop.</li>
+    <li><strong>Cover slow work with speech.</strong> A slow tool call gets a spoken "let me pull that up" and progress updates — perceived latency, not just measured latency.</li>
+  </ul>
+
+  <div class="say">
+    <span class="lbl">Say it like this</span>
+    <p>"Budget's under a second, and the biggest lever isn't model choice — it's co-location. My tool call is about 55 milliseconds of real work, but from my laptop the round trip was 130 because of the cross-country hop; co-located in the same region it dropped to about 4. So I put the agent, the models, and the data in one region near the users, keep every-call lookups as direct tools, and cover anything slow with a spoken filler so the customer never hears silence."</p>
+  </div>
+</section>
+
+<!-- 08 SCALE -->
+<section class="ch" id="scale">
+  <span class="ch-num">10 · Scale</span>
+  <h2>Scale — how it grows</h2>
+
+  <p>The number to have ready: a Python voice worker holds roughly <strong>5 to 20 concurrent sessions per CPU core</strong>, depending on the pipeline. So it's <em>tens</em> of calls per machine, not hundreds — voice agents are heavy, and that shapes every scaling decision.</p>
+
+  <ul>
+    <li><strong>The agent (GKE)</strong> scales horizontally — more pods. LiveKit dispatch places each session on a worker by effective load, pinned there for the call's life. 500 concurrent is tens of cores across a fleet, autoscaled on <em>active-session</em> metrics, not CPU alone.</li>
+    <li><strong>Web app + MCP (Cloud Run)</strong> scale trivially — stateless, request-shaped, scale to zero when idle. The opposite shape to the agent.</li>
+    <li><strong>LiveKit Cloud</strong> scales the media plane for you — built for millions of concurrent connections.</li>
+    <li><strong>Firestore and Vertex RAG</strong> are serverless — they absorb load without provisioning.</li>
+  </ul>
+
+  <h3>How dispatch actually places a call — and what to watch</h3>
+  <p>Workers continuously exchange <strong>availability and capacity</strong> with LiveKit, so the scheduler load-balances new sessions across them. Because sessions are long-lived, it's <strong>stateful</strong> load balancing: it pins a session to one worker for the whole call and places new ones by <em>effective load</em>, factoring in user locality, CPU/GPU, memory, and network to keep latency and jitter low. The honest edge case: under a sharp burst, spinning a fresh worker takes time, and a new session waiting on cold capacity can see its first response stretch from a few seconds to much longer — another reason to <strong>pre-warm</strong> rather than scale reactively.</p>
+  <p>You can't tune what you don't measure. The per-turn metrics to watch continuously — LiveKit surfaces them, and its Agent Observability lets you replay a session with synced audio, transcript, and traces:</p>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Metric</th><th>Is</th><th>Target</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">TTFT</td><td>LLM time-to-first-token</td><td class="num">&lt; 800 ms</td></tr>
+        <tr><td class="mono">TTFB</td><td>TTS time-to-first-byte of audio</td><td class="num">low, streaming</td></tr>
+        <tr><td class="mono">EOU delay</td><td>end-of-turn detection latency</td><td class="num">tune to use case</td></tr>
+        <tr><td class="mono">interruption rate</td><td>how often barge-in fires (proxy for false cutoffs)</td><td class="num">watch the trend</td></tr>
+        <tr><td class="mono">tool latency</td><td>per tool / MCP call</td><td class="num">~55 ms measured</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="lbl">The honest constraint</span>
+    <p>Because agents are heavy and hold state, the agent tier has thinner headroom than a stateless web tier — you can't absorb a spike by forking a thousand workers instantly; each is a real process holding a call. For known peaks you <strong>pre-warm capacity</strong> rather than scaling reactively, and you decide explicitly what happens past the ceiling: queue, degrade, or overflow to humans.</p>
+  </div>
+
+  <div class="say">
+    <span class="lbl">Say it like this</span>
+    <p>"Will it hold 500 concurrent calls? The media plane, comfortably — that's LiveKit's job. The constraint is the workers: five to twenty sessions per core, so 500 is tens of cores across a GKE fleet, autoscaled on active sessions. But agents are heavy and stateful, so I'd pre-warm for known peaks — and I'd ask you whether 500 is the peak or the average, and what acceptable behavior is past the ceiling: queue, degrade, or overflow to a human."</p>
+  </div>
+</section>
+
+<!-- COST -->
+<section class="ch" id="cost">
+  <span class="ch-num">11 · Cost</span>
+  <h2>Cost &amp; economics — where the money goes</h2>
+
+  <p class="lead">A voice agent is billed roughly <strong>by the minute</strong>, and the cost of one minute is the sum of the pieces running during it. The principal move isn't quoting a price — it's knowing which piece dominates and which lever moves it.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Cost piece</th><th>Driven by</th><th>Relative weight</th></tr></thead>
+      <tbody>
+        <tr><td>LLM</td><td>tokens — context length × turns</td><td><b>usually the biggest &amp; most variable</b></td></tr>
+        <tr><td>TTS</td><td>characters / seconds of audio spoken</td><td>meaningful</td></tr>
+        <tr><td>STT</td><td>minutes of audio transcribed</td><td>modest</td></tr>
+        <tr><td>Media transport (LiveKit)</td><td>participant-minutes</td><td>modest, predictable</td></tr>
+        <tr><td>Agent compute (GKE)</td><td>a fraction of a core-minute per call</td><td>small</td></tr>
+        <tr><td>Tools · RAG · Firestore</td><td>per query</td><td>negligible per call</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The five cost levers</h3>
+  <ul>
+    <li><strong>Right-size each model.</strong> The LLM usually dominates, so don't pay for a giant model to read back a tracking number. Cascaded lets you pick a cheap, fast model per stage and reach for a bigger one only when the task needs it — a real cost argument for cascaded, on top of the failover one.</li>
+    <li><strong>Keep context tight.</strong> The LLM bill scales with tokens, and tokens pile up every turn. Use handoffs and scoped tasks so the model isn't re-reading irrelevant history on every request — this is exactly why LiveKit pushes workflows over one giant prompt.</li>
+    <li><strong>Don't pay for silence.</strong> VAD gates dead air so you're not transcribing and processing an empty channel while the caller thinks.</li>
+    <li><strong>Cache the static parts.</strong> System prompts and tool schemas repeat every turn — prompt caching stops you paying to re-send them.</li>
+    <li><strong>Reduce waste, not just unit price.</strong> Co-location doesn't lower the per-token price, but it cuts the timeouts and retries that quietly double a turn's cost.</li>
+  </ul>
+
+  <div class="note">
+    <span class="lbl">The cost triangle — name it out loud</span>
+    <p><strong>Cost ↔ latency ↔ quality</strong> pull against each other: a bigger model is smarter but slower <em>and</em> pricier; a snappier turn-detector is cheaper but risks cutting people off. There's no free corner — you tune the triangle to the use case. Saying this is more senior than quoting a single number.</p>
+  </div>
+
+  <div class="say">
+    <span class="lbl">Say it like this — and the build-vs-buy close</span>
+    <p>"Per minute, the LLM usually dominates and it scales with tokens, so I keep context tight with handoffs and right-size each model — another reason I like cascaded: a cheap fast model reads a tracking number, and I only reach for a bigger one when the task needs it. And the honest build-vs-buy point: the per-minute inference isn't the whole cost. If a customer says 'we'll just call OpenAI Realtime directly,' the hidden cost is rebuilding telephony, media scaling, turn detection, and failover themselves. LiveKit's value is renting the hard media layer so your spend goes to the agent logic that actually differentiates you."</p>
+  </div>
+</section>
+
+<!-- 11 REDUNDANCY -->
+<section class="ch" id="redundancy">
+  <span class="ch-num">12 · Redundancy</span>
+  <h2>Redundancy &amp; reliability — what breaks, and what the caller hears</h2>
+
+  <p class="lead">The principal framing isn't "does it have fallbacks" — it's "when this fails at 2pm, what does the caller <em>hear</em>." Redundancy lives at four layers, and they fail differently.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 860 250" role="img" aria-label="Redundancy at four layers: media plane self-heals via session migration; model layer fails over per component; agent tier replaces crashed workers and drains gracefully on deploy; data tier is multi-region.">
+        <rect x="20" y="30" width="820" height="46" rx="4" fill="var(--rust-soft)" stroke="var(--rust)"/>
+        <text x="34" y="50" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--rust)">MEDIA PLANE · LiveKit Cloud</text>
+        <text x="34" y="67" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">SFU mesh self-heals — session migrates to another edge on node/DC loss. You don't operate this.</text>
+        <rect x="20" y="84" width="820" height="46" rx="4" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="34" y="104" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--teal)">MODEL LAYER</text>
+        <text x="34" y="121" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">Per-component fallback — a second STT/TTS/LLM vendor on latency or error. The reason to stay cascaded.</text>
+        <rect x="20" y="138" width="820" height="46" rx="4" fill="var(--gcp-soft)" stroke="var(--gcp)"/>
+        <text x="34" y="158" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--gcp)">AGENT TIER · GKE</text>
+        <text x="34" y="175" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">Deploy → graceful drain, no drop. But a CRASH mid-call loses that call's state — the agent-plane is the real SPOF.</text>
+        <rect x="20" y="192" width="820" height="46" rx="4" fill="var(--surface-2)" stroke="var(--rule)"/>
+        <text x="34" y="212" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--ink)">DATA TIER · Firestore / MCP</text>
+        <text x="34" y="229" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">Multi-region storage; ticket down → queue the write and reconcile. The conversation never blocks on data.</text>
+      </svg>
+    </div>
+    <figcaption><b>Four layers, four failure behaviors.</b> The media plane self-heals and you don't run it. The model layer fails over per component — the argument for cascaded. The agent tier drains gracefully on deploy but loses state on a crash. The data tier is multi-region and writes are queued, so the conversation never blocks on a slow backend.</figcaption>
+  </figure>
+
+  <div class="note">
+    <span class="lbl">The distinction that separates you from everyone else — media plane ≠ agent plane</span>
+    <p>LiveKit's famous resilience — session migration, self-healing SFU mesh — is <strong>media-plane</strong> resilience, and it's automatic. But your <strong>agent</strong> is a participant whose conversation state lives in one worker process. If that worker dies mid-call, the media plane is fine and the agent is <em>gone</em> — there's no automatic hand-off of agent state to another worker. Graceful drain protects you on <em>deploys</em> (planned) but not on <em>crashes</em> (unplanned). Saying this out loud — and proposing durable session state or fast re-dispatch as the fix — is exactly the principal-level honesty that makes an interviewer trust everything else you said.</p>
+  </div>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>What fails</th><th>What the caller hears — and what you did</th></tr></thead>
+      <tbody>
+        <tr><td>Deploy during a live call</td><td><b>Nothing.</b> Graceful drain on GKE — the old pod finishes its calls before terminating (grace 600s + worker drain 600s), new calls go to the new pod. <em>The</em> reason the agent is on GKE, not Cloud Run.</td></tr>
+        <tr><td>STT / TTS vendor degrades</td><td>A brief blip at most. Per-component failover to a second vendor, health-checked on latency, not just errors. The structural argument for cascaded.</td></tr>
+        <tr><td>LLM slow or rate-limited</td><td>Spoken filler, retry on a faster model, hard escalation if it persists. Never dead air.</td></tr>
+        <tr><td>An agent worker crashes <em>mid-call</em></td><td><b>That call is dropped, not just degraded — and its conversation state is gone with the process.</b> The SFU (media plane) survives, but the agent's context lived in that worker; a re-dispatched agent starts cold, and under load that recovery has been seen to push time-to-speak from ~5s to tens of seconds. Own this as the real single point of failure — don't claim it's free.</td></tr>
+        <tr><td>MCP / ticketing down</td><td>Nothing — the write is queued and reconciled later; the conversation never blocks. A core argument for the MCP boundary.</td></tr>
+        <tr><td>Region outage</td><td>Traffic routes to the next region — <em>if</em> your GKE and data are multi-region too. Otherwise you've moved the single point of failure, not removed it.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="say">
+    <span class="lbl">Say it like this</span>
+    <p>"The one I design around rather than paper over is a deploy during a live call — exactly why the agent is on GKE, with a ten-minute grace period paired to the worker's drain, so the old pod finishes its calls while new ones go to the new pod. Cloud Run couldn't guarantee that. For vendor degradation I fail over per component — my main reason to stay cascaded. If ticketing goes down I queue the write instead of blocking the conversation — a big part of why that sits behind its own MCP boundary. And for a region outage I'd be honest: it only helps if the agent and data are multi-region too, otherwise I've just relocated the single point of failure."</p>
+  </div>
+</section>
+
+<!-- 13 WHY LIVEKIT -->
+<section class="ch" id="why">
+  <span class="ch-num">13 · Positioning</span>
+  <h2>Why LiveKit — and how to handle "why not X?"</h2>
+
+  <p class="lead">Mike is a sales engineer; he <em>will</em> ask you to defend the choice against the field. The move isn't to trash competitors — it's to name the category each one lives in and the axis where LiveKit wins.</p>
+
+  <p>The market splits cleanly in two: <strong>managed orchestrators</strong> you configure (Vapi, Retell) and <strong>frameworks you operate</strong> (LiveKit, Pipecat). Plus the model-vendor SDKs (OpenAI Realtime). Different tools for different stages of a company's journey.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Alternative</th><th>What it is</th><th>When they're right — and your counter</th></tr></thead>
+      <tbody>
+        <tr><td><b>Vapi</b></td><td>managed orchestrator, per-minute, built-in telephony, best-in-class Twilio integration &amp; DX</td><td>Great to prototype fast. But it's their infra and less control; you hit a wall on latency tuning and custom media. <em>You graduate to LiveKit.</em></td></tr>
+        <tr><td><b>Retell</b></td><td>managed, visual workflow canvas, business-builder UX</td><td>Wins on no-code UX. Same ceiling: less control, their runtime. Fine until you need to own the stack.</td></tr>
+        <tr><td><b>Pipecat</b></td><td>open-source Python framework (Daily) — the real head-to-head</td><td>Lighter, faster to prototype, but less mature <em>operationally</em>. LiveKit brings the production media plane: global SFU, telephony, turn detection, session scaling, observability.</td></tr>
+        <tr><td><b>OpenAI Realtime (direct)</b></td><td>a model SDK, not a platform</td><td>Right if you're standardized on OpenAI and already have an audio pipe. But there's <em>no media plane</em> — you'd rebuild WebRTC, telephony, scaling, and failover yourself.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The honest economics — when to buy vs build</h3>
+  <p>This is the line that earns trust because it tells the customer when <em>not</em> to pick you:</p>
+  <div class="dl" style="grid-template-columns:auto 1fr">
+    <dl class="dl" style="margin:0">
+      <dt>&lt; 10K min/mo</dt><dd>Stay managed (Vapi/Retell) — not worth operating a stack.</dd>
+      <dt>10–50K min/mo</dt><dd>Hybrid — start managed, move the hot paths.</dd>
+      <dt>&gt; 50K min/mo</dt><dd>Build on LiveKit/Pipecat — <strong>saves 60–80% on per-minute cost</strong>, but now you own latency tuning, telephony, and uptime.</dd>
+    </dl>
+  </div>
+
+  <h3>The three LiveKit-only differentiators to plant</h3>
+  <ul>
+    <li><strong>Voice <em>and</em> video</strong> — LiveKit is WebRTC infrastructure, so screen-share support agents, video concierge, and training simulators are genuinely better here than on any voice-only orchestrator.</li>
+    <li><strong>Agent-as-participant + the turn-detection model</strong> — the media plane and the best-in-class end-of-turn model are things the orchestrators rent from someone else; here they're the core.</li>
+    <li><strong>Own it or rent it</strong> — same SDK self-hosted or on LiveKit Cloud, so a customer is never locked into a runtime they can't take with them.</li>
+  </ul>
+
+  <div class="say">
+    <span class="lbl">Say it like this — the objection-handling close</span>
+    <p>"I wouldn't put everyone on LiveKit. Under ten thousand minutes a month, a managed platform like Vapi or Retell is the right call — faster to stand up, nothing to operate. LiveKit earns its keep at scale: past fifty thousand minutes you save sixty to eighty percent per minute, and you get things the orchestrators can only rent — the global media plane, the best end-of-turn model, voice <em>and</em> video, and the freedom to self-host. Versus Pipecat, which is the real open-source comparison, it's operational maturity: I get production telephony, scaling, and observability out of the box instead of assembling them. And versus calling OpenAI Realtime directly — that's a model, not a platform; you'd be rebuilding the whole media layer yourself."</p>
+  </div>
+</section>
+
+<!-- 14 TALK -->
+<section class="ch" id="talk">
+  <span class="ch-num">14 · Narration</span>
+  <h2>How to talk about it</h2>
+
+  <p>The architecture is the easy half. The pre-sales half is <em>how you narrate it</em>. Five rules, drawn from everything above.</p>
+
+  <h3>1. Ask before you draw</h3>
+  <p>The reference diagram is a set of <em>choices</em>, not a template. Open with the questions that change it: where does data live, public or VPC, regulated, peak volume, existing telephony provider. Those decide where the agent runs, the database, the region, the sizing. Asking is the job, not stalling.</p>
+
+  <h3>2. Separate the paths out loud</h3>
+  <p>The clearest signal you understand the system: "voice goes browser-to-LiveKit over WebRTC; the web app and token are a separate HTTPS path; only tool calls cross into my cloud. Media plane and data plane never mix."</p>
+
+  <h3>3. Lead with the measured lever</h3>
+  <p>"Co-location beats model tuning" lands harder with a number: "130 ms from my laptop, 4 ms co-located." You built this — use it. Same with RAG: "I verified it fired against my own document with a fact only my PDF contains."</p>
+
+  <h3>4. Own the model decision</h3>
+  <p>When Mike asks about models, don't list vendors — frame the <em>axis</em>: cascaded vs speech-to-speech, and why cascaded fits customer service. Naming the tradeoff is more senior than naming a model.</p>
+
+  <h3>5. Critique your own design</h3>
+  <p>The most senior move is naming what's <em>missing</em>: no multi-region yet, RAG retrieval is coarse on a tiny corpus, no eval loop in CI. "The architecture is right; the -ilities are what separate this demo from a contact centre." That honesty gets you believed on everything else.</p>
+
+  <div class="say">
+    <span class="lbl">The 60-second close</span>
+    <p>"So: two ways in — browser over WebRTC, or phone over SIP — converging into one LiveKit room. The agent joins that room as a participant and runs a cascaded STT-LLM-TTS loop under a one-second budget, which I chose over speech-to-speech for failover and control. It reads orders and files tickets across a controlled MCP boundary into my own cloud, and answers policy questions from a Vertex RAG corpus — which I've verified fires against my own document. When it can't resolve, a human joins the same room already briefed. The whole right-hand side runs on your GCP — agent on GKE for graceful drain, everything else on Cloud Run and managed services — co-located in one region so latency stays under budget. And I've actually built and measured this, so I can show you the numbers rather than promise them."</p>
+  </div>
+
+  <footer>
+    <p>Built and measured on <code>bq-demos-469816</code>, August 2026. The capstone to <a href="https://claude.ai/code/artifact/5fda0bed-ea51-4522-9650-235aba50cab3">LiveKit, From the Ground Up</a>, <a href="https://claude.ai/code/artifact/85378d63-1f3a-4d9f-9c9c-6e6f5d6d9c1a">The Model Decision</a>, <a href="https://claude.ai/code/artifact/a5d683d5-c5df-4f45-9642-43b52f7c3d49">What Runs Where</a>, and the <a href="https://claude.ai/code/artifact/280e533f-f812-4e14-b135-cf8bb95adba2">AnyCompany Voice Agent Playbook</a>. All resources labelled <code>aug24</code>; one script tears them down.</p>
+  </footer>
+</section>
+
+</div>
+</main>

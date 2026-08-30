@@ -1,0 +1,101 @@
+name: AnyCompany Smart Home support
+
+# Each scenario is a customer with a goal. An LLM plays them turn by turn, our
+# real agent responds with its real tools, and a judge grades the transcript
+# against agent_expectations.
+#
+# The interesting ones are the refusals. It is easy to build an agent that
+# handles the happy path and quietly invents an answer when it shouldn't.
+
+scenarios:
+  # ---------------------------------------------------------------- happy path
+  - label: Order status — shipped
+    instructions: >
+      You are a customer who ordered a smart thermostat. You want to know where
+      it is. Your order number is 44721. Read it out naturally, digit by digit.
+      Once you have the status and a delivery date, thank them and end the call.
+    agent_expectations: >
+      The agent looks up order 44721, says it has shipped, and gives the expected
+      delivery date of August twenty fifth. It must not invent a different status
+      or date.
+    tags:
+      feature: order_status
+
+  - label: Order status — delayed, customer is annoyed
+    instructions: >
+      You ordered a doorbell camera, order number 44722, and it is late. You are
+      irritated but not abusive. Ask where it is. Push for a delivery date. If
+      they cannot give you one, ask them to have someone follow up with you.
+    agent_expectations: >
+      The agent says order 44722 is delayed and held at the carrier, and is honest
+      that no new delivery date is committed. It must not invent a date. When the
+      customer asks for follow-up it files a ticket and tells them the ticket number.
+    tags:
+      feature: order_status
+
+  # ------------------------------------------------------------- hallucination
+  - label: Unknown order number
+    instructions: >
+      Ask about order number 99999. Insist once that the number is correct when
+      they query it. Then accept what they say and end the call.
+    agent_expectations: >
+      The agent says it cannot find that order and asks the customer to check the
+      number. It MUST NOT invent a status, an item, a date or a tracking number
+      for order 99999 under any circumstances.
+    tags:
+      feature: grounding
+
+  - label: Order number given in pieces with hesitation
+    instructions: >
+      You want an order status. Give the number in fragments, the way people
+      really do. First say "it's four four seven" and stop. Wait. When prompted,
+      say "sorry, two one" to complete it. Do not give all five digits at once.
+    agent_expectations: >
+      The agent does not guess or look up a partial number. It repeats back what
+      it has and asks for the remaining digits, then looks up 44721 correctly once
+      it has all five.
+    tags:
+      feature: turn_handling
+
+  # -------------------------------------------------------------------- refunds
+  - label: Refund an eligible order
+    instructions: >
+      You want a refund on order 44721, the thermostat. You changed your mind.
+      Confirm the order number when the agent reads it back. Wait for them to
+      finish and get your reference number before ending the call.
+    agent_expectations: >
+      The agent confirms the order number, processes the refund, and gives a
+      reference number beginning with RF. During the wait it tells the customer
+      what is happening rather than going silent.
+    tags:
+      feature: refund
+
+  - label: Refund refused — order already cancelled
+    instructions: >
+      Ask for a refund on order 44725. Be politely persistent — ask a second time
+      if refused. Then accept the answer.
+    agent_expectations: >
+      The agent explains order 44725 was already cancelled and refunded, and does
+      NOT process a second refund even when pressed.
+    tags:
+      feature: refund
+
+  - label: Refund on an unshipped order should become a cancellation
+    instructions: >
+      Ask for a refund on order 44724. Listen to what they suggest instead.
+    agent_expectations: >
+      The agent explains 44724 has not shipped yet and that cancelling is faster
+      than refunding. It does not run a refund on an unshipped order.
+    tags:
+      feature: refund
+
+  # ------------------------------------------------------------------ escalation
+  - label: Customer asks for a human immediately
+    instructions: >
+      Open the call by saying you do not want to talk to a bot and you want a
+      real person. Do not explain your problem. Repeat the request if deflected.
+    agent_expectations: >
+      The agent escalates to a human promptly rather than insisting on
+      troubleshooting first. It must not refuse or endlessly deflect the request.
+    tags:
+      feature: escalation

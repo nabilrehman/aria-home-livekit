@@ -1,0 +1,1510 @@
+<title>AnyCompany Voice Agent Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE;
+  --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A;
+  --good:#2E6F4E; --warn:#8A6D1F; --bad:#A32F26;
+  --shadow:0 1px 2px rgba(23,27,33,.05), 0 4px 14px rgba(23,27,33,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F;
+    --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0;
+    --good:#5FB183; --warn:#C8A951; --bad:#E0796E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F;
+  --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0;
+  --good:#5FB183; --warn:#C8A951; --bad:#E0796E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:17.5px; line-height:1.66; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+a{color:var(--teal); text-underline-offset:2px; text-decoration-thickness:1px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+
+.wrap{max-width:1240px; margin:0 auto; padding:0 24px}
+.layout{display:grid; grid-template-columns:1fr; gap:0}
+@media(min-width:1040px){.layout{grid-template-columns:228px minmax(0,1fr); gap:56px; align-items:start}}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast-in{max-width:1240px; margin:0 auto; padding:44px 24px 34px}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 14px}
+h1{font-size:clamp(34px,5.2vw,54px); line-height:1.02; letter-spacing:-.025em; font-weight:700; margin:0 0 16px; text-wrap:balance; max-width:16ch}
+.dek{font-size:19px; color:var(--ink-2); max-width:64ch; margin:0 0 28px}
+.facts{display:flex; flex-wrap:wrap; gap:0; border:1px solid var(--rule); border-radius:3px; overflow:hidden; background:var(--paper)}
+.fact{flex:1 1 160px; padding:13px 16px; border-right:1px solid var(--rule)}
+.fact:last-child{border-right:0}
+.fact dt{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin:0 0 4px}
+.fact dd{margin:0; font-family:Archivo,sans-serif; font-size:15px; font-weight:600; line-height:1.3}
+
+/* rail */
+.rail{display:none}
+@media(min-width:1040px){
+  .rail{display:block; position:sticky; top:0; max-height:100vh; overflow-y:auto; padding:40px 0 60px; font-family:Archivo,sans-serif}
+  .rail ol{list-style:none; margin:0; padding:0}
+  .rail a{display:flex; gap:9px; padding:5px 0; font-size:13.5px; line-height:1.35; color:var(--ink-2); text-decoration:none}
+  .rail a:hover{color:var(--teal)}
+  .rail .num{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3); padding-top:2px; flex:none}
+  .rail-head{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); margin:0 0 12px; padding-bottom:8px; border-bottom:1px solid var(--rule)}
+  .rail .hot a{color:var(--rust); font-weight:600}
+}
+.railgap{height:20px}
+
+main{padding:40px 0 90px; min-width:0}
+section{margin:0 0 68px; scroll-margin-top:20px}
+.sec-head{border-top:2px solid var(--ink); padding-top:12px; margin-bottom:22px}
+.sec-num{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em; color:var(--teal); display:block; margin-bottom:6px}
+h2{font-size:clamp(25px,3.4vw,33px); line-height:1.12; letter-spacing:-.02em; margin:0; font-weight:700; text-wrap:balance}
+h3{font-size:20px; line-height:1.25; letter-spacing:-.01em; margin:34px 0 10px; font-weight:600; text-wrap:balance}
+h4{font-size:15.5px; margin:24px 0 8px; font-weight:600}
+p{margin:0 0 16px; max-width:68ch}
+ul,ol{max-width:68ch; margin:0 0 16px; padding-left:23px}
+li{margin:0 0 9px}
+li::marker{color:var(--ink-3)}
+strong{font-weight:600}
+.lede{font-size:18.5px; color:var(--ink-2)}
+code:not(pre code){background:var(--surface-2); padding:.1em .38em; border-radius:2px; font-size:.85em; border:1px solid var(--rule)}
+
+/* spoken script — the thing to say out loud */
+.say{border-left:3px solid var(--teal); background:var(--teal-soft); padding:16px 19px; margin:24px 0; border-radius:0 3px 3px 0; max-width:68ch}
+.say .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:8px; font-weight:600}
+.say p{margin:0; font-size:17px}
+.say p + p{margin-top:11px}
+.say .time{float:right; font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--teal); opacity:.8; letter-spacing:.06em}
+
+.note{border:1px solid var(--rule); border-left:3px solid var(--rust); background:var(--surface); padding:15px 18px; margin:22px 0; border-radius:0 3px 3px 0; max-width:68ch}
+.note .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--rust); display:block; margin-bottom:7px; font-weight:600}
+.note p{margin:0; font-size:16.5px}
+.note p + p{margin-top:10px}
+
+/* drills */
+.drills{margin:26px 0; max-width:68ch}
+.drills-head{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin:0 0 10px; padding-bottom:7px; border-bottom:1px solid var(--rule)}
+details{border-bottom:1px solid var(--rule)}
+summary{cursor:pointer; padding:11px 0 11px 26px; position:relative; font-family:Archivo,sans-serif; font-size:15.5px; font-weight:500; line-height:1.4; list-style:none; color:var(--ink)}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+"; position:absolute; left:4px; top:11px; font-family:"IBM Plex Mono",monospace; font-size:14px; color:var(--teal); font-weight:600}
+details[open] summary::before{content:"\2212"}
+details[open] summary{color:var(--teal)}
+.answer{padding:0 0 16px 26px}
+.answer p{margin:0 0 12px; font-size:16.5px}
+.answer p:last-child{margin-bottom:0}
+.answer ul{margin:0 0 12px; font-size:16.5px}
+
+/* figures */
+figure{margin:30px 0; max-width:100%}
+.figbox{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; min-width:500px; max-width:100%; height:auto; color:var(--ink)}
+figcaption{font-size:14.5px; color:var(--ink-2); margin-top:11px; max-width:68ch; line-height:1.5}
+figcaption b{color:var(--ink); font-weight:600}
+.legend{display:flex; flex-wrap:wrap; gap:16px; margin:14px 0 0; padding:0; list-style:none; font-size:13px}
+.legend li{display:flex; align-items:center; gap:7px; margin:0; font-family:Archivo,sans-serif; color:var(--ink-2)}
+.swatch{width:22px; height:0; border-top-width:2.5px; border-top-style:solid; flex:none}
+.sw-media{border-color:var(--teal)} .sw-data{border-color:var(--slate); border-top-style:dashed} .sw-hand{border-color:var(--rust)}
+
+/* tables */
+.tablebox{overflow-x:auto; margin:24px 0; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:15.5px}
+th,td{padding:11px 15px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
+td strong{font-family:Archivo,sans-serif; font-size:15px}
+
+.grid2{display:grid; grid-template-columns:1fr; gap:16px; margin:24px 0}
+@media(min-width:720px){.grid2{grid-template-columns:1fr 1fr}}
+.card{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:16px 19px; box-shadow:var(--shadow)}
+.card h4{margin:0 0 8px; font-size:15.5px}
+.card p{font-size:16px; margin:0 0 10px}
+.card p:last-child{margin-bottom:0}
+.tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; padding:2px 7px; border-radius:2px; border:1px solid currentColor; font-weight:500}
+.t-good{color:var(--good)} .t-media{color:var(--teal)}
+
+/* drawing steps with board snapshots */
+.steps{list-style:none; padding:0; margin:26px 0}
+.steps > li{display:grid; grid-template-columns:38px minmax(0,1fr); gap:16px; padding:0 0 26px; margin:0; position:relative}
+.steps > li::before{content:""; position:absolute; left:18px; top:34px; bottom:0; width:1px; background:var(--rule)}
+.steps > li:last-child::before{display:none}
+.stepnum{width:38px; height:38px; border-radius:50%; border:1px solid var(--rule); background:var(--surface); display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:600; color:var(--teal); position:relative; z-index:1}
+.stepbody h4{margin:8px 0 8px; font-size:17px}
+.stepbody p{margin:0 0 11px; font-size:16.5px}
+.stepbody ul{font-size:16.5px}
+.script{border-left:2px solid var(--rust); padding:8px 0 8px 14px; margin:12px 0 0; font-style:italic; color:var(--ink-2); font-size:16.5px; max-width:64ch}
+.script b{font-style:normal; color:var(--rust); font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; display:block; margin-bottom:6px; font-weight:600}
+.board{margin:14px 0 4px; border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:12px 14px 8px; overflow-x:auto; max-width:640px}
+.board svg{display:block; width:100%; min-width:380px; height:auto; color:var(--ink)}
+.board .cap{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); margin:6px 0 0}
+
+/* phrase bank */
+.phrases{margin:24px 0; max-width:68ch}
+.phrase{border-left:2px solid var(--rule); padding:4px 0 4px 15px; margin:0 0 16px}
+.phrase .when{font-family:Archivo,sans-serif; font-size:13.5px; font-weight:600; color:var(--ink-3); margin:0 0 5px; letter-spacing:.01em}
+.phrase p{margin:0; font-size:16.5px; font-style:italic; color:var(--ink)}
+
+/* practice prompts */
+.prompt{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:15px 18px; margin:0 0 14px; max-width:68ch}
+.prompt .q{font-family:Archivo,sans-serif; font-size:16px; font-weight:600; margin:0 0 4px; line-height:1.35}
+.prompt .meta{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0}
+
+/* schedule */
+.days{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; margin:24px 0}
+.day{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:12px 14px}
+.day .d{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); margin:0 0 5px}
+.day .t{font-family:Archivo,sans-serif; font-weight:600; font-size:14.5px; line-height:1.3; margin:0 0 4px}
+.day .s{font-size:13.5px; color:var(--ink-2); margin:0; line-height:1.45}
+.day.rehearse{border-color:var(--rust); background:var(--rust-soft)}
+
+.srcs{columns:2; column-gap:34px; font-size:14.5px}
+@media(max-width:700px){.srcs{columns:1}}
+.srcs li{break-inside:avoid; margin-bottom:8px}
+footer{border-top:1px solid var(--rule); padding:26px 0 50px; color:var(--ink-3); font-size:14px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="mast-in">
+    <p class="eyebrow">LiveKit · Sales Engineer (Pre-Sales) · Technical round</p>
+    <h1>AnyCompany Voice Agent Playbook</h1>
+    <p class="dek">The concepts behind the whiteboard, the order to draw it in, and the words to say while you draw. Written to be read aloud as much as read.</p>
+    <dl class="facts">
+      <div class="fact"><dt>Format</dt><dd>60 min, shared whiteboard</dd></div>
+      <div class="fact"><dt>Scenario</dt><dd>Customer service voice agent</dd></div>
+      <div class="fact"><dt>They dig into</dt><dd>Components · integrations · latency · reliability</dd></div>
+      <div class="fact"><dt>Your edge</dt><dd>5 yrs GCP customer engineering</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+  <nav class="rail" aria-label="Sections">
+    <div class="railgap"></div>
+    <p class="rail-head">Contents</p>
+    <ol>
+      <li><a href="#brief"><span class="num">00</span><span>The brief</span></a></li>
+      <li><a href="#arch"><span class="num">01</span><span>The architecture</span></a></li>
+      <li><a href="#webrtc"><span class="num">02</span><span>WebRTC &amp; the SFU</span></a></li>
+      <li><a href="#latency"><span class="num">03</span><span>The one-second budget</span></a></li>
+      <li><a href="#turns"><span class="num">04</span><span>Turn-taking</span></a></li>
+      <li><a href="#agents"><span class="num">05</span><span>Agents, tools, MCP</span></a></li>
+      <li><a href="#sip"><span class="num">06</span><span>SIP from zero</span></a></li>
+      <li><a href="#handoff"><span class="num">07</span><span>Human handoff</span></a></li>
+      <li><a href="#reliability"><span class="num">08</span><span>Reliability &amp; scale</span></a></li>
+      <li class="hot"><a href="#script"><span class="num">09</span><span>Drawing it, step by step</span></a></li>
+      <li class="hot"><a href="#speak"><span class="num">10</span><span>Speaking practice</span></a></li>
+      <li><a href="#gcp"><span class="num">11</span><span>The GCP redraw</span></a></li>
+      <li><a href="#presales"><span class="num">12</span><span>Objections</span></a></li>
+      <li><a href="#lab"><span class="num">13</span><span>Hands-on lab</span></a></li>
+      <li><a href="#plan"><span class="num">14</span><span>Two-week plan</span></a></li>
+      <li><a href="#sources"><span class="num">—</span><span>Sources</span></a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+  <!-- 00 -->
+  <section id="brief">
+    <div class="sec-head"><span class="sec-num">00</span><h2>The brief</h2></div>
+
+    <p class="lede">Mike will describe a company with a support problem and ask you to draw the system with him. The scenario on the reference sheet is AnyCompany Smart Home — connected devices, high contact volume, customers arriving from both the web and the phone.</p>
+
+    <p>Reconstructed from that sheet, the question sounds roughly like this:</p>
+
+    <div class="say">
+      <span class="lbl">The question</span>
+      <p>"AnyCompany Smart Home sells connected devices and gets a lot of support contacts. Design a production voice AI agent: customers reach it from the web <em>and</em> over the phone, it should feel like a real conversation — fast, interruptible — it needs to look up customer, device and order data, file tickets in their ticketing system, and hand off to a human specialist when it can't resolve. Let's draw it. Walk me through the components, the integrations, where the latency goes, and what happens when things break."</p>
+    </div>
+
+    <p>There is a real chance you get a different scenario. The document that example came from is titled <em>Architecture Draw <strong>Example</strong></em> and runs to five pages, and the recruiter wrote that Mike would walk you through "a realistic scenario" rather than "the" scenario. So treat the smart-home version as one worked example of a shape you should be able to produce for retail returns, appointment booking, outbound collections, or patient intake just as easily.</p>
+
+    <p>Two things about the format matter more than any single fact you could memorize.</p>
+
+    <p><strong>It is collaborative, not an examination.</strong> "Sketch out the architecture together" means Mike expects to be drawn <em>with</em>. Long silences while you think are the main failure mode, and so is producing the finished picture immediately — that reads as recital rather than reasoning. He is watching how you work through a problem in front of a customer, because that is the actual job.</p>
+
+    <p><strong>It is a pre-sales interview wearing a systems-design costume.</strong> Most people who fail this round know the technology perfectly well. They fail because they solve before they ask what the constraints are, because they give a tour of components instead of telling a story, and because they have no honest answer when someone pushes on cost, scale, or why not just use Twilio. Technical correctness is the floor here, not the bar.</p>
+
+    <div class="note">
+      <span class="lbl">How to use this guide</span>
+      <p>Read the companion primer first if the underlying technology is unfamiliar — it builds the whole stack from a pressure wave in the air, and it will make everything here land in the right slot. Then read §09, the drawing section, before you read the concepts, so you know what you're studying <em>toward</em>.</p>
+      <p>Sections 02 through 08 are the concepts, ordered by how much of the hour they carry. Every one of them ends with a short passage written to be said aloud, not read silently. Section 10 is where you rehearse those passages properly.</p>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="arch">
+    <div class="sec-head"><span class="sec-num">01</span><h2>The architecture, whole</h2></div>
+
+    <p>Here is the reference answer, redrawn. Before you study any individual box, look at the shape: three vertical bands, and three distinct kinds of line running between them. The bands are the people, the realtime platform, and your own cloud. The lines are realtime media, ordinary data calls, and the human handoff. Every section after this one explains a single part of this picture.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 940 540" role="img" aria-label="Architecture of the AnyCompany voice agent: browser and phone reach a LiveKit room over WebRTC and SIP, a Python agent worker joins the same room, calls hosted inference, reads a customer database directly and files tickets through an MCP boundary, and a human specialist joins the same room for handoff.">
+          <defs>
+            <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+            <marker id="a-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+            <marker id="a-rust" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--rust)"/></marker>
+          </defs>
+          <rect x="252" y="26" width="286" height="492" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.2"/>
+          <text x="272" y="50" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--teal)" letter-spacing="1.2">LIVEKIT CLOUD</text>
+          <text x="272" y="66" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">managed transport + inference</text>
+          <rect x="614" y="26" width="300" height="492" rx="5" fill="none" stroke="var(--rule)" stroke-width="1.2"/>
+          <text x="634" y="50" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--ink-2)" letter-spacing="1.2">YOUR CLOUD</text>
+          <text x="634" y="66" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">one region · co-located with inference</text>
+
+          <rect x="24" y="96" width="176" height="54" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="112" y="118" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--ink)">Browser</text>
+          <text x="112" y="135" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">web app · mic + speaker</text>
+          <rect x="24" y="212" width="176" height="54" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="112" y="234" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--ink)">Phone</text>
+          <text x="112" y="251" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">PSTN · any handset</text>
+          <rect x="24" y="416" width="176" height="54" rx="3" fill="var(--rust-soft)" stroke="var(--rust)"/>
+          <text x="112" y="438" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--rust)">Specialist</text>
+          <text x="112" y="455" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">human · joins on escalation</text>
+
+          <rect x="278" y="90" width="234" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="395" y="114" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">Room / SFU</text>
+          <text x="395" y="132" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">every participant meets here</text>
+          <rect x="278" y="196" width="234" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="395" y="220" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">SIP bridge</text>
+          <text x="395" y="238" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">trunk + dispatch rule</text>
+          <rect x="278" y="302" width="234" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="395" y="326" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">Inference</text>
+          <text x="395" y="344" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">STT · LLM · TTS, hosted</text>
+          <rect x="278" y="408" width="234" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="395" y="432" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">Turn detection</text>
+          <text x="395" y="450" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">VAD + semantic end-of-turn</text>
+
+          <rect x="640" y="90" width="248" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="764" y="114" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">Agent worker</text>
+          <text x="764" y="132" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">Python · joins room as participant</text>
+          <rect x="640" y="196" width="248" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="764" y="220" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">Web + console</text>
+          <text x="764" y="238" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">serves UI · mints room tokens</text>
+          <rect x="640" y="302" width="248" height="60" rx="3" fill="var(--surface)" stroke="var(--slate)" stroke-dasharray="5 3"/>
+          <text x="764" y="326" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">Ticketing (MCP)</text>
+          <text x="764" y="344" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">external-system boundary</text>
+          <rect x="640" y="408" width="248" height="60" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="764" y="432" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13.5" font-weight="600" fill="var(--ink)">Customer data</text>
+          <text x="764" y="450" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">customers · devices · orders</text>
+
+          <line x1="200" y1="123" x2="272" y2="118" stroke="var(--teal)" stroke-width="2" marker-end="url(#a-teal)"/>
+          <text x="236" y="105" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--teal)">WebRTC</text>
+          <line x1="200" y1="239" x2="272" y2="228" stroke="var(--teal)" stroke-width="2" marker-end="url(#a-teal)"/>
+          <text x="236" y="222" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--teal)">SIP+RTP</text>
+          <path d="M395,196 L395,156" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#a-teal)"/>
+          <text x="404" y="180" font-family="Archivo,sans-serif" font-size="10" fill="var(--teal)">joins room</text>
+          <line x1="512" y1="112" x2="634" y2="112" stroke="var(--teal)" stroke-width="2" marker-start="url(#a-teal)" marker-end="url(#a-teal)"/>
+          <text x="573" y="103" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--teal)">media</text>
+          <path d="M660,150 L660,175 L555,175 L555,318 L512,318" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" fill="none" marker-end="url(#a-slate)"/>
+          <text x="566" y="290" font-family="Archivo,sans-serif" font-size="10" fill="var(--slate)">STT/LLM/TTS</text>
+          <path d="M868,150 L868,408" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" fill="none" marker-end="url(#a-slate)"/>
+          <text x="876" y="392" font-family="Archivo,sans-serif" font-size="10" fill="var(--slate)">reads</text>
+          <path d="M764,150 L764,302" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" fill="none" marker-end="url(#a-slate)"/>
+          <text x="772" y="286" font-family="Archivo,sans-serif" font-size="10" fill="var(--slate)">files ticket</text>
+          <path d="M112,96 L112,72 L700,72 L700,196" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" fill="none" marker-end="url(#a-slate)"/>
+          <text x="406" y="66" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--slate)">HTTPS · loads app, fetches room token</text>
+          <path d="M200,436 L230,436 L230,140 L272,140" stroke="var(--rust)" stroke-width="2" fill="none" marker-end="url(#a-rust)"/>
+          <text x="243" y="490" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)">joins the same room — agent announces, then steps back</text>
+        </svg>
+        <ul class="legend">
+          <li><span class="swatch sw-media"></span>realtime media (WebRTC)</li>
+          <li><span class="swatch sw-data"></span>data &amp; service calls</li>
+          <li><span class="swatch sw-hand"></span>human handoff</li>
+        </ul>
+      </div>
+      <figcaption><b>The whole system.</b> The single most important structural fact is that the browser, the phone caller, the AI agent and the human specialist are all participants in one room. There is no separate transfer subsystem, because escalation is simply another participant arriving.</figcaption>
+    </figure>
+
+    <h3>What each band is doing</h3>
+
+    <p><strong>On the left are the people, and there are two ways in.</strong> Someone on the website clicks a button to talk to support, and someone else picks up a phone and dials. What matters is that these two paths converge almost immediately, and everything downstream is identical regardless of which door the customer came through. That convergence is most of the reason this architecture is worth building.</p>
+
+    <p><strong>In the middle is LiveKit Cloud,</strong> which does three jobs: it moves audio reliably over networks that are frequently terrible, it bridges into the phone network, and it can host the models. What you are buying here is transport and physical proximity — the models are close to the media, which turns out to matter more than almost anything else you can tune.</p>
+
+    <p><strong>On the right is your own cloud,</strong> holding your logic, your data and your integrations. Notice how thin this band is: a worker process, a web application, and a database. That thinness is not an accident and it is worth pointing out, because it is the difference between shipping in weeks and shipping in quarters.</p>
+
+    <div class="note">
+      <span class="lbl">The detail worth being able to defend</span>
+      <p>The ticketing box is drawn dashed and the customer database is not. That is an argument rather than a decoration: reads against data you own stay direct, while writes into someone else's system cross a declared boundary. The MCP service is where schema drift, authentication, rate limits and retries get contained.</p>
+      <p>If Mike pushes back that MCP is overkill for one integration, agree with him — because he is right — and then name the threshold at which it starts paying for itself. Agreeing and then adding something is a much stronger move than defending the diagram.</p>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="webrtc">
+    <div class="sec-head"><span class="sec-num">02</span><h2>WebRTC and the SFU</h2></div>
+
+    <p class="lede">What you need here is not the specification. It is the ability to answer "why not just use a WebSocket?" and "what is the SFU actually doing on a two-party call?" without hedging.</p>
+
+    <h3>Why WebRTC rather than a WebSocket</h3>
+
+    <p>A WebSocket runs on TCP, and TCP guarantees that everything arrives, in order. That sounds like exactly what you want, and for live audio it is precisely wrong. When a packet goes missing, TCP stops and asks for it again, and everything behind it waits in line. You did not lose twenty milliseconds of speech — you inserted a couple of hundred milliseconds of delay into the call, and you never get that time back. Every subsequent loss adds more, so the conversation drifts steadily further behind real time exactly when the network is worst.</p>
+
+    <p>WebRTC runs on UDP instead, where a lost packet is simply gone and the decoder covers the hole. Opus carries forward error correction and does packet-loss concealment, so losing two percent of packets is inaudible rather than being a series of small stalls. On top of that, WebRTC brings a jitter buffer that smooths uneven arrival into steady playback, bandwidth estimation that lowers the bitrate before congestion turns into loss, and echo cancellation — which matters more than it sounds, because without it the agent hears itself and starts answering its own questions.</p>
+
+    <p>The honest summary is that TCP trades latency for completeness, and live voice needs the opposite trade. You can build voice on WebSockets, and plenty of products do. It works beautifully on an office network and falls apart on a phone walking through a parking garage.</p>
+
+    <h3>Peer-to-peer, MCU, and SFU</h3>
+
+    <p>If everyone connects directly to everyone, each participant has to upload a separate copy of their audio to every other participant. That is fine at two people and becomes quadratic quickly, and the uplink is the scarce resource. It also makes it impossible to record the call, bridge it to a phone, or insert an AI — because there is no server in the middle to attach any of that to.</p>
+
+    <p>So you put a server in the middle, and there are two ways to build one. An <strong>MCU</strong> decodes everybody's audio, mixes it into a single combined stream and re-encodes it, which is cheap for the participants and expensive for the server. The transcoding adds latency, and worse, it destroys the separation between speakers — and an AI needs one person's clean audio, not a blend. An <strong>SFU</strong> receives each stream and forwards it selectively to whoever subscribed, without decoding or re-encoding anything. It adds very little delay, and the streams stay separate.</p>
+
+    <p>The SFU is the right answer, and separation is the reason that matters most here.</p>
+
+    <div class="note">
+      <span class="lbl">Say this before Mike says it</span>
+      <p>A one-to-one support call is the easy case for an SFU — you are not buying it for fan-out, and pretending otherwise is the kind of oversell that loses a technical audience. What you are actually buying is the edge close to the user, the phone bridge, session migration when an instance dies, and the participant model that makes both the AI and the human specialist first-class members of the same conversation. Naming that limitation yourself is worth considerably more than defending it after he points it out.</p>
+    </div>
+
+    <h3>ICE, STUN and TURN — the corporate firewall question</h3>
+
+    <p>Most machines sit behind NAT and have no public address of their own. Your router has one and everything in the house shares it, which works fine when you start the conversation and fails completely when someone else wants to start one with you. Both ends of a call have this problem at the same time.</p>
+
+    <p><strong>STUN</strong> is a small public server you ask "what do I look like from out there?", and it tells you the public address and port your traffic appears to come from. That is usually enough. <strong>TURN</strong> is for when the network refuses UDP entirely, which locked-down corporate networks routinely do: a relay receives your media and forwards it, typically over TCP on port 443 so it looks like ordinary web traffic. It costs latency and bandwidth, but the call connects. <strong>ICE</strong> is the procedure that gathers all of these candidate paths, tries them simultaneously, and keeps whichever works best.</p>
+
+    <h3>Rooms, participants and tracks</h3>
+
+    <p>Three nouns, and together they are the entire data model. A <strong>room</strong> is one session. A <strong>participant</strong> is anything in it — a browser, a phone caller, an AI agent, a human specialist, a recorder. A <strong>track</strong> is one stream of media a participant publishes, and participants subscribe to each other's tracks.</p>
+
+    <p>The word doing the work is <em>anything</em>. Because the system does not distinguish between kinds of participant, several problems that look separate collapse into one solved problem: how the AI hears the customer, how you transfer to a human, how you record for compliance, and how a supervisor listens in are all the same answer.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 260" role="img" aria-label="Comparison: the naive design routes audio through a backend API server, while the LiveKit design puts the agent in the room as a peer participant alongside the customer.">
+          <defs>
+            <marker id="b-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+            <marker id="b-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          </defs>
+          <text x="20" y="24" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--ink-3)" letter-spacing="1">THE INSTINCT</text>
+          <text x="20" y="42" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">agent is a backend service you call</text>
+          <rect x="20" y="70" width="110" height="46" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="75" y="98" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" fill="var(--ink)">Customer</text>
+          <rect x="170" y="70" width="110" height="46" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="225" y="92" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" fill="var(--ink)">API server</text>
+          <text x="225" y="107" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">req / res</text>
+          <rect x="320" y="70" width="110" height="46" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="375" y="98" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" fill="var(--ink)">Models</text>
+          <line x1="130" y1="93" x2="164" y2="93" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#b-slate)"/>
+          <line x1="280" y1="93" x2="314" y2="93" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#b-slate)"/>
+          <text x="20" y="152" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">Now bolt on: who holds the audio socket? where does barge-in</text>
+          <text x="20" y="168" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">get handled? how does a human join mid-call? what happens</text>
+          <text x="20" y="184" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">when this box restarts? — all of it becomes yours.</text>
+          <line x1="466" y1="20" x2="466" y2="240" stroke="var(--rule)" stroke-width="1"/>
+          <text x="500" y="24" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--teal)" letter-spacing="1">THE MODEL</text>
+          <text x="500" y="42" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">agent is a participant in the room</text>
+          <circle cx="700" cy="140" r="76" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.4"/>
+          <text x="700" y="80" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--teal)" letter-spacing="1">ROOM</text>
+          <rect x="620" y="104" width="88" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="664" y="126" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">Customer</text>
+          <rect x="694" y="150" width="88" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="738" y="172" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">Agent</text>
+          <line x1="676" y1="138" x2="726" y2="150" stroke="var(--teal)" stroke-width="2" marker-start="url(#b-teal)" marker-end="url(#b-teal)"/>
+          <text x="500" y="234" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">Peers. So a human specialist joins the same way. So does a</text>
+          <text x="500" y="250" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">recorder, a supervisor, a second agent. Nothing special-cased.</text>
+        </svg>
+      </div>
+      <figcaption><b>The insight that separates candidates.</b> Almost everyone's first instinct is to draw the agent as a backend service the audio gets piped to. Drawing it as a participant is what demonstrates you understand the platform, and it is what makes handoff, supervision and recording fall out for free rather than each needing its own subsystem.</figcaption>
+    </figure>
+
+    <div class="say">
+      <span class="lbl">Say it out loud <span class="time">~40 sec</span></span>
+      <p>"The reason this is WebRTC and not a WebSocket is that TCP guarantees delivery, and for live audio that's the wrong guarantee. Lose a packet and TCP stops everything to go get it again, so you don't lose twenty milliseconds of speech — you permanently insert a couple of hundred milliseconds of delay, and it accumulates for the rest of the call. UDP just drops it and the codec fills the gap, which your ear won't notice.</p>
+      <p>The SFU in the middle isn't really about fan-out on a one-to-one call — I'd be honest about that. What it buys you is an edge close to the user, somewhere to terminate the phone bridge, and the model where the AI joins as a participant rather than being a service you pipe audio to."</p>
+    </div>
+
+    <div class="drills">
+      <p class="drills-head">Drill</p>
+      <details><summary>Why not just stream audio over a WebSocket to your server?</summary>
+        <div class="answer"><p>You can, and it works until the network is bad. TCP head-of-line blocking turns packet loss into accumulating delay you never recover from within the call. UDP plus Opus forward error correction degrades gracefully instead. You would also be rebuilding jitter buffering, bandwidth estimation and echo cancellation yourself, and you would still have no answer for phone calls.</p></div>
+      </details>
+      <details><summary>What is the SFU doing for a 1:1 call — isn't it just overhead?</summary>
+        <div class="answer"><p>For pure media routing on a two-party call it is close to overhead, and I would say so rather than oversell it. What it buys is everything around the media: an edge close to the user in whatever region they are in, session migration when an instance dies, a place for the phone bridge to terminate, and the participant model that makes the agent and the human specialist first-class members of the same session.</p></div>
+      </details>
+      <details><summary>A customer's agents are on a locked-down corporate network. Will audio connect?</summary>
+        <div class="answer"><p>Yes. ICE gathers candidate paths and falls back to a TURN relay over TCP on 443 when UDP is blocked, so it looks like normal HTTPS traffic. It adds latency and relay bandwidth cost, so I would want to know what fraction of their users are in that situation before I quoted a latency number.</p></div>
+      </details>
+      <details><summary>Where does the agent's audio actually go?</summary>
+        <div class="answer"><p>The agent worker connects to the room as a participant, subscribes to the customer's audio track and publishes its own. So the media path runs from the customer to the edge SFU and on to the agent worker — not through your web app, which only ever mints tokens and serves the interface.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="latency">
+    <div class="sec-head"><span class="sec-num">03</span><h2>The one-second budget</h2></div>
+
+    <p class="lede">Mike will ask where the latency goes. Know this section cold, because it is the one place where a specific number beats a confident adjective.</p>
+
+    <p>The target is under one second, measured from the moment the customer stops speaking to the moment they hear the agent begin. That number is not an engineering preference — it comes from how people actually talk. Across the languages studied in a well-known comparison, the gap between one speaker finishing and the next beginning clusters in the low hundreds of milliseconds. Past roughly a second, people assume the line has dropped, or they start repeating themselves, which makes the following turn worse still.</p>
+
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Stage</th><th>Budget</th><th>What is happening</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Audio transport</strong></td><td class="num">&lt; 50 ms</td><td>WebRTC to the nearest edge and on to the agent. This is why edge proximity matters.</td></tr>
+          <tr><td><strong>End-of-turn decision</strong></td><td class="num">~ 300 ms</td><td>Deciding the customer is actually finished rather than pausing. Pure waiting, and the biggest single lever.</td></tr>
+          <tr><td><strong>STT first partial</strong></td><td class="num">100–200 ms</td><td>Streaming, so partial transcripts arrive while they are still speaking. Only the final flush is on the critical path.</td></tr>
+          <tr><td><strong>LLM first token</strong></td><td class="num">200–400 ms</td><td>Model size, prompt length and tool calls all move this. A tool round-trip can double it.</td></tr>
+          <tr><td><strong>TTS first audio</strong></td><td class="num">100–300 ms</td><td>Streaming synthesis starts on the first clause rather than the finished sentence.</td></tr>
+          <tr><td><strong>Perceived total</strong></td><td class="num">&lt; 1 s</td><td>Less than the sum, because the stages overlap.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 300" role="img" aria-label="Timeline showing that speech recognition runs concurrently with the customer speaking, so only endpointing, the final transcript, LLM first token and TTS first audio sit on the critical path after the customer stops.">
+          <line x1="150" y1="256" x2="860" y2="256" stroke="var(--rule)" stroke-width="1"/>
+          <line x1="380" y1="34" x2="380" y2="266" stroke="var(--rust)" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="380" y="286" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--rust)">customer stops speaking</text>
+          <text x="856" y="286" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--ink-3)">~1000 ms later</text>
+          <rect x="150" y="46" width="230" height="26" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/>
+          <text x="265" y="64" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">customer speaking</text>
+          <text x="140" y="64" text-anchor="end" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">audio in</text>
+          <rect x="188" y="86" width="240" height="26" rx="2" fill="var(--teal-soft)" stroke="var(--teal)"/>
+          <text x="308" y="104" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--teal)">STT streaming partials — free, runs concurrently</text>
+          <text x="140" y="104" text-anchor="end" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">STT</text>
+          <rect x="380" y="126" width="150" height="26" rx="2" fill="var(--rust-soft)" stroke="var(--rust)"/>
+          <text x="455" y="144" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--rust)">end-of-turn ~300 ms</text>
+          <text x="140" y="144" text-anchor="end" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">turn</text>
+          <rect x="530" y="166" width="160" height="26" rx="2" fill="var(--surface-2)" stroke="var(--slate)"/>
+          <text x="610" y="184" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">LLM first token 200–400 ms</text>
+          <text x="140" y="184" text-anchor="end" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">LLM</text>
+          <rect x="690" y="206" width="120" height="26" rx="2" fill="var(--surface-2)" stroke="var(--slate)"/>
+          <text x="750" y="224" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">TTS first audio</text>
+          <text x="140" y="224" text-anchor="end" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">TTS</text>
+          <line x1="810" y1="206" x2="810" y2="256" stroke="var(--teal)" stroke-width="2"/>
+          <circle cx="810" cy="256" r="4" fill="var(--teal)"/>
+          <text x="820" y="248" font-family="Archivo,sans-serif" font-size="11" font-weight="600" fill="var(--teal)">agent speaks</text>
+          <text x="150" y="26" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">everything left of the dashed line is already paid for</text>
+        </svg>
+      </div>
+      <figcaption><b>Why the stages do not add up to the total.</b> Streaming means recognition happens while the customer is still talking. The clock that matters starts when they stop, and the largest remaining slice is the system deliberately waiting to be sure they are done.</figcaption>
+    </figure>
+
+    <h3>The three levers, largest first</h3>
+
+    <p><strong>Co-location is the big one, and it is structural rather than a tuning knob.</strong> Every stage in that pipeline might live in a different data center, and you pay the round trip between them four or five times per turn — audio in, STT, LLM, TTS, audio out. Putting inference physically next to the media path removes all of those hops at once, and it is worth more than any amount of model selection. This is also the sentence that ties the product to the physics, so it is worth saying out loud in the interview.</p>
+
+    <p><strong>End-of-turn tuning is the second.</strong> Three hundred milliseconds of the budget is the system waiting to be certain, and shortening that makes the agent feel snappier while making it interrupt people more often. The next section is entirely about that trade.</p>
+
+    <p><strong>Model choice is third,</strong> and less interesting than people expect. A smaller, faster model on the conversational path, escalating to something larger only when a turn genuinely needs it. Streaming synthesis rather than batch. Both trade quality for milliseconds in ways the customer should get to decide.</p>
+
+    <h3>Cascaded pipeline against speech-to-speech</h3>
+
+    <div class="grid2">
+      <div class="card">
+        <h4>STT → LLM → TTS <span class="tag t-media">default here</span></h4>
+        <p>Three swappable components, so you can choose each vendor, fail over per component, and tune cost per stage independently.</p>
+        <p>You also get a transcript for free, which matters enormously in support: that transcript is simultaneously the QA record, the compliance artifact, the analytics source and the eval set.</p>
+      </div>
+      <div class="card">
+        <h4>Speech-to-speech realtime</h4>
+        <p>One multimodal model consuming and producing audio directly. Faster, often under 500 ms, with noticeably better prosody, because it hears tone and hesitation that a transcript discards.</p>
+        <p>The cost is control: less ability to constrain behavior, harder to swap pieces, usually more expensive, and you work harder for a reliable transcript.</p>
+      </div>
+    </div>
+
+    <p>The pre-sales answer to "which should we use" is a question back rather than a recommendation: is this a regulated support line where you need the transcript and predictable behavior, or a consumer experience where naturalness wins? For AnyCompany's warranty and order support, cascaded is the right default, and you can say so with reasons rather than as a preference.</p>
+
+    <div class="say">
+      <span class="lbl">Say it out loud <span class="time">~45 sec</span></span>
+      <p>"The target is under a second, from the end of their speech to the start of ours — and that's not an arbitrary engineering number, it's roughly where human conversational timing sits. Past a second people think the call dropped.</p>
+      <p>Transport is under fifty milliseconds. The big one is actually end-of-turn detection, about three hundred milliseconds of just being sure they've finished. Then two to four hundred to first token from the model, and one to three hundred to first audio out of TTS. It comes in under a second rather than being the sum, because speech recognition is running while they're still talking — that part's already paid for by the time it matters.</p>
+      <p>And the biggest lever isn't model choice, it's co-location. If your inference is in a different region from your media, you're paying that round trip four or five times every single turn."</p>
+    </div>
+
+    <div class="drills">
+      <p class="drills-head">Drill</p>
+      <details><summary>The customer says 800 ms feels sluggish. What do you cut?</summary>
+        <div class="answer"><p>First I would measure where it is actually going rather than guess, with per-stage metrics on every turn. In practice the order is: check co-location, then tune the end-of-turn threshold down and watch the false-cutoff rate move, then swap to a faster model on the common path. I would also check whether tool calls are sitting on the critical path, because a synchronous CRM lookup can cost more than the entire rest of the budget.</p></div>
+      </details>
+      <details><summary>A tool call needs 900 ms. Now what?</summary>
+        <div class="answer"><p>Cover it with speech. The agent says "let me pull that up" and the lookup runs underneath — filler is a legitimate technique rather than a hack, because it is exactly what a person does. Beyond that: prefetch on intent rather than waiting for the explicit request, cache the customer record at call start using the caller ID, and make slow integrations asynchronous so a ticket write never blocks the conversation.</p></div>
+      </details>
+      <details><summary>Why does LiveKit host inference at all — isn't that outside their lane?</summary>
+        <div class="answer"><p>Because latency is dominated by distance, and this is the one place they control both ends. If the media terminates at their edge and the model runs in that same facility, several cross-region round trips per turn disappear. It is not a play to replace model vendors; it is the same co-location argument that makes the rest of the product work.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="turns">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Turn-taking, the hard part</h2></div>
+
+    <p class="lede">Deciding when a customer has finished speaking is what makes a voice agent feel human or infuriating. It gets far less attention than latency, and it is where the genuinely interesting engineering lives.</p>
+
+    <p>There are two mechanisms, and they are doing different jobs. <strong>VAD</strong> — voice activity detection — is a small, fast, cheap model that runs continuously on the raw audio and answers exactly one question: is there speech right now? It understands nothing about meaning. Its jobs are noticing that the customer has started talking, which is how you get barge-in, and noticing silence.</p>
+
+    <p><strong>Semantic end-of-turn detection</strong> answers a different question entirely: given what they have said so far, does it sound finished? LiveKit's is an open-weights transformer that reads the running transcript and predicts end of utterance in roughly fifty milliseconds. It has no ears at all; it works purely on text.</p>
+
+    <p>You need both, because they fail in opposite directions. VAD on its own cuts people off every time they pause to remember something. The semantic model on its own has no way to trigger barge-in and no cheap continuous signal to work from.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 250" role="img" aria-label="A customer saying an order number with a pause in the middle. Voice activity detection alone fires during the pause and cuts the customer off; the semantic end-of-turn model recognises the sentence is unfinished and waits for the rest.">
+          <text x="20" y="24" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-3)">The customer says:</text>
+          <text x="130" y="24" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--ink)">"my order number is&#8230; uh&#8230; 4 4 7 2 1"</text>
+          <rect x="40" y="52" width="200" height="30" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/>
+          <text x="140" y="72" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">"my order number is"</text>
+          <rect x="240" y="52" width="130" height="30" rx="2" fill="none" stroke="var(--rule)" stroke-dasharray="4 3"/>
+          <text x="305" y="72" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">700 ms pause</text>
+          <rect x="370" y="52" width="180" height="30" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/>
+          <text x="460" y="72" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">"uh&#8230; 4 4 7 2 1"</text>
+          <text x="20" y="124" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--bad)">VAD only</text>
+          <line x1="40" y1="138" x2="860" y2="138" stroke="var(--rule)" stroke-width="1"/>
+          <line x1="290" y1="120" x2="290" y2="156" stroke="var(--bad)" stroke-width="2"/>
+          <circle cx="290" cy="138" r="4" fill="var(--bad)"/>
+          <text x="300" y="134" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">fires here — silence is silence</text>
+          <text x="300" y="150" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">agent interrupts: "Sure, let me look that up" — with no number</text>
+          <text x="20" y="196" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--good)">VAD + semantic EOU</text>
+          <line x1="40" y1="210" x2="860" y2="210" stroke="var(--rule)" stroke-width="1"/>
+          <line x1="290" y1="198" x2="290" y2="222" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <text x="298" y="205" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">"is" &#8212; unfinished, hold</text>
+          <line x1="560" y1="192" x2="560" y2="228" stroke="var(--good)" stroke-width="2"/>
+          <circle cx="560" cy="210" r="4" fill="var(--good)"/>
+          <text x="570" y="206" font-family="Archivo,sans-serif" font-size="11" fill="var(--good)">fires here — the sentence completed</text>
+          <text x="570" y="222" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">agent responds with the order number in hand</text>
+        </svg>
+      </div>
+      <figcaption><b>The failure everyone has personally experienced.</b> A trailing "is" makes the sentence grammatically unfinished — information plainly visible in the transcript and completely invisible to a model that only hears silence. This is the concrete example to draw if Mike asks what turn detection actually buys.</figcaption>
+    </figure>
+
+    <h3>The trade-off curve, which is the thing to really understand</h3>
+
+    <p>Turn detection is a dial with pain at both ends. Wait longer and you cut people off less often, but the agent feels slow. Wait less and it feels snappy and talks over people. There is no setting that removes the trade-off — a better model gives you a better curve, not an escape from it. LiveKit's own published framing is exactly this: at a three hundred millisecond latency budget, the v1 model sits at roughly a ten percent false-cutoff rate, described as a better frontier than the alternatives rather than a solved problem.</p>
+
+    <p>What makes this a strong interview answer is recognizing that the right setting is per use case rather than global. A customer reading out a sixteen-digit account number wants a patient agent. Someone answering yes or no wants a fast one. That is a configuration conversation to have with the customer, and noticing that is more sophisticated than any particular number.</p>
+
+    <h3>Barge-in</h3>
+
+    <p>When the customer starts talking while the agent is mid-sentence, three things have to happen quickly: stop the audio playback, discard the rest of the generated response, and correct the conversation history so the model knows only part of its reply was actually heard. That last step is the one naive implementations skip, and it produces agents that confidently refer back to things the customer never heard them say.</p>
+
+    <div class="say">
+      <span class="lbl">Say it out loud <span class="time">~40 sec</span></span>
+      <p>"There are two models doing different jobs here. VAD is cheap and continuous — it just detects whether someone's speaking, and that's what gives you barge-in, so the customer can cut the agent off the way you would with a person.</p>
+      <p>But VAD on its own cuts people off, because a pause while you're remembering your order number looks exactly like being finished. So on top of it there's a small transformer reading the running transcript and asking 'does this sound complete?' — about fifty milliseconds. If the sentence ends on 'my order number is', it waits.</p>
+      <p>It's a dial, though, and there's no setting that makes the trade-off disappear. Shorter wait, snappier agent, more interruptions. Around a three-hundred-millisecond budget you're looking at roughly a ten percent false-cutoff rate. Where you set it really should depend on whether your customers are reading out account numbers or saying yes and no."</p>
+    </div>
+
+    <div class="drills">
+      <p class="drills-head">Drill</p>
+      <details><summary>Our agent keeps interrupting customers. Fix it.</summary>
+        <div class="answer"><p>First I would confirm it is turn detection and not something else, because barge-in misfiring on background noise looks identical to the user. If it is endpointing, raise the threshold and measure what it costs in latency, and add the semantic model if they are running VAD-only. If it is noise, enable noise cancellation on the input. And if their customers routinely read out long numbers, that is a use-case-specific tuning conversation rather than a global default.</p></div>
+      </details>
+      <details><summary>Why not just wait longer? Isn't 1.5 seconds fine?</summary>
+        <div class="answer"><p>It is fine right up until it is not. Long silences read as a dropped call, so people start repeating themselves, which makes the transcript worse and the turn longer still. You have also blown the sub-second budget entirely. The point of the semantic model is that it lets you wait a long time when the sentence sounds unfinished and a short time when it does not, instead of paying the worst case on every single turn.</p></div>
+      </details>
+      <details><summary>What breaks if the customer is on a noisy factory floor?</summary>
+        <div class="answer"><p>VAD starts firing on machinery, which triggers spurious barge-in and cuts the agent off mid-sentence. Noise cancellation on the inbound track is the first fix. Beyond that, recognition accuracy drops, which degrades the semantic turn model too since it reads the transcript. So I would set expectations that this environment needs its own tuning and almost certainly its own eval set.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="agents">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Agents, tools and the MCP boundary</h2></div>
+
+    <p class="lede">This is the right-hand band of the diagram. Small surface area, but worth being precise about, because "where does our code run" is a question every customer asks within the first ten minutes.</p>
+
+    <h3>The worker model</h3>
+
+    <p>You run a long-lived process, called an agent server or worker. It registers with LiveKit and then waits. When a room needs an agent, LiveKit dispatches a job to a worker that has capacity, and that worker spawns an isolated subprocess which joins the room as a participant and runs your entrypoint function. By default, agents are dispatched to every new room in your project.</p>
+
+    <p>Four properties of this model are worth knowing, because between them they answer most reliability questions. <strong>Each job is process-isolated</strong>, so one call crashing does not take down the others on that worker. <strong>Dispatch is load-aware</strong>: workers report their capacity, and sessions are placed by effective load — accounting for user locality, CPU, memory and network — rather than by round-robin connection count. <strong>Sessions are inherently sticky</strong>, because a call lasts minutes and carries state, so it stays on the worker it started on; this is why agent workloads are not stateless web services, and it shapes every deployment decision downstream. And <strong>workers drain on deploy</strong>, meaning a worker being replaced stops accepting new jobs and lets existing calls finish rather than dropping them.</p>
+
+    <h3>Sizing, and the number to have ready</h3>
+
+    <p>A Python worker holds roughly five to twenty concurrent sessions per CPU core, varying a great deal with which plugins are in the pipeline. Agents are resource-heavy: this is tens of concurrent calls per machine, not hundreds.</p>
+
+    <p>Which means the <code>t3.small</code> on the reference diagram — two vCPUs and two gigabytes — is a demonstration box. It might carry ten or twenty concurrent calls with inference offloaded, and on that same sheet it is simultaneously running the Next.js application and the MCP service. <strong>Notice this out loud.</strong> Catching that the reference architecture is sized for a proof of concept, and then describing what production would actually look like, is one of the strongest single moves available to you in this interview.</p>
+
+    <h3>Tools, and where the boundary goes</h3>
+
+    <p>The agent's model is given a set of callable functions — look up a customer, check an order, create a ticket. In LiveKit Agents these are ordinary Python functions with a decorator, and the docstring is what teaches the model when to call them. That makes tool descriptions prompt engineering rather than documentation, which is a useful thing to point out.</p>
+
+    <p><strong>MCP</strong>, the Model Context Protocol, is a standard way for a tool provider to describe what it offers so that any compatible agent can discover and call it. The agents SDK includes a toolset that wraps an MCP server, connects to it, fetches its tools and exposes them to the model.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h4>Direct function tool</h4>
+        <p>Your code, your database, running in-process. Fewer moving parts, the lowest latency, and versioned together with the agent.</p>
+        <p><strong>Right for</strong> reads against data you own — on this diagram, the customer, device and order lookups.</p>
+      </div>
+      <div class="card">
+        <h4>Behind an MCP boundary</h4>
+        <p>A separate service with a declared contract. It costs a network hop and a deployment, and buys isolation: their schema changes do not force a redeploy of your agent, and authentication, rate limiting and retries all live in one place.</p>
+        <p><strong>Right for</strong> systems you do not control — here, the ticketing integration.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="lbl">Have the counter-argument ready</span>
+      <p>For a single integration, MCP is more machinery than the problem needs, and a plain function tool is the better call. It starts paying for itself when there are several external systems, when a different team owns them, or when the same tools need to be reachable from more than one agent. If Mike pushes on this, agreeing with the pushback and then naming the threshold is a far stronger answer than defending the drawing.</p>
+    </div>
+
+    <h3>State and context</h3>
+
+    <p>Two questions come up every time. <em>Does it remember me?</em> — which means loading customer history into the prompt at call start, keyed on caller ID or an authenticated session. And <em>what happens to context on a twenty-minute call?</em> — where the transcript grows, cost grows with it, and quality degrades past a point, so long calls need summarization or a windowing strategy. Neither is exotic, and both are worth raising before you are asked.</p>
+
+    <div class="say">
+      <span class="lbl">Say it out loud <span class="time">~35 sec</span></span>
+      <p>"Your side of this is genuinely small — it's a Python process that registers with LiveKit and waits. When a call comes in, it gets dispatched a job, spawns an isolated subprocess, and that subprocess joins the room as a participant. It makes an outbound connection, so there's nothing you need to expose.</p>
+      <p>One thing I'd flag on this diagram: a t3.small is a demo box. A Python worker holds something like five to twenty sessions per core depending on your pipeline, so it's tens of calls per machine, not hundreds — and here it's also running the web app and the MCP service. For production I'd separate those and size the workers against your actual concurrency."</p>
+    </div>
+
+    <div class="drills">
+      <p class="drills-head">Drill</p>
+      <details><summary>Where does our code run, and can it run in our VPC?</summary>
+        <div class="answer"><p>The agent worker is a container you run wherever you like — your VPC, your Kubernetes cluster, your own hardware. It makes an outbound connection to LiveKit, so there is nothing inbound to expose. If you would rather not operate it, LiveKit Cloud will run the worker for you, and self-hosting the media server is also an option if the requirement is that media never leaves your infrastructure at all.</p></div>
+      </details>
+      <details><summary>The model hallucinates a tool call with a bad order ID. What stops that reaching production?</summary>
+        <div class="answer"><p>Validate inside the tool rather than in the prompt: the function checks the ID exists and returns a structured "not found" the model can speak, instead of throwing. For anything with consequences — a refund, a cancellation — the pattern is propose then confirm, where the model proposes and a human or an explicit customer confirmation commits. And idempotency keys on writes, so a retry does not file the ticket twice.</p></div>
+      </details>
+      <details><summary>How many concurrent calls on one box?</summary>
+        <div class="answer"><p>On the order of five to twenty sessions per CPU core for a Python worker, and it swings a lot with which plugins you are running — local VAD and turn detection cost CPU, fully hosted inference costs less. So tens per machine rather than hundreds, and I would want to load-test their actual pipeline rather than quote a rule of thumb. The t3.small on this sheet is a demo size, not a production one.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="sip">
+    <div class="sec-head"><span class="sec-num">06</span><h2>SIP from zero</h2></div>
+
+    <p class="lede">Start here if telephony is unfamiliar. It is a smaller subject than it looks — the vocabulary is intimidating and the underlying concepts are not.</p>
+
+    <h3>The one distinction everything else hangs from</h3>
+
+    <p>A phone call is two separate things travelling separately. <strong>SIP is the signaling</strong> — the who, where and when. Setting up, ringing, answering, hanging up. It is text-based and deliberately similar to HTTP, with requests that have methods and responses that have numeric codes. It carries no audio whatsoever. <strong>RTP is the media</strong> — the actual voice, in packets, over UDP. Once the call connects, RTP flows between the endpoints, often not even through the machine that handled the signaling.</p>
+
+    <p>If you remember one sentence from this section: SIP is the phone ringing, and RTP is the voice. Nearly every telephony question you will ever be asked decomposes into "is this a signaling problem or a media problem?"</p>
+
+    <h3>The vocabulary, briefly</h3>
+
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Term</th><th>What it actually is</th></tr></thead>
+        <tbody>
+          <tr><td><strong>PSTN</strong></td><td>The public switched telephone network — the global phone system. When you call a phone number you are reaching into it.</td></tr>
+          <tr><td><strong>SIP trunk</strong></td><td>The pipe between your system and a telephony provider who has PSTN access. It replaces physical phone lines with an internet connection.</td></tr>
+          <tr><td><strong>Channel</strong></td><td>One lane in that pipe, meaning one simultaneous call. "How many channels" is the concurrency question, and it is usually where the cost sits.</td></tr>
+          <tr><td><strong>DID</strong></td><td>Direct Inward Dialing — a phone number that routes to you specifically.</td></tr>
+          <tr><td><strong>INVITE</strong></td><td>The SIP request that starts a call. Think of it as <code>POST /call</code>.</td></tr>
+          <tr><td><strong>SDP</strong></td><td>The payload inside INVITE and its answer: here are the codecs I speak and the address to send audio to. Codec negotiation happens here.</td></tr>
+          <tr><td><strong>DTMF</strong></td><td>Keypad tones, carried as signaling events rather than as audio, per RFC 2833/4733 — which is why "press 1" still works over a compressed connection.</td></tr>
+          <tr><td><strong>REFER</strong></td><td>The SIP request meaning "go talk to someone else instead." It is the mechanism behind a cold transfer.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 330" role="img" aria-label="SIP call flow ladder diagram: the caller sends INVITE through the provider to LiveKit SIP, which responds 100 Trying, 180 Ringing and 200 OK with SDP; the caller acknowledges and RTP audio begins flowing while a SIP participant appears in the LiveKit room.">
+          <defs>
+            <marker id="s-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+            <marker id="s-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          </defs>
+          <text x="105" y="24" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">Caller's phone</text>
+          <text x="390" y="24" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">Telephony provider</text>
+          <text x="700" y="24" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink)">LiveKit SIP</text>
+          <text x="700" y="40" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">your inbound trunk</text>
+          <line x1="105" y1="52" x2="105" y2="300" stroke="var(--rule)" stroke-width="1"/>
+          <line x1="390" y1="52" x2="390" y2="300" stroke="var(--rule)" stroke-width="1"/>
+          <line x1="700" y1="52" x2="700" y2="300" stroke="var(--rule)" stroke-width="1"/>
+          <line x1="105" y1="76" x2="384" y2="76" stroke="var(--slate)" stroke-width="1.6" marker-end="url(#s-ink)"/>
+          <text x="245" y="70" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--slate)">INVITE  (SDP: I speak Opus, G.711)</text>
+          <line x1="390" y1="100" x2="694" y2="100" stroke="var(--slate)" stroke-width="1.6" marker-end="url(#s-ink)"/>
+          <text x="542" y="94" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--slate)">INVITE  (routed to your DID)</text>
+          <line x1="694" y1="124" x2="396" y2="124" stroke="var(--slate)" stroke-width="1.6" marker-end="url(#s-ink)"/>
+          <text x="545" y="118" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--ink-3)">100 Trying</text>
+          <line x1="694" y1="148" x2="111" y2="148" stroke="var(--slate)" stroke-width="1.6" marker-end="url(#s-ink)"/>
+          <text x="400" y="142" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--ink-3)">180 Ringing</text>
+          <line x1="694" y1="180" x2="111" y2="180" stroke="var(--slate)" stroke-width="1.8" marker-end="url(#s-ink)"/>
+          <text x="400" y="174" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--slate)">200 OK  (SDP answer: Opus, send audio here)</text>
+          <line x1="111" y1="204" x2="694" y2="204" stroke="var(--slate)" stroke-width="1.6" marker-end="url(#s-ink)"/>
+          <text x="400" y="198" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--slate)">ACK</text>
+          <rect x="111" y="222" width="583" height="30" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/>
+          <line x1="140" y1="237" x2="660" y2="237" stroke="var(--teal)" stroke-width="2" marker-start="url(#s-teal)" marker-end="url(#s-teal)"/>
+          <text x="400" y="233" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="600" fill="var(--teal)">RTP — the voice, both directions</text>
+          <rect x="596" y="268" width="208" height="34" rx="3" fill="var(--surface)" stroke="var(--teal)"/>
+          <text x="700" y="282" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" font-weight="600" fill="var(--teal)">dispatch rule fires</text>
+          <text x="700" y="296" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">SIP participant appears in the room</text>
+          <line x1="700" y1="252" x2="700" y2="264" stroke="var(--teal)" stroke-width="1.6" marker-end="url(#s-teal)"/>
+        </svg>
+      </div>
+      <figcaption><b>An inbound call, end to end.</b> Everything above the teal band is signaling, and no audio has moved yet. The moment that matters architecturally is the final box: the caller becomes an ordinary participant in a room, and from there the agent treats them exactly like a browser user.</figcaption>
+    </figure>
+
+    <h3>What LiveKit adds on top</h3>
+
+    <p>An <strong>inbound trunk</strong> receives calls and can be restricted to specific IP addresses or numbers. An <strong>outbound trunk</strong> handles calls you place, through <code>CreateSIPParticipant</code>, and the same provider trunk can serve both directions. A <strong>dispatch rule</strong> attaches to a trunk and decides which room an inbound call lands in — this is your routing logic, so branching by dialed number to send warranty calls and billing calls to differently configured agents happens here. The <strong>SIP participant</strong> is the caller materialized in the room, created automatically inbound and explicitly outbound. LiveKit will also sell you US local and toll-free numbers directly, or you can bring your own provider. DTMF handling, Krisp noise cancellation and SRTP for encrypted media all come along with it.</p>
+
+    <div class="say">
+      <span class="lbl">Say it out loud <span class="time">~35 sec</span></span>
+      <p>"SIP is signaling only — it's the phone ringing, not the voice. The audio is RTP and it's a completely separate flow. That distinction clears up most confusion in this area.</p>
+      <p>So a call arrives: the provider sends an INVITE to our inbound trunk, we answer, RTP starts flowing, and a dispatch rule on that trunk decides which room the call lands in. At that point the caller is just a participant — same as somebody sitting in a browser.</p>
+      <p>And that's really the whole trick. After the bridge, there's one code path, not two. Whatever we build for the web works on the phone, and vice versa."</p>
+    </div>
+
+    <div class="drills">
+      <p class="drills-head">Drill</p>
+      <details><summary>We already have Twilio. Do we have to move?</summary>
+        <div class="answer"><p>No — you keep your numbers and your provider and point a trunk at LiveKit. Bringing your own trunk is the normal path, and LiveKit selling numbers is a convenience rather than a requirement. It is worth checking whether you are on Flex, though: if the call already lives inside a Twilio contact center, ConversationRelay may fit your existing routing better, and I would rather tell you that than sell you a migration you do not need.</p></div>
+      </details>
+      <details><summary>Audio quality over the phone is worse than the web. Why?</summary>
+        <div class="answer"><p>Codec. The PSTN commonly gives you G.711 at eight kilohertz narrowband, while the browser is sending Opus at forty-eight. You are losing most of the frequency range before the audio ever reaches speech recognition, so accuracy drops as well. If the customer's provider supports a wideband codec you can negotiate it in SDP; otherwise it is a real constraint worth setting expectations about, and a good reason to evaluate the phone path separately from the web path.</p></div>
+      </details>
+      <details><summary>What is a dispatch rule, in one sentence?</summary>
+        <div class="answer"><p>A rule attached to an inbound trunk that decides which room an incoming call joins — the routing layer between "a phone rang" and "a participant exists." It is where you would branch by dialed number to route warranty calls and billing calls to differently configured agents.</p></div>
+      </details>
+      <details><summary>Does the audio go through your servers?</summary>
+        <div class="answer"><p>For a phone call, yes — the SIP bridge terminates RTP and forwards it into the room, and that is unavoidable if you want the phone network and WebRTC to talk to each other. Media is encrypted in transit and SRTP is supported on the SIP leg. If the requirement is that media never leaves your infrastructure at all, that is the self-hosted conversation, and it is a real option.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="handoff">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Human handoff</h2></div>
+
+    <p class="lede">This is the part of the diagram customers care most about, because it decides whether the AI is an improvement on their IVR or simply a new way to trap people.</p>
+
+    <p>The failure being replaced is universally understood. You explain your problem to a menu, then to a bot, then to a person who asks you to explain it again. The entire problem is context loss, and every design decision in this section follows from refusing to lose it.</p>
+
+    <h3>Three patterns, and they are genuinely different</h3>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 300" role="img" aria-label="Three handoff patterns compared: cold transfer sends the caller away via SIP REFER and loses the agent; warm transfer briefs the human in a private consultation room before moving them to the caller; conferenced handoff keeps all three in one room with the agent muted as a copilot.">
+          <defs><marker id="h-rust" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--rust)"/></marker></defs>
+          <text x="20" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--ink)">Cold transfer</text>
+          <text x="20" y="38" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-3)">SIP REFER</text>
+          <rect x="20" y="56" width="250" height="150" rx="4" fill="none" stroke="var(--rule)"/>
+          <rect x="42" y="82" width="86" height="32" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="85" y="103" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">Caller</text>
+          <rect x="162" y="82" width="86" height="32" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-dasharray="3 3"/>
+          <text x="205" y="103" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">Agent</text>
+          <line x1="132" y1="98" x2="158" y2="98" stroke="var(--rule)" stroke-width="1.4"/>
+          <rect x="102" y="146" width="86" height="32" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="145" y="167" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">Their PBX</text>
+          <line x1="85" y1="114" x2="120" y2="142" stroke="var(--rust)" stroke-width="1.8" marker-end="url(#h-rust)"/>
+          <text x="30" y="228" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--bad)">Caller leaves. Agent gone. Context gone.</text>
+          <text x="30" y="244" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">Cheap, simple, and it's the IVR experience.</text>
+          <text x="320" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--ink)">Warm transfer</text>
+          <text x="320" y="38" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-3)">WarmTransferTask</text>
+          <rect x="320" y="56" width="250" height="150" rx="4" fill="none" stroke="var(--rule)"/>
+          <rect x="336" y="76" width="102" height="52" rx="3" fill="var(--surface-2)" stroke="var(--rule)" stroke-dasharray="3 3"/>
+          <text x="387" y="96" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">consult room</text>
+          <text x="387" y="110" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">agent briefs</text>
+          <text x="387" y="122" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">the human</text>
+          <rect x="336" y="150" width="102" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="387" y="171" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">Caller on hold</text>
+          <rect x="464" y="112" width="92" height="34" rx="3" fill="var(--rust-soft)" stroke="var(--rust)"/>
+          <text x="510" y="133" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)">Specialist</text>
+          <line x1="442" y1="102" x2="460" y2="120" stroke="var(--rust)" stroke-width="1.8" marker-end="url(#h-rust)"/>
+          <line x1="464" y1="140" x2="444" y2="162" stroke="var(--rust)" stroke-width="1.8" marker-end="url(#h-rust)"/>
+          <text x="450" y="160" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--rust)">Move</text>
+          <text x="330" y="228" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--good)">Human arrives already briefed. Agents exit.</text>
+          <text x="330" y="244" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">Clean human-to-human call. Context preserved.</text>
+          <text x="620" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--rust)">Conferenced</text>
+          <text x="620" y="38" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-3)">the reference diagram</text>
+          <rect x="620" y="56" width="250" height="150" rx="4" fill="var(--rust-soft)" stroke="var(--rust)"/>
+          <text x="745" y="76" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" font-weight="700" fill="var(--rust)" letter-spacing="1">ONE ROOM</text>
+          <rect x="642" y="88" width="88" height="30" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="686" y="108" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">Caller</text>
+          <rect x="760" y="88" width="88" height="30" rx="3" fill="var(--surface)" stroke="var(--rust)"/>
+          <text x="804" y="108" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)">Specialist</text>
+          <rect x="700" y="140" width="90" height="30" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-dasharray="3 3"/>
+          <text x="745" y="160" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">Agent, muted</text>
+          <line x1="730" y1="103" x2="756" y2="103" stroke="var(--rust)" stroke-width="1.8"/>
+          <line x1="686" y1="118" x2="716" y2="138" stroke="var(--rule)" stroke-width="1.2" stroke-dasharray="3 2"/>
+          <line x1="804" y1="118" x2="774" y2="138" stroke="var(--rule)" stroke-width="1.2" stroke-dasharray="3 2"/>
+          <text x="630" y="228" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--good)">Agent stays as copilot — keeps transcribing,</text>
+          <text x="630" y="244" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">can be re-addressed, files the ticket afterwards.</text>
+        </svg>
+      </div>
+      <figcaption><b>What actually changes between the three.</b> Cold sends the caller away. Warm briefs the human first and then leaves them alone together. Conferenced keeps everyone in one room with the agent present but silent. Your reference diagram draws the third, and knowing that it differs from the framework's default warm-transfer flow is exactly the kind of detail that makes a good conversation with Mike.</figcaption>
+    </figure>
+
+    <h3>The mechanics of a warm transfer</h3>
+
+    <p>This is worth being able to narrate, because it is concrete and it shows you have read past the marketing. The caller is placed on hold with audio disabled and hold music playing. A separate private consultation room is created, and the specialist is dialed into it through an outbound SIP call. A transfer agent holding the conversation context summarizes the call to them. Then <code>MoveParticipant</code> moves the specialist out of the consultation room and into the caller's room, the agent sessions end, and the caller and specialist are left talking. The claim worth quoting is that the human can be helping within roughly ten to fifteen seconds, without the caller repeating anything.</p>
+
+    <h3>When to escalate</h3>
+
+    <p>Do not say "when it can't handle it" — that is the answer everybody gives. The signals worth naming are risk, meaning money, health or legal exposure; low model confidence about what the customer wants; complexity beyond the agent's scope; regulatory requirement; detected frustration; and explicit request, which should always work immediately, because refusing it is the single fastest way to make people hate a voice agent.</p>
+
+    <p>Mechanically, escalation is a tool the model can call, and the tool's description encodes the criteria. That is a nice thing to point at on the whiteboard, because it means the escalation policy is tunable text rather than logic buried in code.</p>
+
+    <div class="say">
+      <span class="lbl">Say it out loud <span class="time">~40 sec</span></span>
+      <p>"The thing everyone hates about being transferred is having to start over. So the design goal here isn't 'can it transfer' — it's 'does the human arrive already knowing the story.'</p>
+      <p>Because the specialist is just another participant, there are three shapes available. Cold transfer sends the caller somewhere else and the AI disappears — that's the IVR experience and I wouldn't recommend it. Warm transfer puts the caller on hold, briefs the human privately, then moves them into the call, so they arrive informed in about ten or fifteen seconds. Conferenced keeps everyone in the same room with the AI present but silent, which means it keeps transcribing and can file the ticket afterwards.</p>
+      <p>That third one is what this diagram draws, and it's a decision worth making deliberately — because a silent AI listening to a human conversation is a consent question in some industries."</p>
+    </div>
+
+    <div class="drills">
+      <p class="drills-head">Drill</p>
+      <details><summary>Our specialists live in Salesforce Service Cloud. How does this reach them?</summary>
+        <div class="answer"><p>Two routes, and I would want to know which fits their operation. Either the agent dials the specialist as an outbound SIP call into their existing telephony, which keeps their current queueing and reporting intact, or specialists take escalations in a browser console that joins the room directly — a better experience, but it is a second place for them to work unless it is embedded in Salesforce. The context package goes across either way; the real question is whose queue owns the routing.</p></div>
+      </details>
+      <details><summary>Why keep the agent in the room after the human joins?</summary>
+        <div class="answer"><p>It keeps transcribing, so the record stays complete through the human portion of the call. It can be re-addressed for lookups without the specialist leaving. And it can do the wrap-up work — filing the ticket, sending the summary — that the human would otherwise do afterwards. The trade-off is that it is a silent third party on the call, which is a consent and recording question worth raising before they ask.</p></div>
+      </details>
+      <details><summary>No specialist is available. What happens?</summary>
+        <div class="answer"><p>That is a design decision the customer should make explicitly, and it is a good question to put back to them: hold with the agent keeping the customer company, offer a callback, take a message and file the ticket, or fall back to their existing queue. The failure mode to avoid is escalating into silence — the agent should never hand off to nobody. I would also want a timeout that escalates to a backup rather than waiting indefinitely.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="reliability">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Reliability, scale and cost</h2></div>
+
+    <p class="lede">The recruiter named reliability explicitly, which means there will be a "what breaks" portion of the conversation. Have this table in your head.</p>
+
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>What fails</th><th>What the customer experiences</th><th>What you do about it</th></tr></thead>
+        <tbody>
+          <tr><td><strong>STT/TTS vendor degrades</strong></td><td>Slow or garbled responses</td><td>Per-component fallback to a second vendor — the main structural argument for keeping the pipeline cascaded. Health-check on latency, not only on errors.</td></tr>
+          <tr><td><strong>LLM slow or rate-limited</strong></td><td>Long silences</td><td>Timeout with a spoken filler, retry on a smaller model, and a hard escalation path if it persists. Never let the customer sit in silence.</td></tr>
+          <tr><td><strong>Agent worker crashes</strong></td><td>Agent goes quiet mid-call</td><td>Process isolation limits it to that one call, and detection and replacement take around fifteen seconds. Being honest: that call is degraded. This is the one to design around rather than paper over.</td></tr>
+          <tr><td><strong>SFU node lost</strong></td><td>Brief audio interruption</td><td>Session migration to another instance, with the SDKs handling reconnection. This is what the mesh is for.</td></tr>
+          <tr><td><strong>Region outage</strong></td><td>Calls fail to connect</td><td>Traffic routes to the next closest location. Your own side needs to be multi-region too, or you have moved the single point of failure rather than removed it.</td></tr>
+          <tr><td><strong>Ticketing system down</strong></td><td>Nothing, if designed right</td><td>Queue the write and reconcile later; the conversation should never block on it. A strong argument for the MCP boundary, since retry logic lives in one place.</td></tr>
+          <tr><td><strong>Traffic spike</strong></td><td>Calls queue or fail</td><td>Agents are heavy and scale in tens per machine, so headroom is thinner than a web tier. Pre-warm capacity for known peaks rather than scaling reactively.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Deployment and rollout</h3>
+
+    <p>Three properties matter more here than they would for a web service. <strong>Draining on deploy</strong> means a worker being replaced blocks new sessions and lets active calls finish — critical, because a rolling restart that kills live calls is unacceptable in a contact center. <strong>Instant rollback</strong> lets you revert to a previous agent version with one command, and in this world a bad prompt change is a production incident, so the rollback story genuinely matters. <strong>Cold starts</strong> are handled on LiveKit Cloud paid plans by keeping agents warm; self-hosted, that is on you, and it is exactly the problem that makes serverless awkward for this workload.</p>
+
+    <h3>Observability</h3>
+
+    <p>Per turn, instrument end-of-turn latency, STT final latency, time to first token, time to first audio, and total response time. Per call, capture duration, turn count, interruption count, tool calls and their outcomes, whether it escalated and what triggered it, and whether it resolved. Plus transcripts, which are simultaneously your debugging tool, your compliance record and your eval set — and a PII problem to be deliberate about.</p>
+
+    <p>The mature answer to "how do you know it's working" is an eval set built from real calls, replayed against every change and scored on task completion rather than on vibes. Voice agents regress silently when a prompt or a model changes, and any customer who has been burned by that will ask.</p>
+
+    <h3>Cost, roughly</h3>
+
+    <p>Order-of-magnitude figures, so you are not guessing at a whiteboard. LiveKit Cloud tiers run Build (free), Ship at fifty dollars a month, Scale at five hundred, plus Enterprise. Agent session minutes are the main driver at about a cent a minute, SIP minutes run around a third of a cent, and plain WebRTC connection minutes are far cheaper than either. One thing to flag early with a regulated customer: HIPAA and SOC 2 Type II sit at the Scale tier, so there is a five-hundred-dollar-a-month floor before any usage.</p>
+
+    <p>Model inference is usually the larger line item and it is not LiveKit's. A useful reflex at a whiteboard is to build the per-minute number in front of the customer — platform, plus STT, plus LLM, plus TTS, plus telephony — rather than quoting a platform price that understates what they will actually pay. It builds trust, and it is the conversation they actually need to have.</p>
+
+    <div class="say">
+      <span class="lbl">Say it out loud <span class="time">~40 sec</span></span>
+      <p>"Let me walk the failure modes, because that's usually where these designs get interesting.</p>
+      <p>If a speech vendor degrades, I fail over to a second one — and that's the main structural reason I'd keep the pipeline as three components rather than one speech-to-speech model. If a worker crashes, it's process-isolated so it only affects that one call, and it's replaced in about fifteen seconds; I'd be honest that the call in progress is degraded. If your ticketing system is down, I queue the write rather than blocking the conversation, and that's a big part of why that integration sits behind its own boundary.</p>
+      <p>The one I'd want to design around properly with you is traffic spikes, because agents are heavy — you get tens of concurrent calls per machine, not hundreds, so there's less headroom to absorb a surge than you'd have on a web tier."</p>
+    </div>
+
+    <div class="drills">
+      <p class="drills-head">Drill</p>
+      <details><summary>Will this handle 500 concurrent calls?</summary>
+        <div class="answer"><p>The media layer will, comfortably — that is what it is built for. The constraint is the agent workers: roughly five to twenty sessions per core depending on the pipeline, so five hundred concurrent is on the order of tens of cores, and I would size it against their actual plugin stack rather than a rule of thumb. The questions I would need answered first are whether five hundred is the peak or the average, how spiky it is, and what acceptable behavior looks like when they exceed it — queue, degrade, or overflow to humans.</p></div>
+      </details>
+      <details><summary>What's your uptime story?</summary>
+        <div class="answer"><p>LiveKit Cloud targets 99.99% with redundant infrastructure and automatic session migration on instance failure. But end-to-end availability is the product of every dependency — the platform, the speech vendor, the model, the synthesis, the telephony provider — so the honest framing is that the composite number is lower than any single component's. The design work is deciding what degrades gracefully, which is what the per-component fallbacks are for.</p></div>
+      </details>
+      <details><summary>How do you know the agent isn't getting worse?</summary>
+        <div class="answer"><p>Recorded evals. Take a corpus of real calls, replay them against every prompt or model change, and score task completion, escalation rate and turn latency. Voice quality regressions are invisible in unit tests and obvious in aggregate metrics. Anyone who has shipped one of these has been burned by a model update quietly changing behavior, so I would want this in place before go-live rather than after.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section id="script">
+    <div class="sec-head"><span class="sec-num">09</span><h2>Drawing it, step by step</h2></div>
+
+    <p class="lede">This is the section to rehearse. Not what the finished picture looks like, but the order you build it in, what the board looks like at each stage, and what you are saying while your hand moves.</p>
+
+    <div class="note">
+      <span class="lbl">Before anything else</span>
+      <p>Put the legend in a corner in the first thirty seconds: a solid line is realtime media, a dashed line is data and service calls, and a third colour is the human handoff. It takes almost no time, it makes every later line self-explanatory, and it signals that you have drawn architecture for customers before. A readable diagram <em>is</em> the pre-sales deliverable.</p>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <div class="stepnum">01</div>
+        <div class="stepbody">
+          <h4>Ask before you draw</h4>
+          <p>Five to seven questions, roughly two minutes, and no boxes yet. This is the highest-leverage thing you do all hour, and it is the thing most candidates skip entirely.</p>
+          <ul>
+            <li>What is the call volume — peak concurrent, not monthly total?</li>
+            <li>Inbound only, or outbound as well?</li>
+            <li>What telephony do you have today, and are you attached to it?</li>
+            <li>What is the system of record — the CRM, the ticketing system?</li>
+            <li>What does escalation look like now, and where do the humans sit?</li>
+            <li>Are you regulated? Recording consent, PII, HIPAA, PCI?</li>
+            <li>What does success look like — deflection rate, handle time, CSAT?</li>
+          </ul>
+          <p class="script"><b>Say</b>Before I start drawing — can I ask you a few things? The architecture changes quite a lot depending on the answers, and I'd rather draw the right one than draw a generic one and back-fill.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">02</div>
+        <div class="stepbody">
+          <h4>The customer, and the two ways in</h4>
+          <p>Far left of the board. A browser and a phone. Say the assumption out loud as you draw it, so it is his to correct.</p>
+          <div class="board">
+            <svg viewBox="0 0 460 150" role="img" aria-label="Board state: two boxes on the left, a browser and a phone, with nothing else drawn yet.">
+              <rect x="20" y="30" width="130" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="85" y="55" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" fill="var(--ink)">Browser</text>
+              <rect x="20" y="92" width="130" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="85" y="117" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" fill="var(--ink)">Phone</text>
+              <text x="176" y="50" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">two front doors —</text>
+              <text x="176" y="66" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">they're going to converge</text>
+              <text x="20" y="18" font-family="IBM Plex Mono,monospace" font-size="9.5" fill="var(--teal)" letter-spacing="1">LEGEND ALREADY IN THE CORNER</text>
+            </svg>
+            <p class="cap">board after step 2</p>
+          </div>
+          <p class="script"><b>Say</b>Two entry points — someone on your site clicking "talk to support," and someone dialing your support number. I'm drawing both because I want to show you they converge, and that convergence is most of why this architecture is worth building.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">03</div>
+        <div class="stepbody">
+          <h4>The room</h4>
+          <p>Centre of the board, one box, and then pause. This is the concept everything else attaches to, and it deserves a beat rather than being drawn in passing.</p>
+          <div class="board">
+            <svg viewBox="0 0 460 150" role="img" aria-label="Board state: browser and phone on the left now both connect to a central room box.">
+              <defs><marker id="d3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker></defs>
+              <rect x="20" y="30" width="110" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="75" y="55" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" fill="var(--ink)">Browser</text>
+              <rect x="20" y="92" width="110" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="75" y="117" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" fill="var(--ink)">Phone</text>
+              <circle cx="280" cy="81" r="52" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.4"/>
+              <text x="280" y="78" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="700" fill="var(--teal)">ROOM</text>
+              <text x="280" y="95" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">one session</text>
+              <line x1="130" y1="50" x2="230" y2="66" stroke="var(--teal)" stroke-width="2" marker-end="url(#d3)"/>
+              <line x1="130" y1="112" x2="230" y2="96" stroke="var(--teal)" stroke-width="2" marker-end="url(#d3)"/>
+              <text x="352" y="78" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">everything joins</text>
+              <text x="352" y="94" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">this one thing</text>
+            </svg>
+            <p class="cap">board after step 3</p>
+          </div>
+          <p class="script"><b>Say</b>Everything meets in a room. It's a session — audio moves through it, and anyone in it can hear anyone else. The reason I'm drawing this before anything else is that the customer, the AI, and later a human specialist are all just participants in it. There's no separate transfer system, because there doesn't need to be one.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">04</div>
+        <div class="stepbody">
+          <h4>The phone bridge</h4>
+          <p>Connect the phone to the room, through a small box. Name what it does in one sentence — if telephony is unfamiliar to <em>them</em>, this is where you earn credibility.</p>
+          <p class="script"><b>Say</b>The phone side comes in over SIP — that's just signaling, the ringing and the answering; the audio itself is a separate stream. A dispatch rule on the trunk decides which room the call lands in, and after that the caller is a participant like anybody else. So after this one box, there's one code path rather than two.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">05</div>
+        <div class="stepbody">
+          <h4>The agent — as a participant</h4>
+          <p>Draw it joining the room, not hanging off a server somewhere. If you get one thing structurally right today, make it this.</p>
+          <div class="board">
+            <svg viewBox="0 0 460 160" role="img" aria-label="Board state: the room now contains both the customer and the agent as peer participants, with the phone bridge connecting the phone in.">
+              <defs><marker id="d5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker></defs>
+              <rect x="14" y="26" width="92" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="60" y="47" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">Browser</text>
+              <rect x="14" y="100" width="92" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="60" y="121" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">Phone</text>
+              <rect x="122" y="100" width="72" height="34" rx="3" fill="var(--surface)" stroke="var(--teal)"/>
+              <text x="158" y="121" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--teal)">SIP</text>
+              <line x1="106" y1="117" x2="118" y2="117" stroke="var(--teal)" stroke-width="1.8" marker-end="url(#d5)"/>
+              <circle cx="300" cy="80" r="62" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.4"/>
+              <text x="300" y="34" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" font-weight="700" fill="var(--teal)" letter-spacing="1">ROOM</text>
+              <rect x="240" y="56" width="76" height="28" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="278" y="75" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink)">Customer</text>
+              <rect x="288" y="94" width="76" height="28" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.6"/>
+              <text x="326" y="113" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" font-weight="600" fill="var(--ink)">AI agent</text>
+              <line x1="292" y1="84" x2="314" y2="94" stroke="var(--teal)" stroke-width="1.8"/>
+              <line x1="106" y1="43" x2="236" y2="62" stroke="var(--teal)" stroke-width="1.8" marker-end="url(#d5)"/>
+              <line x1="194" y1="117" x2="248" y2="105" stroke="var(--teal)" stroke-width="1.8" marker-end="url(#d5)"/>
+              <text x="378" y="76" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)">peers — not</text>
+              <text x="378" y="91" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)">client/server</text>
+            </svg>
+            <p class="cap">board after step 5 — the structural heart of the answer</p>
+          </div>
+          <p class="script"><b>Say</b>Here's the part that surprises people. The AI isn't a service that audio gets piped to — it's a participant that joins the room, subscribes to the customer's audio and publishes its own. Concretely that's a Python process you run wherever you want. It makes an outbound connection, so there's nothing for you to expose.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">06</div>
+        <div class="stepbody">
+          <h4>The pipeline, then the budget on top of it</h4>
+          <p>Beside or inside the agent, draw STT → LLM → TTS with turn detection alongside. Then immediately annotate the milliseconds. Numbers written on a whiteboard are disproportionately persuasive.</p>
+          <p class="script"><b>Say</b>Speech to text, the model, text to speech — all of it streaming. The budget is under a second from when they stop talking to when they hear us. Transport's under fifty milliseconds; the big one is actually deciding they've finished, about three hundred. Then two to four hundred to first token, one to three hundred to first audio. And it lands under a second rather than being the sum, because recognition is running while they're still speaking.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">07</div>
+        <div class="stepbody">
+          <h4>Data and tools</h4>
+          <p>Right-hand side. Direct reads as solid lines, the external system dashed. Make the boundary an argument rather than a decoration.</p>
+          <div class="board">
+            <svg viewBox="0 0 460 170" role="img" aria-label="Board state: the agent in the room now has a solid line to a customer database and a dashed line to a ticketing box drawn outside a boundary.">
+              <defs>
+                <marker id="d7t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+              </defs>
+              <circle cx="110" cy="82" r="56" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.4"/>
+              <text x="110" y="42" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" font-weight="700" fill="var(--teal)" letter-spacing="1">ROOM</text>
+              <rect x="60" y="60" width="70" height="26" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="95" y="78" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink)">Customer</text>
+              <rect x="98" y="94" width="70" height="26" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-width="1.6"/>
+              <text x="133" y="112" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" font-weight="600" fill="var(--ink)">AI agent</text>
+              <rect x="270" y="26" width="150" height="42" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="345" y="44" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="600" fill="var(--ink)">Customer data</text>
+              <text x="345" y="59" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">yours · read directly</text>
+              <rect x="262" y="96" width="166" height="58" rx="4" fill="none" stroke="var(--slate)" stroke-dasharray="4 3"/>
+              <text x="345" y="112" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--slate)" letter-spacing="1">SOMEONE ELSE'S SYSTEM</text>
+              <rect x="278" y="118" width="134" height="28" rx="3" fill="var(--surface)" stroke="var(--slate)"/>
+              <text x="345" y="137" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">Ticketing (MCP)</text>
+              <line x1="168" y1="100" x2="266" y2="52" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#d7t)"/>
+              <text x="196" y="70" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--slate)">reads</text>
+              <line x1="168" y1="112" x2="272" y2="128" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#d7t)"/>
+              <text x="196" y="134" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--slate)">writes</text>
+            </svg>
+            <p class="cap">board after step 7 — the boundary is the argument</p>
+          </div>
+          <p class="script"><b>Say</b>The agent needs to look things up — customer, device, order history — so those are function tools straight against your data. Ticketing I'm drawing differently, behind a boundary, because it's someone else's system: their schema, their auth, their rate limits. Containing that in one service means a change on their side doesn't force a redeploy of my agent. Though if you've only got the one integration, that's probably over-engineering and I'd start with a direct call.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">08</div>
+        <div class="stepbody">
+          <h4>The handoff</h4>
+          <p>Third colour. The specialist joins the same room. For anyone who runs a contact centre this is the emotional centre of the whole design, so slow down here.</p>
+          <div class="board">
+            <svg viewBox="0 0 460 170" role="img" aria-label="Board state: a human specialist joins the same room in a third colour, alongside the customer and the now-muted agent.">
+              <defs><marker id="d8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--rust)"/></marker></defs>
+              <circle cx="200" cy="86" r="72" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.4"/>
+              <text x="200" y="32" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" font-weight="700" fill="var(--teal)" letter-spacing="1">SAME ROOM</text>
+              <rect x="140" y="52" width="78" height="28" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+              <text x="179" y="71" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink)">Customer</text>
+              <rect x="196" y="90" width="78" height="28" rx="3" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.5"/>
+              <text x="235" y="109" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" font-weight="600" fill="var(--rust)">Specialist</text>
+              <rect x="128" y="112" width="78" height="26" rx="3" fill="var(--surface)" stroke="var(--rule)" stroke-dasharray="3 3"/>
+              <text x="167" y="129" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">agent, muted</text>
+              <line x1="218" y1="70" x2="238" y2="88" stroke="var(--rust)" stroke-width="2"/>
+              <rect x="330" y="76" width="110" height="34" rx="3" fill="var(--surface)" stroke="var(--rust)"/>
+              <text x="385" y="97" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)">human, briefed</text>
+              <line x1="326" y1="95" x2="278" y2="102" stroke="var(--rust)" stroke-width="2" marker-end="url(#d8)"/>
+              <text x="18" y="150" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">no transfer — an arrival</text>
+            </svg>
+            <p class="cap">board after step 8 — the happy path is now complete</p>
+          </div>
+          <p class="script"><b>Say</b>When it can't resolve — or when the customer just asks for a person, which should always work immediately — a specialist joins this same room. They arrive already briefed, so the customer doesn't repeat themselves. That's really the whole point. The AI announces them and steps back, and it can stay on as a silent copilot to keep the transcript complete and file the ticket afterwards.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">09</div>
+        <div class="stepbody">
+          <h4>Only now, the reliability layer</h4>
+          <p>With the happy path drawn and agreed, go back over it and mark what breaks. Do not front-load this — doing it earlier makes the first pass unreadable.</p>
+          <p class="script"><b>Say</b>Let me go back over this and mark what breaks. If the speech vendor degrades, I fail over here — that's the main reason I'd keep these as separate components rather than one speech-to-speech model. If a worker dies, it's isolated to that one call and replaced in about fifteen seconds, and I'd be honest that the call in progress is degraded. If ticketing is down, I queue the write rather than blocking the conversation.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="stepnum">10</div>
+        <div class="stepbody">
+          <h4>Recap at minute fifty-five</h4>
+          <p>Sixty seconds, tracing the diagram with your finger, landing on their metric rather than on the technology.</p>
+          <p class="script"><b>Say</b>So — two ways in, converging into one room. The AI joins as a participant, responds in under a second, reads your data directly and files tickets across a controlled boundary. When it can't resolve, a human joins the same conversation already knowing what's happened. And your side of all this is a worker process, a web app and a database — which is the part I'd want you to notice, because it means you could have this in front of real customers in weeks rather than quarters.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="note">
+      <span class="lbl">Whiteboard hygiene</span>
+      <p>Leave yourself room. Start on the left and work right, and resist filling the canvas in the first five minutes. Narrate continuously, because silence while you think is worse than thinking out loud. Write assumptions in a corner as you make them, so they are visible and correctable.</p>
+      <p>When you do not know something, say "I don't know — here's how I'd find out." Pre-sales engineers get caught bluffing constantly, and it is the fastest way to lose a technical audience. And if Mike picks up the pen, stop and let him: being drawn <em>with</em> is the format working exactly as intended.</p>
+    </div>
+  </section>
+
+  <!-- 10 SPEAKING -->
+  <section id="speak">
+    <div class="sec-head"><span class="sec-num">10</span><h2>Speaking practice</h2></div>
+
+    <p class="lede">You are being assessed on how you sound explaining this, not on whether you know it. Those are different skills, and only one of them improves by reading. Everything in this section is meant to be said out loud, standing up, ideally to a wall.</p>
+
+    <h3>Warm-up: six sentences from memory</h3>
+
+    <p>Before each practice session, say these six aloud without looking. They are the load-bearing claims, and most other answers can be reconstructed from them.</p>
+
+    <ol>
+      <li>TCP trades latency for completeness, and live voice needs the opposite trade.</li>
+      <li>The AI is a participant in the room, not a backend service the audio is piped to.</li>
+      <li>Under one second, because that is roughly where human conversational timing sits.</li>
+      <li>Co-location beats model tuning, because you pay the cross-region hop four or five times per turn.</li>
+      <li>SIP is the ringing and RTP is the voice; after the bridge there is one code path.</li>
+      <li>Handoff is not a transfer — it is a person arriving in a conversation already in progress.</li>
+    </ol>
+
+    <h3>The ninety-second overview</h3>
+
+    <p>Rehearse this until it is fluent. It is what you say if Mike opens with "so how would you approach this?", and it is close to what you say again at minute fifty-five.</p>
+
+    <div class="say">
+      <span class="lbl">The overview <span class="time">~90 sec</span></span>
+      <p>"So at the highest level there are two ways a customer reaches you — someone on the website, and someone dialing a phone number — and the first thing I want to do is get those to converge, because after that point everything downstream is identical.</p>
+      <p>They converge in a room. That's a session, and everything joins it: the customer, the AI, and later a human. The AI isn't a service sitting behind an API — it's a participant, a process you run that joins and subscribes to the customer's audio. That matters because it means putting a human in the call later doesn't need a new subsystem.</p>
+      <p>Inside the agent, the loop is speech to text, model, text to speech, all streaming, with a budget of under a second from when the customer stops talking to when they hear a reply. That's not arbitrary — it's about where human conversational timing sits. The largest slice of that budget isn't computation, it's deciding they've actually finished speaking rather than pausing.</p>
+      <p>The agent reads your customer and order data directly, and files tickets across a controlled boundary because that's someone else's system. And when it can't resolve, a specialist joins the same room already briefed, so the customer never repeats themselves.</p>
+      <p>Your side of all this is genuinely small — a worker process, a web app, a database. But before I commit to any of it I'd want to ask you about volume, your existing telephony, and whether you're regulated, because those change real decisions here."</p>
+    </div>
+
+    <h3>Answer these aloud, then check</h3>
+
+    <p>Give yourself sixty to ninety seconds per answer, out loud, before opening the model answer. Speaking it badly once is worth more than reading a good answer five times.</p>
+
+    <div class="drills">
+      <p class="drills-head">Round one — the technology</p>
+      <details><summary>Explain WebRTC to someone non-technical in three sentences.</summary>
+        <div class="answer"><p>"It's the technology browsers use to send live audio and video. The important thing about it is that it's built for conversations rather than downloads — when the network hiccups, it would rather drop a tiny piece of audio than pause and fall behind. That's the opposite of how the rest of the web works, and it's why a call stays in sync instead of drifting."</p></div>
+      </details>
+      <details><summary>Where does the second go? Walk me through it.</summary>
+        <div class="answer"><p>Say the §03 script. The scoring criteria: did you name transport as under fifty, endpointing as the three-hundred-millisecond bulk, first token and first audio — and did you explain the overlap, so the numbers don't appear to contradict the total? If you skipped the overlap, the answer sounds wrong to anyone doing the arithmetic.</p></div>
+      </details>
+      <details><summary>What's SIP, in plain language?</summary>
+        <div class="answer"><p>"SIP is the signaling for a phone call — it's the ringing, the answering, the hanging up. It doesn't carry any audio at all; the voice travels separately over something called RTP. Almost every confusing telephony question gets simpler once you've split those two apart."</p></div>
+      </details>
+      <details><summary>Why is turn detection hard?</summary>
+        <div class="answer"><p>Lead with the concrete example rather than the theory — the customer saying "my order number is…" and pausing. Then name the two models and their different jobs, then land on it being a dial with no setting that removes the trade-off, tuned per use case. If you got to "there's no right answer, it depends what your customers are saying," you nailed it.</p></div>
+      </details>
+    </div>
+
+    <div class="drills">
+      <p class="drills-head">Round two — the pressure questions</p>
+      <details><summary>This seems expensive. Justify it.</summary>
+        <div class="answer"><p>Do not defend the price. Build the number with them — platform, speech, model, synthesis, telephony — and note that the platform is usually the smaller line. Then move to their side of the ledger: what a deflected contact is worth, what handle time costs them today. If you are regulated, flag the compliance tier floor early rather than letting it surface in procurement.</p></div>
+      </details>
+      <details><summary>Our security team says no third-party media. Now what?</summary>
+        <div class="answer"><p>Take the objection seriously rather than working around it. It is open source and self-hostable, media server included, so media can stay entirely in their infrastructure — they trade the managed edge for that control. Then ask the diagnostic question: is the requirement about media specifically, or about data residency? Those have quite different answers, and people often say the first when they mean the second.</p></div>
+      </details>
+      <details><summary>Why shouldn't we just build this ourselves?</summary>
+        <div class="answer"><p>Be genuinely even-handed. The agent logic is not the hard part and they could write it. The hard parts are the global edge, the phone bridge, session migration, and scaling stateful long-lived sessions — all of which are boring to own and expensive to get wrong. If they have a media infrastructure team already, the calculus genuinely changes, and saying so buys credibility for everything else.</p></div>
+      </details>
+      <details><summary>What don't you know about this?</summary>
+        <div class="answer"><p>Answer it honestly and specifically. Something like: "I'd want to load-test the worker sizing against your actual pipeline rather than trusting a rule of thumb, and I haven't run this at your concurrency. I'd also want to measure the phone leg separately, because narrowband audio hurts recognition accuracy and I wouldn't want to promise you web-quality numbers on a phone call." Naming real unknowns precisely reads as expertise; deflecting reads as the opposite.</p></div>
+      </details>
+    </div>
+
+    <h3>Phrase bank</h3>
+
+    <p>Actual sentences for the moments that go wrong. Having these ready is the difference between recovering smoothly and freezing.</p>
+
+    <div class="phrases">
+      <div class="phrase">
+        <p class="when">You need a second to think</p>
+        <p>"Let me think about that for a second, because there are two ways to go and they have different trade-offs."</p>
+      </div>
+      <div class="phrase">
+        <p class="when">You genuinely don't know</p>
+        <p>"I don't know that one. Here's how I'd find out, and here's what I'd expect the answer to look like."</p>
+      </div>
+      <div class="phrase">
+        <p class="when">You realise mid-sentence you drew it wrong</p>
+        <p>"Actually, let me redraw that — I've put this on the wrong side of the boundary and it matters for what happens next."</p>
+      </div>
+      <div class="phrase">
+        <p class="when">He pushes back and he's right</p>
+        <p>"That's fair, and you're right. Let me tell you where I'd draw the line on that, because I think it changes at a certain scale."</p>
+      </div>
+      <div class="phrase">
+        <p class="when">He pushes back and you disagree</p>
+        <p>"I'd push back gently on that one, and here's why — though tell me if I'm missing something about your setup."</p>
+      </div>
+      <div class="phrase">
+        <p class="when">He asks something you can't answer without more information</p>
+        <p>"It depends on one thing — can I ask you about X first? Because the answer genuinely goes two different directions."</p>
+      </div>
+      <div class="phrase">
+        <p class="when">You're going too deep and losing the room</p>
+        <p>"I'm probably deeper in the weeds than you need — do you want me to keep going here, or move on?"</p>
+      </div>
+      <div class="phrase">
+        <p class="when">You want to flag a weakness before he finds it</p>
+        <p>"Before you ask — the thing I'd be worried about in this design is…"</p>
+      </div>
+    </div>
+
+    <h3>How to rehearse, concretely</h3>
+
+    <p>Set a timer for ten minutes and draw the whole thing from a blank page while narrating continuously. Record yourself on your phone. Then listen back once — which is unpleasant and by far the most useful ten minutes in this guide.</p>
+
+    <p>Three things to listen for. <strong>Are you filling silence with "um" or with sentences?</strong> Narrating your reasoning is fine; noise is not. <strong>Are you explaining or listing?</strong> "There's a room, and an agent, and a database" is a component tour. "They converge into a room, and the reason that matters is…" is an explanation. <strong>Did you ask anything?</strong> If you spoke for ten minutes without a single question, you have practised the wrong skill.</p>
+
+    <h3>Self-scoring rubric</h3>
+
+    <p>You are ready when all six are yes on a cold run-through:</p>
+    <ul>
+      <li>Did you ask discovery questions before drawing anything?</li>
+      <li>Did you put the legend up in the first minute?</li>
+      <li>Did you draw the agent as a participant rather than a backend service?</li>
+      <li>Did you write actual latency numbers on the picture?</li>
+      <li>Did you name at least one weakness in the design without being asked?</li>
+      <li>Did you land the recap on a customer metric rather than a feature?</li>
+    </ul>
+  </section>
+
+  <!-- 11 GCP -->
+  <section id="gcp">
+    <div class="sec-head"><span class="sec-num">11</span><h2>The GCP redraw</h2></div>
+
+    <p class="lede">Your five years as a Google Cloud customer engineer is the most differentiated thing you bring to this interview. Not because LiveKit runs on GCP, but because a large share of their prospects do — and "here's how this lands in your existing footprint" is exactly the sentence a pre-sales engineer is hired to say.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 330" role="img" aria-label="The same architecture on Google Cloud: Cloud Load Balancing and Cloud CDN in front of Cloud Run for the web app, the agent worker on GKE, Firestore for customer data, a ticketing MCP service on Cloud Run, with Workload Identity and Secret Manager.">
+          <defs>
+            <marker id="g-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+            <marker id="g-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          </defs>
+          <rect x="20" y="60" width="150" height="200" rx="4" fill="var(--teal-soft)" stroke="var(--teal)"/>
+          <text x="95" y="84" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--teal)" letter-spacing=".8">LIVEKIT CLOUD</text>
+          <rect x="36" y="100" width="118" height="42" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="95" y="126" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">Room / SFU</text>
+          <rect x="36" y="156" width="118" height="42" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="95" y="182" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">SIP bridge</text>
+          <rect x="36" y="212" width="118" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="95" y="234" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">Inference</text>
+          <rect x="230" y="34" width="640" height="264" rx="4" fill="none" stroke="var(--rule)"/>
+          <text x="252" y="56" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--ink-2)" letter-spacing=".8">GOOGLE CLOUD · us-east4</text>
+          <text x="252" y="72" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">region chosen to sit next to the media edge</text>
+          <rect x="252" y="92" width="150" height="48" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="327" y="112" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Cloud LB + CDN</text>
+          <text x="327" y="128" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">edge · TLS · WAF</text>
+          <rect x="252" y="164" width="150" height="48" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="327" y="184" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Cloud Run</text>
+          <text x="327" y="200" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">Next.js + token API</text>
+          <rect x="446" y="128" width="164" height="56" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="528" y="150" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--teal)">GKE — agent workers</text>
+          <text x="528" y="166" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">long-lived, stateful, drained on deploy</text>
+          <text x="528" y="178" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--ink-3)">terminationGracePeriodSeconds</text>
+          <rect x="446" y="216" width="164" height="46" rx="3" fill="var(--surface)" stroke="var(--slate)" stroke-dasharray="5 3"/>
+          <text x="528" y="236" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Ticketing MCP</text>
+          <text x="528" y="252" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">Cloud Run · request-shaped, fine here</text>
+          <rect x="672" y="92" width="176" height="48" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="760" y="112" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Firestore</text>
+          <text x="760" y="128" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">customers · devices · orders</text>
+          <rect x="672" y="164" width="176" height="48" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="760" y="184" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Workload Identity</text>
+          <text x="760" y="200" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">+ Secret Manager · no static keys</text>
+          <rect x="672" y="230" width="176" height="46" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="760" y="250" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--ink)">Cloud Logging / Trace</text>
+          <text x="760" y="265" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">per-turn latency spans</text>
+          <line x1="170" y1="128" x2="440" y2="150" stroke="var(--teal)" stroke-width="2" marker-start="url(#g-teal)" marker-end="url(#g-teal)"/>
+          <text x="300" y="146" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--teal)">media</text>
+          <line x1="610" y1="146" x2="666" y2="120" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#g-slate)"/>
+          <line x1="610" y1="164" x2="666" y2="182" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#g-slate)"/>
+          <line x1="528" y1="184" x2="528" y2="212" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#g-slate)"/>
+          <line x1="327" y1="140" x2="327" y2="160" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#g-slate)"/>
+        </svg>
+      </div>
+      <figcaption><b>Same architecture, GCP primitives.</b> The one genuinely interesting decision is where the agent workers run. Everything else maps cleanly, and that box does not.</figcaption>
+    </figure>
+
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Reference (AWS)</th><th>GCP</th><th>Why, and what to watch</th></tr></thead>
+        <tbody>
+          <tr><td>CloudFront</td><td>Cloud CDN + Cloud Load Balancing</td><td>Direct swap. Anycast front end, TLS termination, Cloud Armor if they want a WAF.</td></tr>
+          <tr><td>EC2 — web app</td><td>Cloud Run</td><td>Genuinely a better fit. The web app and token API are request-shaped and stateless, which is exactly Cloud Run's sweet spot, and scale-to-zero removes the idle cost.</td></tr>
+          <tr><td>EC2 — agent worker</td><td><strong>GKE</strong>, not Cloud Run</td><td>The decision worth arguing about. See below.</td></tr>
+          <tr><td>DynamoDB</td><td>Firestore</td><td>The closest analogue — document model, serverless, on-demand. Spanner if they need strong global consistency or relational joins, but that is usually over-provisioning for a customer lookup.</td></tr>
+          <tr><td>IAM instance role</td><td>Workload Identity</td><td>Same principle with a better story: the pod gets a Google service account and there is no key material anywhere. "No static keys" is a claim you can make more strongly here.</td></tr>
+          <tr><td>—</td><td>Secret Manager</td><td>Model provider API keys, mounted at runtime, rotated independently, audited.</td></tr>
+          <tr><td>—</td><td>Cloud Logging / Trace</td><td>Per-turn latency as trace spans is a genuinely nice fit, since the pipeline stages map naturally onto a span tree.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The one that isn't a lookup: where do the workers run?</h3>
+
+    <p>A voice agent session is long-lived and stateful. It holds conversation context and an active media connection, and it must stay on the same instance for its entire life. That is close to the opposite of what Cloud Run is designed around, and it is worth being precise about why rather than waving at it.</p>
+
+    <p>Cloud Run caps a request at sixty minutes, with a default of five. A support call rarely runs an hour, but "rarely" is not "never," and a hard ceiling on call duration is an architectural constraint you have to disclose rather than discover. Scale-to-zero also fights you: cold starts on a voice path are unacceptable, so you end up setting minimum instances and paying for warm capacity anyway, which removes most of the reason to be there. This has bitten people in practice — there are filed reports of LiveKit agents on Cloud Run going quiet mid-conversation and failing startup probes. And draining needs real control: letting active calls finish while refusing new ones maps directly onto Kubernetes' termination grace period and a preStop hook, which you own on GKE and mostly do not on Cloud Run.</p>
+
+    <p>So the answer is GKE for the workers and Cloud Run for everything request-shaped. That split is more interesting than "put it all on Cloud Run," because it demonstrates you understand what makes this workload different from a web tier.</p>
+
+    <div class="say">
+      <span class="lbl">Say it out loud <span class="time">~35 sec</span></span>
+      <p>"If they're a Google shop, most of this maps one to one — Cloud CDN at the edge, Firestore for the customer data, Workload Identity instead of instance roles so there's no key material sitting anywhere.</p>
+      <p>The one I'd argue about is the agent workers. The instinct is Cloud Run, and I'd push back on it: these sessions are long-lived and sticky, Cloud Run caps a request at sixty minutes, and you'd be pinning minimum instances to avoid cold starts anyway — so you've lost most of the benefit. I'd put the workers on GKE where I control draining properly, and Cloud Run for the web app and the MCP service where the request model actually fits."</p>
+    </div>
+
+    <h3>GCP-native models, honestly</h3>
+
+    <p>Chirp for speech recognition and Gemini for the model are legitimate choices, and Gemini Live is a real speech-to-speech option if they want to go that route. The reasons a customer might prefer them are data residency, an existing Vertex AI commitment, consolidated billing, or a negotiated enterprise agreement — all commercial, and all valid.</p>
+
+    <p>The reason to be careful is that the stack on the reference sheet is there because each component is a latency leader in its category, and swapping for procurement reasons can cost real milliseconds. That is a measurement rather than an opinion, so offer to benchmark both stacks against their actual traffic. Offering to measure instead of asserting is the single most credible thing a pre-sales engineer can say.</p>
+
+    <div class="note">
+      <span class="lbl">Where GCP is worse for this — say it unprompted</span>
+      <p>Region coverage for low-latency voice is thinner than AWS in some geographies, and if their customers sit somewhere GCP is far from the media edge, co-location — your biggest latency lever — becomes harder to achieve. Naming a weakness in the platform you know best is disproportionately persuasive, because it tells the room your recommendations are engineering judgments rather than preferences.</p>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section id="presales">
+    <div class="sec-head"><span class="sec-num">12</span><h2>Objections</h2></div>
+
+    <p class="lede">Same diagram, different job. An engineer is judged on whether the design is right; a sales engineer is judged on whether the customer trusts the person who drew it.</p>
+
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>They say</th><th>You say</th></tr></thead>
+        <tbody>
+          <tr><td><strong>"Why not Vapi or Retell?"</strong></td><td>If you want a phone agent live this month and you are happy inside their model of the world, they are genuinely faster to launch. You would choose this instead when you need control over the media path, want the agent running in your own infrastructure, need web and phone in one system, or expect to outgrow a configuration-shaped product. It is a build-versus-configure question, and it is fair to ask which one you are.</td></tr>
+          <tr><td><strong>"Why not Pipecat? It's free."</strong></td><td>Pipecat is a good pipeline framework, and this is open source too — you can self-host the whole thing. What you would be taking on is the transport layer: the global edge, the phone bridge, session migration, scaling. That is the part that is genuinely hard to build and boring to own. If you already have a media infrastructure team, that calculus changes.</td></tr>
+          <tr><td><strong>"We're on Twilio Flex."</strong></td><td>Then ConversationRelay deserves a serious look, because the call already lives in your contact centre and your routing and reporting are built around it. I would rather you evaluate that properly than migrate for the wrong reason. Where this wins is if you also need web and in-app voice, or you want the agent portable across channels.</td></tr>
+          <tr><td><strong>"Why not use OpenAI Realtime directly?"</strong></td><td>You still need everything around the model — getting audio there reliably from a browser or a phone, handling a bad network, bridging the phone system, putting a human into the call. That is the layer this is. They are complementary; you can run OpenAI Realtime as the model inside this architecture.</td></tr>
+          <tr><td><strong>"Security won't allow third-party media."</strong></td><td>Reasonable, and there is a real answer: it is open source and self-hostable, media server included, so media can stay entirely in your infrastructure. You would be trading the managed edge and its operational burden for that control. I would want to understand whether the requirement is about media specifically or about data residency, because those have different answers.</td></tr>
+          <tr><td><strong>"What does this actually cost?"</strong></td><td>Let me build it with you rather than quote a platform number, because the platform is usually the smaller line. Agent session minutes are about a cent a minute and SIP is a third of a cent; model inference is typically the bigger item and that is not ours. One thing to flag early: HIPAA and SOC 2 sit on the Scale tier, so if you are regulated there is a five-hundred-a-month floor before usage.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Reflexes worth having</h3>
+
+    <p><strong>Ask before you solve.</strong> Every question in step 01 of the drawing script changes the architecture. Asking them is not stalling — it is the job.</p>
+
+    <p><strong>Talk in their metrics.</strong> Deflection rate, average handle time, first-contact resolution, satisfaction. "Sub-second latency" is a feature; "your customers stop hanging up during the pause" is a benefit, and only one of those closes.</p>
+
+    <p><strong>Disqualify honestly.</strong> Saying "I don't think we're the best fit for that" once buys you credibility on everything else you say afterwards. It is also the single hardest thing to do in an interview, which is precisely why it lands so well.</p>
+
+    <p><strong>Offer to measure.</strong> Latency, cost, model quality — the answer to most contested questions is a benchmark against their traffic, not an assertion.</p>
+
+    <p><strong>Know the next step.</strong> Every good pre-sales conversation ends with one. A scoped proof of concept on a single call type, with a defined success metric, is the natural close here.</p>
+  </section>
+
+  <!-- 13 -->
+  <section id="lab">
+    <div class="sec-head"><span class="sec-num">13</span><h2>Hands-on lab</h2></div>
+
+    <p class="lede">Build the diagram. Not to become an expert implementer, but so that when Mike asks how something actually works you are remembering rather than reasoning.</p>
+
+    <p>The single highest-value output here is checkpoint two: your own measured latency numbers. Quoting a published budget is fine. Saying "when I built this, my end-of-turn was sitting around three hundred and forty milliseconds, and first token was the thing that surprised me" is a completely different conversation, and it is not one anybody can fake.</p>
+
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>#</th><th>Checkpoint</th><th>What it teaches you to say</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td><strong>Bare agent</strong> — LiveKit Cloud project, Python agent, streaming pipeline, talk to it in the playground.</td><td>What the worker actually is, and how little code it takes.</td></tr>
+          <tr><td class="num">2</td><td><strong>Measure it</strong> — enable metrics, capture per-stage latency across twenty turns, compare against the published budget.</td><td>Your own numbers. The most valuable hour in this list.</td></tr>
+          <tr><td class="num">3</td><td><strong>Turn detection</strong> — run VAD-only, then add the semantic model. Trigger a false cutoff on purpose by pausing mid-sentence.</td><td>The trade-off curve, from having felt it rather than read it.</td></tr>
+          <tr><td class="num">4</td><td><strong>Data and tools</strong> — a small customers/devices/orders store and function tools that read it.</td><td>How tool descriptions drive model behavior — it really is prompt engineering.</td></tr>
+          <tr><td class="num">5</td><td><strong>MCP boundary</strong> — a minimal ticketing MCP server wired through the agents MCP toolset.</td><td>What the dashed box on your diagram actually costs to build.</td></tr>
+          <tr><td class="num">6</td><td><strong>Web app and tokens</strong> — a minimal browser client and a token-minting endpoint.</td><td>Why the web app is not on the media path, and what a room token grants.</td></tr>
+          <tr><td class="num">7</td><td><strong>Handoff</strong> — a second browser client joins the same room; the agent announces and goes quiet.</td><td>That escalation really is just another participant. Seeing it is convincing.</td></tr>
+          <tr><td class="num">8</td><td><strong>Telephony</strong> — a real number, inbound trunk, dispatch rule. Call your agent from your phone.</td><td>SIP, permanently. Costs a few dollars, and it is the best money in this list.</td></tr>
+          <tr><td class="num">9</td><td><strong>Deploy</strong> — containerize, run the worker on GKE and the web app on Cloud Run.</td><td>Section 11, from experience rather than from reasoning.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">On checkpoint 8</span>
+      <p>Buy the phone number. Telephony is the area you flagged as least familiar, and it is the one where a single real phone call replaces an hour of reading. Everything about SIP stops being abstract the moment your own agent answers your own phone.</p>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section id="plan">
+    <div class="sec-head"><span class="sec-num">14</span><h2>Two weeks</h2></div>
+
+    <p>About ninety minutes a day. From day four onward, draw the whole diagram from memory before you start reading anything — ten minutes, out loud, standing up if you can. Repetition of the drawing and the talking is worth more than any additional reading, because the drawing and the talking are what is actually being assessed.</p>
+
+    <div class="days">
+      <div class="day"><p class="d">Day 1</p><p class="t">Primer, front to back</p><p class="s">The companion page. Builds the foundation everything else sits on.</p></div>
+      <div class="day"><p class="d">Day 2</p><p class="t">WebRTC &amp; latency</p><p class="s">§02 and §03. Memorize the budget table.</p></div>
+      <div class="day"><p class="d">Day 3</p><p class="t">Turn-taking</p><p class="s">§04. Understand the curve, not just the components.</p></div>
+      <div class="day rehearse"><p class="d">Day 4</p><p class="t">SIP from zero</p><p class="s">§06 — the big unfamiliar one. Start the daily draw today.</p></div>
+      <div class="day rehearse"><p class="d">Day 5</p><p class="t">SIP again + handoff</p><p class="s">§06 revisited, then §07. Draw first, read second.</p></div>
+      <div class="day rehearse"><p class="d">Day 6</p><p class="t">Agents, tools, MCP</p><p class="s">§05. Learn the sizing numbers properly.</p></div>
+      <div class="day rehearse"><p class="d">Day 7</p><p class="t">Lab 1–2</p><p class="s">Agent running. Get your own latency numbers.</p></div>
+      <div class="day rehearse"><p class="d">Day 8</p><p class="t">Lab 3–4</p><p class="s">Turn detection and tools. Break it on purpose.</p></div>
+      <div class="day rehearse"><p class="d">Day 9</p><p class="t">Lab 5–7</p><p class="s">MCP, web app, handoff between two browsers.</p></div>
+      <div class="day rehearse"><p class="d">Day 10</p><p class="t">Lab 8 — the phone</p><p class="s">Buy the number. Call your own agent.</p></div>
+      <div class="day rehearse"><p class="d">Day 11</p><p class="t">Reliability &amp; scale</p><p class="s">§08. Failure table cold.</p></div>
+      <div class="day rehearse"><p class="d">Day 12</p><p class="t">GCP redraw + lab 9</p><p class="s">§11. Deploy it. Draw the GCP variant twice.</p></div>
+      <div class="day rehearse"><p class="d">Day 13</p><p class="t">Speaking, all of §10</p><p class="s">Every prompt out loud. Record and listen back.</p></div>
+      <div class="day rehearse"><p class="d">Day 14</p><p class="t">Full rehearsal</p><p class="s">Timed, end to end, with someone interrupting you.</p></div>
+    </div>
+  </section>
+
+  <!-- sources -->
+  <section id="sources">
+    <div class="sec-head"><span class="sec-num">—</span><h2>Sources</h2></div>
+    <p>Everything factual here traces to one of these. Documentation moves — re-check the telephony paths in particular, which have shifted from <code>/sip/</code> to <code>/telephony/</code>.</p>
+    <ul class="srcs">
+      <li><a href="https://docs.livekit.io/agents/">LiveKit Agents — framework overview</a></li>
+      <li><a href="https://docs.livekit.io/agents/server/">Agent server overview</a></li>
+      <li><a href="https://docs.livekit.io/agents/server/lifecycle/">Agent server lifecycle</a></li>
+      <li><a href="https://docs.livekit.io/telephony/">Telephony overview</a></li>
+      <li><a href="https://docs.livekit.io/telephony/features/transfers/warm/">Agent-assisted warm transfer</a></li>
+      <li><a href="https://docs.livekit.io/agents/logic/turns/">Turns overview</a></li>
+      <li><a href="https://docs.livekit.io/reference/python/livekit/agents/llm/mcp.html">Agents MCP toolset — API reference</a></li>
+      <li><a href="https://docs.livekit.io/intro/cloud/">LiveKit Cloud</a></li>
+      <li><a href="https://docs.livekit.io/start/voice-ai/">Voice AI quickstart</a></li>
+      <li><a href="https://livekit.com/blog/voice-agent-architecture-stt-llm-tts-pipelines-explained">Voice agent architecture: STT, LLM, TTS pipelines</a> — the latency budget</li>
+      <li><a href="https://livekit.com/blog/turn-detection-voice-agents-vad-endpointing-model-based-detection">Turn detection: VAD, endpointing, model-based</a></li>
+      <li><a href="https://livekit.com/blog/solving-end-of-turn-detection">Solving end-of-turn detection — Turn Detector v1.0</a></li>
+      <li><a href="https://huggingface.co/livekit/turn-detector">livekit/turn-detector model card</a></li>
+      <li><a href="https://livekit.com/blog/scaling-webrtc-with-distributed-mesh">Scaling WebRTC with a distributed mesh</a></li>
+      <li><a href="https://livekit.com/blog/deploy-and-scale-agents-on-livekit-cloud">Deploy and scale agents on LiveKit Cloud</a></li>
+      <li><a href="https://livekit.com/blog/handoff-pattern-voice-agents">The handoff pattern for voice agents</a></li>
+      <li><a href="https://livekit.com/blog/human-in-the-loop-voice-agents">Human-in-the-loop for voice agents</a></li>
+      <li><a href="https://livekit.com/pricing">LiveKit pricing</a></li>
+      <li><a href="https://www.forasoft.com/learn/livekit-for-ai-agents-guide">Production architecture &amp; vendor stack guide</a> — sessions-per-core figure</li>
+      <li><a href="https://docs.cloud.google.com/run/docs/triggering/websockets">Cloud Run — WebSockets and the 60-minute timeout</a></li>
+      <li><a href="https://github.com/livekit/agents/issues/1692">livekit/agents #1692 — Cloud Run deployment problems</a></li>
+      <li><a href="https://www.pnas.org/doi/pdf/10.1073/pnas.0903616106">Stivers et al. — turn-taking timing across languages</a></li>
+      <li><a href="https://www.yeastar.com/blog/sip-protocol/">SIP protocol explained</a></li>
+      <li><a href="https://inworld.ai/resources/vapi-vs-pipecat-vs-livekit">Vapi vs Pipecat vs LiveKit</a></li>
+    </ul>
+
+    <footer>
+      <p>Built for Nabil's LiveKit Sales Engineer technical round. Figures verified August 2026 — re-check pricing and model names before the interview.</p>
+    </footer>
+  </section>
+
+  </main>
+</div>
+</div>

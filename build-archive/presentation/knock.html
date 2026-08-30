@@ -1,0 +1,347 @@
+<title>Knocking on Your Own Door</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE;
+  --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26;
+  --shadow:0 1px 2px rgba(23,27,33,.05), 0 4px 14px rgba(23,27,33,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F;
+    --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F;
+  --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:18px; line-height:1.68; -webkit-font-smoothing:antialiased}
+h1,h2,h3,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+a{color:var(--teal); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px}
+
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:56px; padding-bottom:40px}
+.kicker{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 16px}
+h1{font-size:clamp(34px,6vw,54px); line-height:1.02; letter-spacing:-.03em; font-weight:700; margin:0 0 20px; text-wrap:balance}
+.dek{font-size:20px; color:var(--ink-2); margin:0 0 24px}
+.startline{border-top:1px solid var(--rule); padding-top:16px; font-size:16px; color:var(--ink-2)}
+.startline b{color:var(--ink); font-weight:600}
+
+main{padding:8px 0 80px}
+.ch{margin:0 0 12px; padding:44px 0 0}
+.ch-num{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--teal); display:block; margin-bottom:10px}
+h2{font-size:clamp(25px,3.7vw,33px); line-height:1.13; letter-spacing:-.024em; margin:0 0 20px; font-weight:700; text-wrap:balance}
+h3{font-size:19px; margin:30px 0 9px; font-weight:600; letter-spacing:-.01em}
+p{margin:0 0 17px}
+ul,ol{margin:0 0 17px; padding-left:24px}
+li{margin:0 0 9px}
+li::marker{color:var(--ink-3)}
+code:not(pre code){background:var(--surface-2); padding:.1em .38em; border-radius:2px; font-size:.84em; border:1px solid var(--rule)}
+
+.bridge{margin:30px 0 0; padding:18px 20px 18px 22px; background:var(--rust-soft); border-left:3px solid var(--rust); border-radius:0 3px 3px 0}
+.bridge .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--rust); display:block; margin-bottom:7px; font-weight:600}
+.bridge p{margin:0; font-size:17px; color:var(--ink)}
+.keep{margin:26px 0; padding:16px 20px; background:var(--teal-soft); border-left:3px solid var(--teal); border-radius:0 3px 3px 0}
+.keep .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:7px; font-weight:600}
+.keep p{margin:0; font-size:17px}
+.keep p + p{margin-top:11px}
+.aside{margin:26px 0; padding:16px 19px; background:var(--surface); border:1px solid var(--rule); border-radius:3px}
+.aside .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:7px; font-weight:600}
+.aside p{margin:0; font-size:16.5px}
+.aside p + p{margin-top:11px}
+
+figure{margin:32px 0; width:100%}
+@media(min-width:900px){figure{width:calc(100% + 130px); margin-left:-65px}}
+.figbox{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; min-width:480px; height:auto; color:var(--ink)}
+figcaption{font-size:14.5px; color:var(--ink-2); margin:11px auto 0; line-height:1.5; max-width:700px}
+figcaption b{color:var(--ink); font-weight:600}
+
+.tablebox{overflow-x:auto; margin:24px 0; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+@media(min-width:900px){.tablebox{width:calc(100% + 130px); margin-left:-65px}}
+table{border-collapse:collapse; width:100%; min-width:520px; font-size:15.5px}
+th,td{padding:11px 15px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace; font-size:13.5px; white-space:nowrap}
+td.ok{color:var(--good); font-weight:600}
+td.no{color:var(--ink-3)}
+
+pre{background:var(--surface-2); border:1px solid var(--rule); border-radius:3px; padding:15px 17px; overflow-x:auto; margin:18px 0; font-size:13px; line-height:1.6}
+pre code{background:none; border:0; padding:0}
+.c-teal{color:var(--teal); font-weight:600} .c-rust{color:var(--rust); font-weight:600}
+.c-grey{color:var(--ink-3)} .c-good{color:var(--good); font-weight:600}
+.hl{background:var(--teal-soft); padding:1px 3px; border-radius:2px}
+
+hr{border:0; border-top:1px solid var(--rule); margin:44px 0 0}
+footer{border-top:1px solid var(--rule); margin-top:50px; padding:26px 0 60px; color:var(--ink-3); font-size:14.5px}
+footer p{margin:0 0 9px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">Companion piece · everything here actually happened</p>
+    <h1>Knocking on Your Own Door</h1>
+    <p class="dek">Your project has a phone-network address. Here's what happened when we walked up to it and knocked — and what each part of the reply means.</p>
+    <p class="startline"><b>No diagrams pretending to be evidence.</b> Every output on this page came off a real connection to <code>29ubqywmjjj.sip.livekit.cloud</code>.</p>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<!-- 01 -->
+<section class="ch">
+  <span class="ch-num">01</span>
+  <h2>You have an address on the phone network</h2>
+
+  <p>This is the part that surprises people. Your LiveKit project isn't only reachable over the web — it has a second front door, one that speaks the telephone network's language, and it has been sitting there open the whole time.</p>
+
+  <p>Its address comes from your project ID. Take <code>p_29ubqywmjjj</code>, drop the <code>p_</code>, and that's it:</p>
+
+  <pre><code><span class="c-grey"># your project ID</span>
+p_29ubqywmjjj
+
+<span class="c-grey"># your address on the phone network</span>
+<span class="c-teal">sip:29ubqywmjjj.sip.livekit.cloud</span></code></pre>
+
+  <p><strong>That one string is the entire carrier integration.</strong> When somebody says "integrate Twilio with LiveKit," what they mean is: paste that hostname into a box in Twilio's console. Everything else is bookkeeping.</p>
+
+  <p>So the first question is simply whether anything is home.</p>
+
+  <pre><code>$ dig +short 29ubqywmjjj.sip.livekit.cloud
+
+<span class="c-good">161.115.181.100</span>
+<span class="c-good">161.115.180.215</span></code></pre>
+
+  <p>Two addresses, not one — which is the redundancy showing through. And they sit inside the IP ranges LiveKit publishes for exactly this purpose, which is what you'd hand a customer's security team when they ask what to allow through the firewall.</p>
+
+  <div class="bridge">
+    <span class="lbl">But resolving isn't answering</span>
+    <p>A name pointing at an address proves nothing. Is anybody actually listening?</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 02 -->
+<section class="ch">
+  <span class="ch-num">02</span>
+  <h2>Somebody is listening</h2>
+
+  <p>Phone signalling lives on port 5060, the way web traffic lives on 443. So we knocked:</p>
+
+  <pre><code>$ nc -z 29ubqywmjjj.sip.livekit.cloud 5060
+
+<span class="c-good">Connection to 29ubqywmjjj.sip.livekit.cloud port 5060 [tcp/sip] succeeded!</span></code></pre>
+
+  <p>The door opened. Something on the other side is waiting for phone calls.</p>
+
+  <p>That still doesn't prove it speaks the language, though. So we said something to it — in SIP.</p>
+
+  <div class="bridge">
+    <span class="lbl">And this is the good part</span>
+    <p>There's a SIP message that exists purely to ask "are you there, and what can you do?" It's the same message a carrier sends to health-check a trunk before it trusts you with real calls.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 03 -->
+<section class="ch">
+  <span class="ch-num">03</span>
+  <h2>We said hello in SIP</h2>
+
+  <p>The message is called <code>OPTIONS</code>. Here is exactly what we sent — and notice how ordinary it looks. SIP is text, like HTTP, which is a large part of why it's less frightening than its reputation.</p>
+
+  <pre><code><span class="c-grey">──── WE SEND ────</span>
+<span class="c-teal">OPTIONS</span> sip:29ubqywmjjj.sip.livekit.cloud SIP/2.0
+Via: SIP/2.0/TCP <span class="hl">192.168.1.131:50889</span>;branch=z9hG4bK-a8c7b78d1f33;rport
+From: &lt;sip:probe@example.com&gt;;tag=594d82c9
+To: &lt;sip:29ubqywmjjj.sip.livekit.cloud&gt;
+Call-ID: 2c83b64d144845bc83671074ff7b4265
+CSeq: 1 OPTIONS
+Max-Forwards: 70
+Content-Length: 0</code></pre>
+
+  <p>Read it as a letter. <strong>From</strong> and <strong>To</strong> are who it's between. <strong>Call-ID</strong> is the reference number for this conversation. <strong>Via</strong> is the return address — <em>send your reply back here</em>. <strong>Max-Forwards</strong> stops it bouncing around forever.</p>
+
+  <p>Half a second later:</p>
+
+  <pre><code><span class="c-grey">──── LIVEKIT REPLIES ────</span>
+<span class="c-good">SIP/2.0 200 OK</span>
+Via: SIP/2.0/TCP 192.168.1.131:50889;branch=z9hG4bK-a8c7b78d1f33;<span class="hl">rport=50889;received=192.168.1.131</span>
+From: &lt;sip:probe@example.com&gt;;tag=594d82c9
+To: &lt;sip:29ubqywmjjj.sip.livekit.cloud&gt;;<span class="hl">tag=a6c61b2e-3a6d-4c07-8a60-15b84139881c</span>
+Call-ID: 2c83b64d144845bc83671074ff7b4265
+CSeq: 1 OPTIONS
+Content-Length: 0</code></pre>
+
+  <p><strong><code>200 OK</code>.</strong> The same "200 OK" you know from the web — SIP borrowed HTTP's response codes wholesale. Your project's phone-network door just answered you.</p>
+
+  <h3>Two details in that reply worth understanding</h3>
+
+  <p>Look at the highlighted parts, because they're doing real work.</p>
+
+  <p><strong><code>received=192.168.1.131</code> and <code>rport=50889</code>.</strong> We told it our address; it wrote back <em>"and for the record, here's the address I actually saw you arrive from."</em> That's SIP's built-in way of coping with routers that rewrite addresses — the exact same problem STUN solves for WebRTC, handled here inside the protocol itself.</p>
+
+  <p><strong>A <code>tag</code> appeared on the <code>To:</code> line.</strong> Ours had a tag; theirs didn't, until now. Both sides tagging themselves is how SIP says <em>"this is now a conversation between us two specifically."</em> One tag is a message. Two tags is a dialog.</p>
+
+  <div class="keep">
+    <span class="lbl">Why this matters more than it looks</span>
+    <p>That exchange is not a toy. It is precisely what a Twilio or Telnyx trunk sends before routing production calls to you — same message, same port, same expected reply. Carriers use it to decide whether you're alive.</p>
+    <p>So you have now performed, by hand, the health check that sits underneath every phone integration you'll ever discuss.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 04 -->
+<section class="ch">
+  <span class="ch-num">04</span>
+  <h2>The same door, in five countries</h2>
+
+  <p>Regions stop being abstract the moment you ask DNS about them. The endpoint takes a region name in the middle, and each one is genuinely somewhere else:</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>You ask for</th><th>You get</th><th></th></tr></thead>
+      <tbody>
+        <tr><td class="mono">…sip.livekit.cloud</td><td class="mono">161.115.181.100 · 161.115.180.215</td><td>global — nearest region</td></tr>
+        <tr><td class="mono">…<b>us</b>.sip.livekit.cloud</td><td class="mono">161.115.180.215</td><td class="ok">same as global ↑</td></tr>
+        <tr><td class="mono">…<b>eu</b>.sip.livekit.cloud</td><td class="mono">161.115.161.165</td><td class="no">elsewhere</td></tr>
+        <tr><td class="mono">…<b>india</b>.sip.livekit.cloud</td><td class="mono">143.223.91.165</td><td class="no">elsewhere</td></tr>
+        <tr><td class="mono">…<b>japan</b>.sip.livekit.cloud</td><td class="mono">161.115.166.21</td><td class="no">elsewhere</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Notice the second row. The global name and the US name returned <strong>the same address</strong> — because the query came from a laptop in Texas, and global routing means "send me to whichever region is closest." That's not a claim in a docs page; that's the load balancer's answer, visible.</p>
+
+  <p>Ask from Frankfurt and the global name would have given you the European address instead.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 200" role="img" aria-label="One hostname resolves to whichever region is nearest the person asking. Adding a region name in the middle forces a specific region and switches off automatic failover.">
+        <text x="16" y="24" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--teal)">GLOBAL NAME &#183; the default</text>
+
+        <rect x="16" y="44" width="150" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="91" y="62" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink)">a carrier asks</text>
+        <text x="91" y="76" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">from wherever it is</text>
+
+        <path d="M166,64 L226,64" stroke="var(--teal)" stroke-width="2" fill="none"/>
+        <polygon points="226,60 236,64 226,68" fill="var(--teal)"/>
+
+        <rect x="240" y="44" width="180" height="40" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="330" y="62" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--teal)">…sip.livekit.cloud</text>
+        <text x="330" y="76" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-2)">answers with the nearest</text>
+
+        <g font-family="Archivo,sans-serif" font-size="10" text-anchor="middle">
+          <rect x="470" y="30" width="72" height="24" rx="3" fill="var(--surface)" stroke="var(--rule)"/><text x="506" y="46" fill="var(--ink-2)">US</text>
+          <rect x="560" y="30" width="72" height="24" rx="3" fill="var(--surface)" stroke="var(--rule)"/><text x="596" y="46" fill="var(--ink-2)">EU</text>
+          <rect x="650" y="30" width="72" height="24" rx="3" fill="var(--surface)" stroke="var(--rule)"/><text x="686" y="46" fill="var(--ink-2)">India</text>
+          <rect x="740" y="30" width="66" height="24" rx="3" fill="var(--surface)" stroke="var(--rule)"/><text x="773" y="46" fill="var(--ink-2)">Japan</text>
+        </g>
+        <g stroke="var(--teal)" stroke-width="1.4" stroke-dasharray="3 2">
+          <line x1="420" y1="60" x2="500" y2="56"/><line x1="420" y1="62" x2="590" y2="56"/>
+          <line x1="420" y1="66" x2="680" y2="56"/><line x1="420" y1="68" x2="768" y2="56"/>
+        </g>
+        <text x="470" y="76" font-family="Archivo,sans-serif" font-size="10" fill="var(--good)">whichever is closest &#8212; and it fails over automatically</text>
+
+        <line x1="16" y1="104" x2="806" y2="104" stroke="var(--rule)"/>
+
+        <text x="16" y="130" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--rust)">PINNED NAME &#183; for regulation only</text>
+        <rect x="240" y="146" width="180" height="40" rx="3" fill="var(--rust-soft)" stroke="var(--rust)"/>
+        <text x="330" y="164" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--rust)">…<tspan font-weight="700">eu</tspan>.sip.livekit.cloud</text>
+        <text x="330" y="178" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-2)">always Europe, no matter what</text>
+        <rect x="560" y="152" width="72" height="26" rx="3" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.5"/>
+        <text x="596" y="169" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--rust)">EU</text>
+        <line x1="420" y1="166" x2="554" y2="166" stroke="var(--rust)" stroke-width="2"/>
+        <polygon points="554,162 564,166 554,170" fill="var(--rust)"/>
+        <text x="650" y="170" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--bad)">and if Europe is down, that's that</text>
+      </svg>
+    </div>
+    <figcaption><b>The trade, in one picture.</b> Pinning buys you a promise about where calls land — which is what a regulator wants. It costs you the automatic failover you get for free otherwise. Pin for law, never for speed.</figcaption>
+  </figure>
+
+  <div class="aside">
+    <span class="lbl">One trap worth carrying</span>
+    <p>The region code <code>sa</code> means <strong>South America</strong> for realtime connections and <strong>Saudi Arabia</strong> for SIP. Same two letters, different continents, in the same product.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 05 -->
+<section class="ch">
+  <span class="ch-num">05</span>
+  <h2>What's proven, and what's still a promise</h2>
+
+  <p>Being precise about this is the point. Here is the whole inbound path, marked honestly:</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Piece</th><th>Status</th><th>How we know</th></tr></thead>
+      <tbody>
+        <tr><td>Your project has a SIP address</td><td class="ok">verified</td><td>derived from the project ID, confirmed on the dashboard</td></tr>
+        <tr><td>It resolves, redundantly</td><td class="ok">verified</td><td>two IPs from <code>dig</code></td></tr>
+        <tr><td>Something is listening on 5060</td><td class="ok">verified</td><td>TCP connection succeeded</td></tr>
+        <tr><td>It speaks SIP</td><td class="ok">verified</td><td><code>200 OK</code> to a real OPTIONS</td></tr>
+        <tr><td>Regions are physically separate</td><td class="ok">verified</td><td>four regions, four addresses</td></tr>
+        <tr><td>A trunk declaring numbers and auth</td><td class="ok">created</td><td><code>ST_XzGk7YX5NVgZ</code></td></tr>
+        <tr><td>A rule routing calls to your agent</td><td class="ok">created</td><td><code>SDR_YToSapsMjzmq</code></td></tr>
+        <tr><td><b>A carrier pointing at you</b></td><td class="no">not done</td><td>needs a Twilio or Telnyx account</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Seven of eight. <strong>Everything on your side of the boundary is real and tested.</strong> The only missing piece is somebody else's system aiming at your hostname — and you now know exactly what they'd aim at, and exactly what they'd get back.</p>
+
+  <div class="keep">
+    <span class="lbl">Say it out loud</span>
+    <p>"Integrating a carrier is mostly one hostname. Your project gets a SIP address derived from the project ID, and the carrier's job is to point its origination URI at it. I pinged mine with a SIP OPTIONS and it answered 200 OK — which is the same health check the carrier itself runs before it trusts you with calls. On your side you declare a trunk saying which numbers and which credentials you'll accept, and a dispatch rule saying which room and which agent the call lands in. That's the whole integration."</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="ch">
+  <span class="ch-num">&mdash;</span>
+  <h2>Four things to carry</h2>
+
+  <ol>
+    <li><strong>Your project ID is your phone address.</strong> Strip the <code>p_</code> and add <code>.sip.livekit.cloud</code>. That string is the integration.</li>
+    <li><strong>SIP is text and it borrowed HTTP's status codes.</strong> A <code>200 OK</code> means the same thing it always did.</li>
+    <li><strong><code>OPTIONS</code> is the knock.</strong> Carriers use it to check you're alive; you can use it to check the same thing, by hand, in ten seconds.</li>
+    <li><strong>Regions are real addresses, not settings.</strong> Pinning one is a compliance decision that costs you automatic failover.</li>
+  </ol>
+
+  <footer>
+    <p>Companion to <a href="https://claude.ai/code/artifact/fc53e690-74a0-4923-9c97-498314066b21">Wiring Up a Phone Number</a>, <a href="https://claude.ai/code/artifact/eca37b35-b278-4b09-b3ac-4571b3660c64">From Sound to Conversation</a>, <a href="https://claude.ai/code/artifact/cf30cc8a-a9ed-4e69-abee-301642ef2340">Inside the Room</a>, <a href="https://claude.ai/code/artifact/ed2f4e3f-af24-409e-875e-db5cc0499953">Talking While You Wait</a>, <a href="https://claude.ai/code/artifact/c7cafc7b-638e-4917-82b6-63da043d74d4">What LiveKit Ships</a> and the <a href="https://claude.ai/code/artifact/280e533f-f812-4e14-b135-cf8bb95adba2">AnyCompany Voice Agent Playbook</a>.</p>
+    <p>Every command and response on this page was run against project <code>p_29ubqywmjjj</code> in August 2026. Addresses may change — re-run the commands rather than trusting the numbers.</p>
+  </footer>
+</section>
+
+</div>
+</main>

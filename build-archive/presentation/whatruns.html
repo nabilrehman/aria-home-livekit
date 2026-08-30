@@ -1,0 +1,460 @@
+<title>What Runs Where</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE;
+  --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26;
+  --gcp:#4285F4; --gcp-soft:#E6EEFD;
+  --shadow:0 1px 2px rgba(23,27,33,.05), 0 4px 14px rgba(23,27,33,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F;
+    --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+    --gcp:#7BAAF7; --gcp-soft:#152238;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F;
+  --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+  --gcp:#7BAAF7; --gcp-soft:#152238;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:18px; line-height:1.68; -webkit-font-smoothing:antialiased}
+h1,h2,h3,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+a{color:var(--teal); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px}
+
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:56px; padding-bottom:40px}
+.kicker{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 16px}
+h1{font-size:clamp(34px,6vw,54px); line-height:1.02; letter-spacing:-.03em; font-weight:700; margin:0 0 20px; text-wrap:balance}
+.dek{font-size:20px; color:var(--ink-2); margin:0 0 24px}
+.startline{border-top:1px solid var(--rule); padding-top:16px; font-size:16px; color:var(--ink-2)}
+.startline b{color:var(--ink); font-weight:600}
+
+main{padding:8px 0 80px}
+.ch{margin:0 0 12px; padding:44px 0 0}
+.ch-num{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--teal); display:block; margin-bottom:10px}
+h2{font-size:clamp(25px,3.7vw,33px); line-height:1.13; letter-spacing:-.024em; margin:0 0 20px; font-weight:700; text-wrap:balance}
+h3{font-size:19px; margin:30px 0 9px; font-weight:600; letter-spacing:-.01em}
+p{margin:0 0 17px}
+ul,ol{margin:0 0 17px; padding-left:24px}
+li{margin:0 0 9px}
+li::marker{color:var(--ink-3)}
+code:not(pre code){background:var(--surface-2); padding:.1em .38em; border-radius:2px; font-size:.84em; border:1px solid var(--rule)}
+
+.bridge{margin:30px 0 0; padding:18px 20px 18px 22px; background:var(--rust-soft); border-left:3px solid var(--rust); border-radius:0 3px 3px 0}
+.bridge .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--rust); display:block; margin-bottom:7px; font-weight:600}
+.bridge p{margin:0; font-size:17px; color:var(--ink)}
+.keep{margin:26px 0; padding:16px 20px; background:var(--teal-soft); border-left:3px solid var(--teal); border-radius:0 3px 3px 0}
+.keep .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:7px; font-weight:600}
+.keep p{margin:0; font-size:17px}
+.keep p + p{margin-top:11px}
+.aside{margin:26px 0; padding:16px 19px; background:var(--surface); border:1px solid var(--rule); border-radius:3px}
+.aside .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:7px; font-weight:600}
+.aside p{margin:0; font-size:16.5px}
+.aside p + p{margin-top:11px}
+
+figure{margin:32px 0; width:100%}
+@media(min-width:900px){figure{width:calc(100% + 130px); margin-left:-65px}}
+.figbox{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; min-width:500px; height:auto; color:var(--ink)}
+figcaption{font-size:14.5px; color:var(--ink-2); margin:11px auto 0; line-height:1.5; max-width:700px}
+figcaption b{color:var(--ink); font-weight:600}
+
+.tablebox{overflow-x:auto; margin:24px 0; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+@media(min-width:900px){.tablebox{width:calc(100% + 130px); margin-left:-65px}}
+table{border-collapse:collapse; width:100%; min-width:540px; font-size:15.5px}
+th,td{padding:11px 15px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace; font-size:13px}
+td.you{color:var(--teal); font-weight:600}
+td.lk{color:var(--rust); font-weight:600}
+
+pre{background:var(--surface-2); border:1px solid var(--rule); border-radius:3px; padding:15px 17px; overflow-x:auto; margin:18px 0; font-size:13.5px; line-height:1.65}
+pre code{background:none; border:0; padding:0}
+.c-teal{color:var(--teal); font-weight:600} .c-rust{color:var(--rust); font-weight:600}
+.c-grey{color:var(--ink-3)} .c-good{color:var(--good); font-weight:600} .c-gcp{color:var(--gcp); font-weight:600}
+
+hr{border:0; border-top:1px solid var(--rule); margin:44px 0 0}
+footer{border-top:1px solid var(--rule); margin-top:50px; padding:26px 0 60px; color:var(--ink-3); font-size:14.5px}
+footer p{margin:0 0 9px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">Companion piece · the one that clears up the confusion</p>
+    <h1>What Runs Where</h1>
+    <p class="dek">"LiveKit is a cloud platform, so it all runs in LiveKit Cloud" — the sentence that makes the architecture diagram impossible to read. Here's what's actually true.</p>
+    <p class="startline"><b>You already ran the whole thing today.</b> It just ran on your laptop, and nobody told you that <em>was</em> the cloud box.</p>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<!-- 01 -->
+<section class="ch">
+  <span class="ch-num">01</span>
+  <h2>There are two systems, not one</h2>
+
+  <p>The confusion comes from a reasonable assumption: LiveKit is a cloud product, so surely LiveKit runs everything. It doesn't, and the reason it doesn't is the most important thing on this page.</p>
+
+  <p>A voice agent is really <strong>two separate systems that meet in a room</strong>, and they are owned by different people.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 250" role="img" aria-label="Two systems meet in a room. LiveKit owns the room, the SFU and the hosted models. You own the agent, its logic and your data. They are separate.">
+        <rect x="20" y="40" width="360" height="180" rx="5" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.4"/>
+        <text x="40" y="66" font-family="Archivo,sans-serif" font-size="13" font-weight="700" fill="var(--rust)" letter-spacing=".5">LIVEKIT'S SYSTEM</text>
+        <text x="40" y="83" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">the pipes and the models — always theirs</text>
+        <g font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">
+          <rect x="40" y="98" width="150" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="115" y="120" text-anchor="middle">the Room / SFU</text>
+          <rect x="210" y="98" width="150" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="285" y="120" text-anchor="middle">the phone bridge</text>
+          <rect x="40" y="142" width="150" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="115" y="164" text-anchor="middle">STT · LLM · TTS</text>
+          <rect x="210" y="142" width="150" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="285" y="164" text-anchor="middle">turn detection</text>
+        </g>
+        <text x="200" y="204" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">moves audio · runs models · you can't put your business here</text>
+
+        <rect x="440" y="40" width="360" height="180" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.4"/>
+        <text x="460" y="66" font-family="Archivo,sans-serif" font-size="13" font-weight="700" fill="var(--teal)" letter-spacing=".5">YOUR SYSTEM</text>
+        <text x="460" y="83" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">the brain and the memory — always yours</text>
+        <g font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">
+          <rect x="460" y="98" width="150" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="535" y="120" text-anchor="middle">the agent (code)</text>
+          <rect x="630" y="98" width="150" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="705" y="120" text-anchor="middle">your tools</text>
+          <rect x="460" y="142" width="150" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="535" y="164" text-anchor="middle">your data</text>
+          <rect x="630" y="142" width="150" height="34" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="705" y="164" text-anchor="middle">your web app</text>
+        </g>
+        <text x="620" y="204" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">knows your customers · runs where YOU put it</text>
+      </svg>
+    </div>
+    <figcaption><b>The split that the diagram assumes and never explains.</b> LiveKit's half is fixed — it runs on their infrastructure, that's the product. Your half is the interesting question: it can run in three different places, and the diagram just happens to pick one.</figcaption>
+  </figure>
+
+  <p>Everything your agent did today — knowing order 44721 was a shipped thermostat, refusing to refund the cancelled one, calling your ticketing boundary — is on the right. That is <em>your business</em>, and LiveKit deliberately doesn't run it, because if they did, every company's agent would be identical.</p>
+
+  <div class="keep">
+    <span class="lbl">The whole primer in one line</span>
+    <p>LiveKit runs the room and the models. <strong>You run the agent.</strong> "Where does LiveKit run" is a fixed answer; "where does the agent run" is the actual design decision — and today the answer was "your laptop."</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Which means</span>
+    <p>The box labelled "AWS" in the reference diagram is not LiveKit. It's the second system — yours — and it's showing one of three places you could have put it.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 02 -->
+<section class="ch">
+  <span class="ch-num">02</span>
+  <h2>The agent is a container that phones home</h2>
+
+  <p>Here's the mechanical fact that makes the three options possible. Your agent doesn't wait to be contacted. It <strong>reaches out to LiveKit</strong> and says "I'm here, dispatch me work." From the docs, verbatim: <em>"LiveKit Agents run as containers, so you can deploy them to LiveKit Cloud or to any Kubernetes cluster."</em></p>
+
+  <p>You saw this exact line in your own logs today:</p>
+
+  <pre><code><span class="c-good">registered worker</span> {"agent_name": "anycompany-agent",
+                  "url": "wss://personal-mv5pzdc8.livekit.cloud",
+                  "region": "US Central A"}</code></pre>
+
+  <p>Read that carefully. Your laptop made an <strong>outbound</strong> connection to LiveKit and registered. Nothing connected <em>to</em> your laptop — no port was opened, no address was exposed. It dialled out, said its name, and waited.</p>
+
+  <p>This is why it can run anywhere. A thing that only makes outbound connections doesn't care whether it's on your desk, in LiveKit's data center, or in your own cloud — from LiveKit's side it looks identical. It's a worker that showed up for a shift.</p>
+
+  <div class="aside">
+    <span class="lbl">Why this matters for a security review</span>
+    <p>"Where does your code run, and what do we have to expose?" is a question every enterprise asks. The answer is strong: the agent makes only outbound connections, so there's nothing inbound to firewall. You can run it deep inside a private network and it still works.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">So the real question is just</span>
+    <p>Where do you want that container to run? There are exactly three answers, and they're a progression.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 03 -->
+<section class="ch">
+  <span class="ch-num">03</span>
+  <h2>The three places, and you've already used one</h2>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 270" role="img" aria-label="The same agent container runs in three places: your laptop for development, LiveKit Cloud for managed hosting, or your own cloud like GCP for full control. All three connect outbound to the LiveKit room the same way.">
+        <circle cx="410" cy="60" r="40" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.4"/>
+        <text x="410" y="56" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="700" fill="var(--rust)">LiveKit</text>
+        <text x="410" y="70" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">the Room</text>
+
+        <!-- three sources -->
+        <g font-family="Archivo,sans-serif">
+          <rect x="30" y="170" width="220" height="80" rx="5" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="140" y="194" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--teal)">1 · YOUR LAPTOP</text>
+          <text x="140" y="212" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">lk agent dev</text>
+          <text x="140" y="228" text-anchor="middle" font-size="10" fill="var(--ink-3)">development. dies when you</text>
+          <text x="140" y="242" text-anchor="middle" font-size="10" fill="var(--ink-3)">close the lid. ← you did this</text>
+
+          <rect x="300" y="170" width="220" height="80" rx="5" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="410" y="194" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink-2)">2 · LIVEKIT CLOUD</text>
+          <text x="410" y="212" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">lk agent deploy</text>
+          <text x="410" y="228" text-anchor="middle" font-size="10" fill="var(--ink-3)">managed. they scale it.</text>
+          <text x="410" y="242" text-anchor="middle" font-size="10" fill="var(--ink-3)">least work, least control</text>
+
+          <rect x="570" y="170" width="220" height="80" rx="5" fill="var(--surface)" stroke="var(--gcp)" stroke-width="1.5"/>
+          <text x="680" y="194" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--gcp)">3 · YOUR CLOUD</text>
+          <text x="680" y="212" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">GKE / Cloud Run / EC2</text>
+          <text x="680" y="228" text-anchor="middle" font-size="10" fill="var(--ink-3)">most control, most work.</text>
+          <text x="680" y="242" text-anchor="middle" font-size="10" fill="var(--ink-3)">the diagram picks this</text>
+        </g>
+
+        <!-- outbound arrows, all identical -->
+        <path d="M140,170 L390,92" stroke="var(--teal)" stroke-width="1.8" fill="none" stroke-dasharray="4 3"/>
+        <path d="M410,170 L410,104" stroke="var(--ink-3)" stroke-width="1.8" fill="none" stroke-dasharray="4 3"/>
+        <path d="M680,170 L432,92" stroke="var(--gcp)" stroke-width="1.8" fill="none" stroke-dasharray="4 3"/>
+        <text x="410" y="130" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">all three connect out the same way</text>
+      </svg>
+    </div>
+    <figcaption><b>One container, three homes.</b> The agent code is byte-for-byte identical in all three. What changes is only where the container runs and who operates it — and to the room, all three look like the same worker phoning in.</figcaption>
+  </figure>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Where</th><th>Command</th><th>Good for</th><th>The catch</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="you"><strong>Your laptop</strong></td>
+          <td class="mono">lk agent dev</td>
+          <td>building and testing — what you did all day</td>
+          <td>turns off, one location, no scale. A demo, never a product.</td>
+        </tr>
+        <tr>
+          <td><strong>LiveKit Cloud</strong></td>
+          <td class="mono">lk agent deploy</td>
+          <td>you want it hosted with the least effort</td>
+          <td>less control; your agent's compute lives in LiveKit's account, not yours.</td>
+        </tr>
+        <tr>
+          <td class="you"><strong>Your own cloud</strong></td>
+          <td class="mono">container → GKE</td>
+          <td>data residency, existing infra, full control</td>
+          <td>you operate it. The reference diagram's "AWS box" is this option.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Notice the progression. Option 1 is where you start. Option 2 is the easy production path — LiveKit runs your container for you, still on their infrastructure. Option 3 is when a customer says "our data can't leave our Google Cloud" or "we already run everything on GKE, put it there" — and then the agent lives in <em>their</em> cloud, next to <em>their</em> systems.</p>
+
+  <div class="keep">
+    <span class="lbl">Say it like this</span>
+    <p>"Your agent is a container. In development it runs on my laptop. For production you've got two choices — let LiveKit host it with one command, or run it in your own cloud next to your data. Same code either way. The reference diagram shows it running in your cloud, which is what you'd want if data residency matters or you're already on Kubernetes."</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 04 -->
+<section class="ch">
+  <span class="ch-num">04</span>
+  <h2>What actually happened on your laptop</h2>
+
+  <p>Let's make option 1 concrete, because you lived it and it demystifies the other two. When you ran <code>lk agent dev</code>, your MacBook became the entire right-hand box of the diagram. Here's the whole picture, honestly labelled:</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 250" role="img" aria-label="During development, LiveKit Cloud runs the room and models, but the agent, the fake order data, and the tools all ran locally on the laptop, connected outbound to LiveKit and calling LiveKit's inference over the internet.">
+        <rect x="20" y="40" width="300" height="180" rx="5" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.3"/>
+        <text x="40" y="64" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--rust)">LIVEKIT CLOUD</text>
+        <text x="40" y="80" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">their infrastructure</text>
+        <rect x="40" y="94" width="120" height="30" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="100" y="113" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">the Room</text>
+        <rect x="170" y="94" width="130" height="30" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="235" y="113" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">STT·LLM·TTS</text>
+        <text x="100" y="152" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">answered the phone,</text>
+        <text x="100" y="166" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">moved the audio,</text>
+        <text x="100" y="180" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">ran the models</text>
+
+        <rect x="440" y="40" width="360" height="180" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+        <text x="460" y="64" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--teal)">YOUR MACBOOK</text>
+        <text x="460" y="80" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">standing in for "the cloud box"</text>
+        <g font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">
+          <rect x="460" y="92" width="160" height="30" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="540" y="111" text-anchor="middle">agent.py (the worker)</text>
+          <rect x="632" y="92" width="150" height="30" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="707" y="111" text-anchor="middle">the tools</text>
+          <rect x="460" y="130" width="160" height="30" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="540" y="149" text-anchor="middle">store.py (fake orders)</text>
+          <rect x="632" y="130" width="150" height="30" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="707" y="149" text-anchor="middle">.venv (Python)</text>
+        </g>
+        <text x="620" y="188" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">everything on the right ran here, on your desk</text>
+
+        <path d="M440,110 L320,110" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#wr-a)"/>
+        <defs><marker id="wr-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker></defs>
+        <text x="380" y="103" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--teal)">registers</text>
+        <text x="380" y="124" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">over the internet</text>
+      </svg>
+    </div>
+    <figcaption><b>Development, drawn honestly.</b> The left half is LiveKit's, as always. The right half — the agent, the data, the tools — is the "AWS box" from the reference diagram, except it was your laptop. When Mike's diagram shows EC2, mentally swap in your MacBook and it's the same picture.</figcaption>
+  </figure>
+
+  <p>The order data lived in a Python file on your disk. The tools ran in your local process. The agent connected out to LiveKit over your home internet. It all worked — you took a real phone call through it.</p>
+
+  <p>And every weakness of a laptop-as-production showed up: a <strong>1.66-second cold start</strong> when a call arrived and no process was warm, and the whole thing would vanish the moment you closed the lid. Those aren't bugs. They're the reason options 2 and 3 exist.</p>
+
+  <div class="bridge">
+    <span class="lbl">So porting to GCP is not a rewrite</span>
+    <p>It's picking up that right-hand box and setting it down somewhere that never sleeps. The code doesn't change. The address it phones home to doesn't change. Only the floor under it changes.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 05 -->
+<section class="ch">
+  <span class="ch-num">05</span>
+  <h2>Porting the box to Google Cloud</h2>
+
+  <p>Take each thing that was on your laptop and ask "what's the always-on version of this on GCP?" That's the entire port. Nothing is invented; each piece just moves from your disk to a managed service.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>On your laptop</th><th>On GCP</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>the agent process (<code>lk agent dev</code>)</td><td class="mono" style="color:var(--gcp)">GKE</td><td>a voice call is long-lived and sticky — it must stay on one machine for its whole life, and you scale by adding machines. That's Kubernetes' shape, not a request-response one.</td></tr>
+        <tr><td>the Next.js web app + token server</td><td class="mono" style="color:var(--gcp)">Cloud Run</td><td>stateless, request-shaped, bursty. Scales to zero when idle. The opposite of the agent.</td></tr>
+        <tr><td><code>store.py</code> (fake orders)</td><td class="mono" style="color:var(--gcp)">Firestore</td><td>a real database that survives restarts and many readers. Your dict-in-memory becomes documents.</td></tr>
+        <tr><td>model API keys in <code>.env.local</code></td><td class="mono" style="color:var(--gcp)">Secret Manager</td><td>secrets don't belong in files on disk. Mounted at runtime, rotated, audited.</td></tr>
+        <tr><td>"no static keys" (you had keys in a file)</td><td class="mono" style="color:var(--gcp)">Workload Identity</td><td>the pod assumes a Google identity — no key material anywhere. This is the "IAM instance role · no static keys" note on the diagram.</td></tr>
+        <tr><td>logs scrolling in your terminal</td><td class="mono" style="color:var(--gcp)">Cloud Logging / Trace</td><td>per-turn latency as trace spans, searchable, retained.</td></tr>
+        <tr><td>serving the browser from localhost</td><td class="mono" style="color:var(--gcp)">Cloud CDN + Load Balancing</td><td>the edge for web customers. The "CloudFront" box.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The one row worth arguing about is the first. The instinct is to put the agent on Cloud Run too, since it's the easy default — and it's the wrong call. Cloud Run is built for requests that arrive, get handled, and finish; it caps a request at sixty minutes and it wants to scale to zero. A voice session is the opposite: it hangs on for the length of the call, holds state, and can't be moved mid-conversation. That's exactly what GKE is for. <strong>GKE for the agent, Cloud Run for the web app</strong> is the split that shows you understand the workload rather than reaching for the default.</p>
+
+  <div class="keep">
+    <span class="lbl">Say it like this</span>
+    <p>"Porting to GCP isn't a rewrite — the agent container is identical. You're just deciding where it runs. I'd put the agent on GKE, because voice sessions are long-lived and sticky and Cloud Run is built for short requests. The web app and token server go on Cloud Run, where scale-to-zero actually helps. Firestore for the data, Workload Identity so there are no static keys, and I'd pick the region to sit next to LiveKit's inference so I'm not adding a hop per turn."</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 06 -->
+<section class="ch">
+  <span class="ch-num">06</span>
+  <h2>The GCP pieces that make the agent smarter</h2>
+
+  <p>Everything so far just moved the laptop's box to always-on infrastructure. But once the agent lives inside Google Cloud, it can reach for things the laptop never could — and this is where a GCP-native architecture earns its place rather than just matching AWS.</p>
+
+  <h3>Vertex AI — Google's models, in the customer's own cloud</h3>
+
+  <p>Your agent called LiveKit's hosted models today. A GCP customer might want the models to run in <em>their</em> Google Cloud instead — for data residency, for an existing Vertex commitment, or for consolidated billing. <strong>Vertex AI</strong> is Google's managed home for models: Gemini for the LLM, Chirp for speech-to-text, and Google's text-to-speech voices. The agent can point at Vertex instead of LiveKit Inference, and now the customer's audio and reasoning never leave their own project.</p>
+
+  <p>The honest caveat, and you should say it: the stack LiveKit hosts is there because each piece is a latency leader. Swapping to Vertex for procurement reasons can cost real milliseconds, and that's a measurement, not an assertion — offer to benchmark both against their traffic rather than promising either way.</p>
+
+  <h3>A RAG engine — so the agent knows things it wasn't told</h3>
+
+  <p>Here's a gap you felt today. Your agent knew about orders because you handed it order data. But ask it "what's your return policy?" or "is the thermostat compatible with my old boiler?" and it has nothing — that knowledge lives in PDFs, help articles, and manuals, not in your database.</p>
+
+  <p><strong>RAG — retrieval-augmented generation</strong> — closes that gap. You take all that documentation, turn it into a searchable index, and give the agent a tool: when a customer asks a knowledge question, the agent searches the index, pulls the three most relevant passages, and answers from them instead of guessing. On GCP this is <strong>Vertex AI Search</strong> (formerly the RAG/Search engine): point it at a bucket of documents and it handles the indexing and retrieval.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 200" role="img" aria-label="Retrieval-augmented generation: the customer asks a knowledge question, the agent searches a document index, retrieves the most relevant passages, and the LLM answers from those passages rather than guessing.">
+        <defs><marker id="rag-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--gcp)"/></marker></defs>
+        <rect x="20" y="80" width="130" height="44" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="85" y="100" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">"what's your</text>
+        <text x="85" y="115" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">return policy?"</text>
+
+        <line x1="150" y1="102" x2="196" y2="102" stroke="var(--gcp)" stroke-width="2" marker-end="url(#rag-a)"/>
+
+        <rect x="202" y="80" width="120" height="44" rx="4" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="262" y="100" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="600" fill="var(--teal)">the agent</text>
+        <text x="262" y="115" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">searches, doesn't guess</text>
+
+        <line x1="322" y1="102" x2="368" y2="102" stroke="var(--gcp)" stroke-width="2" marker-end="url(#rag-a)"/>
+        <text x="345" y="94" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9" fill="var(--gcp)">query</text>
+
+        <rect x="374" y="72" width="150" height="60" rx="4" fill="var(--gcp-soft)" stroke="var(--gcp)"/>
+        <text x="449" y="94" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" font-weight="600" fill="var(--gcp)">Vertex AI Search</text>
+        <text x="449" y="110" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-2)">indexed docs, PDFs,</text>
+        <text x="449" y="122" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-2)">help articles, manuals</text>
+
+        <path d="M449,132 L449,158 L262,158 L262,124" stroke="var(--gcp)" stroke-width="1.6" fill="none" stroke-dasharray="4 3" marker-end="url(#rag-a)"/>
+        <text x="355" y="172" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-3)">top 3 relevant passages come back</text>
+
+        <line x1="322" y1="90" x2="368" y2="90" stroke="none"/>
+        <rect x="560" y="80" width="240" height="44" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="680" y="100" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">answers from the real policy —</text>
+        <text x="680" y="115" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink)">grounded, not hallucinated</text>
+        <line x1="524" y1="102" x2="556" y2="102" stroke="var(--gcp)" stroke-width="2" marker-end="url(#rag-a)"/>
+      </svg>
+    </div>
+    <figcaption><b>RAG is just "look it up before answering."</b> It's the same instinct as your order-lookup tool — don't guess, fetch the truth first — but for unstructured knowledge instead of database rows. It's how a support agent handles the long tail of questions no database column can hold.</figcaption>
+  </figure>
+
+  <h3>Backend APIs — reaching the systems that already run the business</h3>
+
+  <p>Your fake <code>store.py</code> stood in for something real, and in a live deployment the agent talks to the customer's actual systems: an order service, a CRM like Salesforce, a billing platform, an inventory API. On GCP those calls go out through the same tool mechanism you already built — a <code>@function_tool</code> that makes an HTTP request — reaching services that might be other Cloud Run services, an internal API behind a load balancer, or a third party across the internet. Nothing about that is new to you; it's your order-lookup tool pointed at a real endpoint instead of a Python dict.</p>
+
+  <div class="aside">
+    <span class="lbl">The pattern under all three</span>
+    <p>Vertex, RAG, and backend APIs are the same move you already know: the agent doesn't hold knowledge, it <em>fetches</em> it — from a model, from a document index, or from a business system. Your whole day was practice for this. The tools just point somewhere real.</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="ch">
+  <span class="ch-num">&mdash;</span>
+  <h2>Five things to carry</h2>
+
+  <ol>
+    <li><strong>There are two systems.</strong> LiveKit runs the room and models; you run the agent. "Where does LiveKit run" is fixed; "where does the agent run" is the design decision.</li>
+    <li><strong>The agent is a container that phones home.</strong> Only outbound connections — which is why it can run anywhere and why there's nothing to expose.</li>
+    <li><strong>Three homes: laptop, LiveKit Cloud, your cloud.</strong> Same code. You used the first today; the diagram shows the third.</li>
+    <li><strong>Porting to GCP is a move, not a rewrite.</strong> Each laptop piece becomes an always-on GCP service: agent→GKE, web→Cloud Run, data→Firestore, keys→Workload Identity.</li>
+    <li><strong>Inside GCP the agent gets smarter.</strong> Vertex for models in the customer's cloud, Vertex AI Search for RAG over their docs, function tools for their real backends — all the same "fetch, don't guess" pattern you already built.</li>
+  </ol>
+
+  <footer>
+    <p>Companion to <a href="https://claude.ai/code/artifact/eca37b35-b278-4b09-b3ac-4571b3660c64">From Sound to Conversation</a>, <a href="https://claude.ai/code/artifact/cf30cc8a-a9ed-4e69-abee-301642ef2340">Inside the Room</a>, <a href="https://claude.ai/code/artifact/c7cafc7b-638e-4917-82b6-63da043d74d4">What LiveKit Ships</a>, <a href="https://claude.ai/code/artifact/fc53e690-74a0-4923-9c97-498314066b21">Wiring Up a Phone Number</a> and the <a href="https://claude.ai/code/artifact/280e533f-f812-4e14-b135-cf8bb95adba2">AnyCompany Voice Agent Playbook</a>.</p>
+    <p>Grounded in the LiveKit deployment docs and the agent's own logs, August 2026. The GCP service names are current; re-check before quoting them, since cloud products rename often.</p>
+  </footer>
+</section>
+
+</div>
+</main>

@@ -1,0 +1,695 @@
+<title>From Sound to Conversation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE;
+  --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A;
+  --good:#2E6F4E; --bad:#A32F26;
+  --shadow:0 1px 2px rgba(23,27,33,.05), 0 4px 14px rgba(23,27,33,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F;
+    --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0;
+    --good:#5FB183; --bad:#E0796E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F;
+  --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0;
+  --good:#5FB183; --bad:#E0796E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:18px; line-height:1.68; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+a{color:var(--teal); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+
+.wrap{max-width:760px; margin:0 auto; padding:0 24px}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:56px; padding-bottom:40px}
+.kicker{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 16px
+}
+h1{
+  font-size:clamp(36px,6.4vw,58px); line-height:1.0; letter-spacing:-.03em;
+  font-weight:700; margin:0 0 20px; text-wrap:balance
+}
+.dek{font-size:20px; color:var(--ink-2); margin:0 0 24px}
+.startline{
+  border-top:1px solid var(--rule); padding-top:16px; font-size:16px; color:var(--ink-2)
+}
+.startline b{color:var(--ink); font-weight:600}
+
+main{padding:8px 0 80px}
+
+/* chapters */
+.ch{margin:0 0 12px; padding:44px 0 0; scroll-margin-top:16px}
+.ch-num{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em;
+  color:var(--teal); display:block; margin-bottom:10px
+}
+h2{
+  font-size:clamp(26px,3.9vw,34px); line-height:1.13; letter-spacing:-.024em;
+  margin:0 0 20px; font-weight:700; text-wrap:balance
+}
+h3{font-size:19px; margin:30px 0 9px; font-weight:600; letter-spacing:-.01em}
+p{margin:0 0 17px}
+ul,ol{margin:0 0 17px; padding-left:24px}
+li{margin:0 0 9px}
+li::marker{color:var(--ink-3)}
+strong{font-weight:600}
+em{font-style:italic}
+code:not(pre code){
+  background:var(--surface-2); padding:.1em .38em; border-radius:2px;
+  font-size:.84em; border:1px solid var(--rule)
+}
+
+/* the bridge device — carries the causal chain between chapters */
+.bridge{
+  margin:30px 0 0; padding:18px 20px 18px 22px;
+  background:var(--rust-soft); border-left:3px solid var(--rust); border-radius:0 3px 3px 0
+}
+.bridge .lbl{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--rust); display:block; margin-bottom:7px; font-weight:600
+}
+.bridge p{margin:0; font-size:17px; color:var(--ink)}
+
+.aside{
+  margin:26px 0; padding:16px 19px; background:var(--surface);
+  border:1px solid var(--rule); border-radius:3px
+}
+.aside .lbl{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:7px; font-weight:600
+}
+.aside p{margin:0; font-size:16.5px}
+.aside p + p{margin-top:11px}
+
+.keep{
+  margin:26px 0; padding:16px 20px; background:var(--teal-soft);
+  border-left:3px solid var(--teal); border-radius:0 3px 3px 0
+}
+.keep .lbl{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--teal); display:block; margin-bottom:7px; font-weight:600
+}
+.keep p{margin:0; font-size:17px}
+
+/* figures — allowed to break the measure */
+figure{margin:32px 0; width:100%}
+@media(min-width:900px){
+  figure{width:calc(100% + 130px); margin-left:-65px}
+}
+.figbox{
+  border:1px solid var(--rule); border-radius:3px; background:var(--surface);
+  padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)
+}
+figure svg{display:block; width:100%; min-width:500px; height:auto; color:var(--ink)}
+figcaption{font-size:14.5px; color:var(--ink-2); margin:11px auto 0; line-height:1.5; max-width:700px}
+figcaption b{color:var(--ink); font-weight:600}
+
+/* scenario table */
+.tablebox{overflow-x:auto; margin:24px 0; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+@media(min-width:900px){.tablebox{width:calc(100% + 130px); margin-left:-65px}}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:15.5px}
+th,td{padding:11px 15px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2); white-space:nowrap
+}
+tbody tr:last-child td{border-bottom:0}
+td strong{font-family:Archivo,sans-serif; font-size:15px}
+
+hr{border:0; border-top:1px solid var(--rule); margin:44px 0 0}
+
+footer{border-top:1px solid var(--rule); margin-top:50px; padding:26px 0 60px; color:var(--ink-3); font-size:14.5px}
+footer p{margin:0 0 9px}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">Companion to the AnyCompany playbook · start here</p>
+    <h1>From Sound to Conversation</h1>
+    <p class="dek">How a voice AI system actually works, built up from a pressure wave in the air. No prior audio, networking, or telephony knowledge assumed.</p>
+    <p class="startline"><b>Read this before the playbook.</b> Twelve short chapters, each one a problem created by the chapter before it. By the end, the architecture isn't a diagram you memorized — it's the only shape the problems could have produced.</p>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<!-- 00 -->
+<section class="ch">
+  <span class="ch-num">00</span>
+  <h2>Why derive it instead of memorizing it</h2>
+  <p>There is a real chance Mike hands you a scenario you've never seen. The doc your example came from is called an <em>Architecture Draw <strong>Example</strong></em> and runs five pages; the recruiter said Mike would walk you through "a realistic scenario," not "the" scenario. Retail returns, appointment booking, outbound collections, patient intake, a drive-thru — all plausible.</p>
+  <p>If you've memorized the smart-home diagram, a new scenario means improvising under pressure. If you understand why each box exists, a new scenario is just a re-run of the same derivation, out loud, which is a far better thing for Mike to watch.</p>
+  <p>So this page never starts from components. It starts from air.</p>
+</section>
+
+<hr>
+
+<!-- 01 -->
+<section class="ch">
+  <span class="ch-num">01</span>
+  <h2>What a voice is, to a computer</h2>
+  <p>Speech is moving air. Your vocal cords push pressure waves outward; a microphone has a membrane that those waves push on, and it turns that motion into a fluctuating voltage.</p>
+  <p>To store that, the computer <strong>samples</strong> it: measures the voltage many times a second and writes down a number each time. Do it 48,000 times a second — the normal rate for good audio — and one second of your voice is 48,000 numbers.</p>
+  <p>How often you sample decides which sounds survive. You can only capture frequencies up to half your sampling rate, so 48 kHz sampling captures up to 24 kHz, comfortably above human hearing. Sample only 8,000 times a second and you capture up to 4 kHz — enough to recognize words, not enough for the higher frequencies that distinguish <em>s</em> from <em>f</em>. That is precisely why phone calls sound the way they do, and it will matter later.</p>
+
+  <h3>Then you shrink it</h3>
+  <p>48,000 numbers a second is far too much to ship across the internet. So a <strong>codec</strong> compresses it. The good ones don't store the waveform at all — they store a description of how a human vocal tract would have to move to produce that sound, which is dramatically smaller. <strong>Opus</strong>, the codec the web uses, carries very good speech in around 24 kbps. That's roughly a hundredth of the raw size.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 150" role="img" aria-label="The chain from voice to network: pressure waves hit a microphone, are sampled 48000 times per second into numbers, compressed by the Opus codec to about 24 kbps, and cut into 20-millisecond packets sent 50 times a second.">
+        <defs>
+          <marker id="p-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/>
+          </marker>
+        </defs>
+        <rect x="14" y="42" width="140" height="56" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="84" y="66" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--ink)">Pressure waves</text>
+        <text x="84" y="84" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">air moving</text>
+
+        <rect x="196" y="42" width="150" height="56" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="271" y="66" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--ink)">48,000 numbers</text>
+        <text x="271" y="84" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">per second of speech</text>
+
+        <rect x="388" y="42" width="150" height="56" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="463" y="66" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--teal)">Opus, ~24 kbps</text>
+        <text x="463" y="84" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">~100&#215; smaller</text>
+
+        <rect x="580" y="42" width="220" height="56" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="690" y="66" text-anchor="middle" font-family="Archivo,sans-serif" font-size="13" font-weight="600" fill="var(--ink)">20 ms packets</text>
+        <text x="690" y="84" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">50 leave your machine every second</text>
+
+        <line x1="156" y1="70" x2="190" y2="70" stroke="var(--slate)" stroke-width="1.6" marker-end="url(#p-arrow)"/>
+        <line x1="348" y1="70" x2="382" y2="70" stroke="var(--slate)" stroke-width="1.6" marker-end="url(#p-arrow)"/>
+        <line x1="540" y1="70" x2="574" y2="70" stroke="var(--slate)" stroke-width="1.6" marker-end="url(#p-arrow)"/>
+
+        <text x="14" y="128" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-3)">sample rate decides which frequencies survive &#8212; 8 kHz sampling is why phone calls sound thin</text>
+      </svg>
+    </div>
+    <figcaption><b>Voice, on its way to the network.</b> The last box is the one that shapes everything after it: audio isn't a file being transferred, it's a steady drip of small packets that only matter if they arrive roughly on time.</figcaption>
+  </figure>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>Fifty packets a second, every second, for the length of the call. Now they have to cross the internet — which was not built to deliver things on time.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 02 -->
+<section class="ch">
+  <span class="ch-num">02</span>
+  <h2>The internet does not do "on time"</h2>
+  <p>The internet moves packets by handing them from router to router, each choosing a next hop. Nobody guarantees anything. Three things happen constantly and are completely normal:</p>
+  <ul>
+    <li><strong>Packets arrive out of order.</strong> Two packets can take different routes and the second can overtake the first.</li>
+    <li><strong>Packets arrive late, and unevenly.</strong> One takes 30 ms, the next takes 90. This unevenness is called <strong>jitter</strong>, and for audio it's often worse than plain slowness — steady slowness you can absorb, unpredictable slowness you cannot.</li>
+    <li><strong>Packets vanish.</strong> A router's queue fills, and it drops what it can't hold. On a phone on cellular data, losing 1–3% of packets is an ordinary Tuesday.</li>
+  </ul>
+  <p>For a file download, none of this matters — you wait, the missing pieces get resent, and the file is perfect. For a live conversation, <em>the whole value is in the timing</em>. A packet of speech that shows up 400 ms late isn't late data. It's a word the other person already stopped waiting for.</p>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>There's an obvious tool for unreliable networks — the one nearly all internet software uses. And for voice it is exactly the wrong choice, in an instructive way.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 03 -->
+<section class="ch">
+  <span class="ch-num">03</span>
+  <h2>The right answer that's wrong</h2>
+  <p><strong>TCP</strong> is the protocol underneath the web, and it solves the problems above completely. It numbers every packet, acknowledges each one, resends anything that goes missing, and hands data to the application in perfect order. Websites, APIs, file transfers — all TCP. A WebSocket is TCP.</p>
+  <p>Here's what that costs on a live call. Packet 7 goes missing. Packets 8, 9 and 10 arrive fine. TCP will not release 8, 9 or 10 to your application, because that would be out of order. It waits, asks for 7 again, waits for it to cross the network again — and only then hands over all four.</p>
+  <p>This is <strong>head-of-line blocking</strong>, and its consequence is brutal for a conversation: you didn't lose 20 milliseconds of audio, you inserted a couple of hundred milliseconds of delay into the call <em>and you never get it back</em>. Every subsequent loss adds more. Fifteen minutes into a bad call you're a second and a half behind, and both people are talking over each other.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 290" role="img" aria-label="Comparison of TCP and UDP when packet 7 is lost. TCP holds packets 8, 9 and 10 while it retransmits packet 7, inserting permanent delay. UDP plays packets 8, 9 and 10 on time and conceals the gap left by packet 7.">
+        <text x="14" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--bad)">TCP &#8212; correct, and permanently late</text>
+
+        <text x="14" y="52" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">sent</text>
+        <g font-family="IBM Plex Mono,monospace" font-size="11.5" text-anchor="middle">
+          <rect x="70" y="38" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="87" y="55" fill="var(--ink-2)">6</text>
+          <rect x="112" y="38" width="34" height="24" rx="2" fill="var(--rust-soft)" stroke="var(--bad)"/><text x="129" y="55" fill="var(--bad)">7</text>
+          <rect x="154" y="38" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="171" y="55" fill="var(--ink-2)">8</text>
+          <rect x="196" y="38" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="213" y="55" fill="var(--ink-2)">9</text>
+          <rect x="238" y="38" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="255" y="55" fill="var(--ink-2)">10</text>
+        </g>
+        <text x="290" y="55" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">packet 7 is dropped in transit</text>
+
+        <text x="14" y="98" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">played</text>
+        <g font-family="IBM Plex Mono,monospace" font-size="11.5" text-anchor="middle">
+          <rect x="70" y="84" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="87" y="101" fill="var(--ink-2)">6</text>
+          <rect x="112" y="84" width="160" height="24" rx="2" fill="none" stroke="var(--bad)" stroke-dasharray="4 3"/>
+          <text x="192" y="101" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">held &#8212; waiting for 7 to be resent</text>
+          <rect x="280" y="84" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="297" y="101" fill="var(--ink-2)">7</text>
+          <rect x="322" y="84" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="339" y="101" fill="var(--ink-2)">8</text>
+          <rect x="364" y="84" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="381" y="101" fill="var(--ink-2)">9</text>
+          <rect x="406" y="84" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="423" y="101" fill="var(--ink-2)">10</text>
+        </g>
+        <line x1="272" y1="118" x2="440" y2="118" stroke="var(--bad)" stroke-width="1.5"/>
+        <text x="356" y="134" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">everything after this point stays late, for the rest of the call</text>
+
+        <line x1="14" y1="158" x2="806" y2="158" stroke="var(--rule)" stroke-width="1"/>
+
+        <text x="14" y="184" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--good)">UDP + Opus &#8212; imperfect, and on time</text>
+
+        <text x="14" y="228" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">played</text>
+        <g font-family="IBM Plex Mono,monospace" font-size="11.5" text-anchor="middle">
+          <rect x="70" y="214" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="87" y="231" fill="var(--ink-2)">6</text>
+          <rect x="112" y="214" width="34" height="24" rx="2" fill="var(--teal-soft)" stroke="var(--teal)" stroke-dasharray="3 2"/><text x="129" y="231" fill="var(--teal)">~</text>
+          <rect x="154" y="214" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="171" y="231" fill="var(--ink-2)">8</text>
+          <rect x="196" y="214" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="213" y="231" fill="var(--ink-2)">9</text>
+          <rect x="238" y="214" width="34" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/><text x="255" y="231" fill="var(--ink-2)">10</text>
+        </g>
+        <text x="290" y="231" font-family="Archivo,sans-serif" font-size="11" fill="var(--teal)">the gap is reconstructed from the surrounding audio &#8212; 20 ms, inaudible</text>
+        <text x="70" y="268" font-family="Archivo,sans-serif" font-size="11" fill="var(--good)">the call never falls behind real time</text>
+      </svg>
+    </div>
+    <figcaption><b>The trade at the heart of realtime audio.</b> TCP protects the data and sacrifices the timing. Voice needs the opposite: throw away the lost packet, keep the clock. Opus carries redundancy so the decoder can approximate what went missing, and a 20 ms hole in speech is something your ear will not notice.</figcaption>
+  </figure>
+
+  <h3>So voice uses UDP, plus a pile of repair work</h3>
+  <p><strong>UDP</strong> is the bare minimum: send a packet, hope it arrives, never look back. On its own that's not enough — which is why <strong>WebRTC</strong> exists. WebRTC is the browser's built-in stack for realtime media, and it's essentially UDP plus everything you'd otherwise have to build:</p>
+  <ul>
+    <li>A <strong>jitter buffer</strong> — holds a few packets in reserve so uneven arrival gets smoothed into steady playback. It is deliberately trading a little latency for stability, and it tunes itself as conditions change.</li>
+    <li><strong>Loss concealment</strong> — reconstructing a missing 20 ms from what surrounded it.</li>
+    <li><strong>Bandwidth estimation</strong> — noticing congestion and lowering the bitrate before packets start dropping.</li>
+    <li><strong>Echo cancellation</strong> — removing the speaker's output from the microphone's input, so the far end doesn't hear itself. Without it, an AI agent transcribes its own voice and answers itself.</li>
+    <li><strong>Encryption</strong>, mandatory, always on.</li>
+  </ul>
+
+  <div class="keep">
+    <span class="lbl">Keep this one</span>
+    <p>"TCP trades latency for completeness. Live voice needs the opposite trade." That single sentence answers "why not just use a WebSocket?", which is the most common question in this whole subject.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>WebRTC can now move audio beautifully between two machines. It just can't find the second machine.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 04 -->
+<section class="ch">
+  <span class="ch-num">04</span>
+  <h2>Two computers that can't find each other</h2>
+  <p>Your laptop does not have its own address on the internet. Your home router has one, and everything behind it shares it — your laptop, your phone, your TV — each with a private address meaningful only inside your house. This is <strong>NAT</strong>, and it's why we haven't run out of addresses.</p>
+  <p>It works fine when you start the conversation: you ask for a web page, the router remembers you asked, and it knows where to send the reply. It fails completely when someone <em>else</em> wants to start a conversation with you. A packet arriving unannounced at your router's address has no way of knowing which device inside is the intended recipient. It gets dropped.</p>
+  <p>Both ends of a call have this problem simultaneously. Three tools solve it:</p>
+  <ul>
+    <li><strong>STUN</strong> — a small server on the public internet you ask "what do I look like from out there?" It replies with the public address and port your traffic appears to come from. Now you have something to hand the other side. Cheap, and usually sufficient.</li>
+    <li><strong>TURN</strong> — for when the network refuses UDP outright, which locked-down corporate networks often do. A relay server in the middle receives your media and forwards it, typically over TCP on port 443 so it's indistinguishable from web traffic. Slower, and it costs real bandwidth, but the call connects.</li>
+    <li><strong>ICE</strong> — the procedure that gathers every possible path (direct, via STUN, via TURN), tries them all at once, and keeps whichever works best.</li>
+  </ul>
+
+  <div class="aside">
+    <span class="lbl">Why this matters commercially</span>
+    <p>"Will this work for our support agents, who are on a locked-down corporate network?" is a question you will be asked in a real sales conversation. The answer is yes, via TURN relay over 443 — with slightly higher latency and relay cost. Being able to name the mechanism rather than saying "it should be fine" is the difference between reassuring someone and sounding like you're guessing.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>Two machines can now reliably talk. But a support call isn't always two machines — and once you want a third participant, direct connections stop scaling.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 05 -->
+<section class="ch">
+  <span class="ch-num">05</span>
+  <h2>Putting a server in the middle</h2>
+  <p>Connect everyone directly to everyone and each participant must send a separate copy of their audio to every other participant. Two people: one stream each. Five people: four outbound streams each. Your phone's uplink gives out fast, and it's the uplink that's scarce.</p>
+  <p>So you put a server in the middle. There are two ways to build it:</p>
+  <ul>
+    <li>An <strong>MCU</strong> decodes everyone's audio, mixes it into a single combined stream, and re-encodes it. Easy on the participants, expensive on the server, adds latency from the transcoding — and it destroys the separation between speakers, because everyone is now blended into one track.</li>
+    <li>An <strong>SFU</strong> — selective forwarding unit — receives each stream and simply <em>forwards</em> the right ones to whoever asked for them. No decoding, no re-encoding, so it adds very little delay. Each participant sends one copy up, and the server does the copying. Streams stay separate.</li>
+  </ul>
+  <p>The SFU wins, and the separation is the reason it matters most here: <strong>an AI needs one speaker's clean audio, not a mix.</strong></p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 250" role="img" aria-label="Peer to peer connections versus a selective forwarding unit. With four participants, peer to peer requires each to upload three copies; an SFU means each uploads one copy and the server forwards it. The server in the middle is also where an AI agent can join.">
+        <text x="14" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--ink-2)">Direct connections</text>
+        <text x="14" y="40" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">each person uploads 3 copies</text>
+        <g stroke="var(--rule)" stroke-width="1.2">
+          <line x1="80" y1="86" x2="240" y2="86"/><line x1="80" y1="186" x2="240" y2="186"/>
+          <line x1="80" y1="86" x2="80" y2="186"/><line x1="240" y1="86" x2="240" y2="186"/>
+          <line x1="80" y1="86" x2="240" y2="186"/><line x1="240" y1="86" x2="80" y2="186"/>
+        </g>
+        <g font-family="Archivo,sans-serif" font-size="11" text-anchor="middle">
+          <circle cx="80" cy="86" r="21" fill="var(--surface)" stroke="var(--rule)"/><text x="80" y="90" fill="var(--ink-2)">A</text>
+          <circle cx="240" cy="86" r="21" fill="var(--surface)" stroke="var(--rule)"/><text x="240" y="90" fill="var(--ink-2)">B</text>
+          <circle cx="80" cy="186" r="21" fill="var(--surface)" stroke="var(--rule)"/><text x="80" y="190" fill="var(--ink-2)">C</text>
+          <circle cx="240" cy="186" r="21" fill="var(--surface)" stroke="var(--rule)"/><text x="240" y="190" fill="var(--ink-2)">D</text>
+        </g>
+        <text x="160" y="232" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">grows quadratically &#8212; uplink dies first</text>
+
+        <line x1="330" y1="14" x2="330" y2="236" stroke="var(--rule)" stroke-width="1"/>
+
+        <text x="376" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--teal)">Selective forwarding</text>
+        <text x="376" y="40" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">each person uploads 1 copy; the server forwards</text>
+        <g stroke="var(--teal)" stroke-width="1.5">
+          <line x1="466" y1="86" x2="548" y2="126"/><line x1="626" y1="86" x2="556" y2="126"/>
+          <line x1="466" y1="186" x2="548" y2="142"/><line x1="626" y1="186" x2="556" y2="142"/>
+        </g>
+        <circle cx="552" cy="134" r="34" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.4"/>
+        <text x="552" y="132" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="700" fill="var(--teal)">SFU</text>
+        <text x="552" y="146" text-anchor="middle" font-family="Archivo,sans-serif" font-size="9.5" fill="var(--ink-2)">no re-encode</text>
+        <g font-family="Archivo,sans-serif" font-size="11" text-anchor="middle">
+          <circle cx="466" cy="86" r="21" fill="var(--surface)" stroke="var(--rule)"/><text x="466" y="90" fill="var(--ink-2)">A</text>
+          <circle cx="626" cy="86" r="21" fill="var(--surface)" stroke="var(--rule)"/><text x="626" y="90" fill="var(--ink-2)">B</text>
+          <circle cx="466" cy="186" r="21" fill="var(--surface)" stroke="var(--rule)"/><text x="466" y="190" fill="var(--ink-2)">C</text>
+          <circle cx="626" cy="186" r="21" fill="var(--surface)" stroke="var(--rule)"/><text x="626" y="190" fill="var(--ink-2)">D</text>
+        </g>
+        <path d="M700,134 L668,134" stroke="var(--rust)" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <text x="708" y="128" font-family="Archivo,sans-serif" font-size="11" font-weight="600" fill="var(--rust)">and this is</text>
+        <text x="708" y="143" font-family="Archivo,sans-serif" font-size="11" font-weight="600" fill="var(--rust)">where AI joins</text>
+      </svg>
+    </div>
+    <figcaption><b>The accident that makes voice AI possible.</b> The server exists to solve a bandwidth problem. But once there's a server sitting in the middle of the audio with every participant's stream separately available, you can attach things to it — a transcriber, a recorder, an AI. The AI didn't need a new architecture; it needed the one that already existed.</figcaption>
+  </figure>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>You now need a word for "the thing everyone is connected to" — and choosing that word well turns out to decide the shape of everything else.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 06 -->
+<section class="ch">
+  <span class="ch-num">06</span>
+  <h2>The room</h2>
+  <p>Three nouns, and they are the entire model:</p>
+  <ul>
+    <li>A <strong>room</strong> is one session. One conversation.</li>
+    <li>A <strong>participant</strong> is anything in it.</li>
+    <li>A <strong>track</strong> is one stream of media a participant publishes. Participants subscribe to each other's tracks.</li>
+  </ul>
+  <p>The word doing all the work is <em>anything</em>. A participant is a browser, or a phone caller, or an AI agent, or a human specialist, or a process silently recording for compliance. The system does not distinguish between them. They all join the same way, publish the same way, and are heard the same way.</p>
+  <p>This is worth sitting with, because it collapses several problems that look separate into one solved problem:</p>
+  <ul>
+    <li>"How does the AI hear the customer?" — it subscribes to their track.</li>
+    <li>"How do we transfer to a human?" — the human joins the room. There is no transfer.</li>
+    <li>"How do we record for QA?" — a recorder joins the room.</li>
+    <li>"How does a supervisor listen in?" — they join the room and publish nothing.</li>
+    <li>"How do we add a live translator?" — same answer.</li>
+  </ul>
+  <p>Four features you would otherwise design, build and maintain separately are all the same feature.</p>
+
+  <div class="keep">
+    <span class="lbl">Keep this one</span>
+    <p>On the whiteboard, draw the room first and the AI as a participant <em>inside</em> it. Almost everyone's instinct is to draw the AI as a backend service the audio is piped to. Drawing it as a peer is the single clearest signal that you understand the platform rather than having read its homepage.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>The AI can now hear. It cannot yet understand, think, or speak.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 07 -->
+<section class="ch">
+  <span class="ch-num">07</span>
+  <h2>Teaching it to hold a conversation</h2>
+  <p>Three models in a chain, each doing one job:</p>
+  <ul>
+    <li><strong>STT</strong> — speech to text. Audio in, words out.</li>
+    <li><strong>LLM</strong> — the words go in with the conversation so far and some instructions; a reply comes out.</li>
+    <li><strong>TTS</strong> — text to speech. Words in, audio out, published back to the room.</li>
+  </ul>
+  <p>Simple enough. The thing that makes it feel alive rather than sluggish is that <strong>none of these wait to finish.</strong></p>
+  <p>A batch implementation does this: record until they stop, transcribe the whole thing, send it to the model, wait for the entire reply, synthesize all of it, play it. Every stage waits for the one before it to complete. That's three or four seconds, and it feels like filling in a form.</p>
+  <p>A streaming implementation overlaps everything. STT emits partial transcripts <em>while</em> the person is still speaking. The LLM starts generating from its first token rather than its last. TTS starts speaking the first clause while the model is still writing the second. By the time the customer stops talking, most of the recognition work is already done — it happened during their sentence.</p>
+
+  <div class="aside">
+    <span class="lbl">Why not one model that does all three?</span>
+    <p>You can — speech-to-speech models take audio in and emit audio out, skip the text entirely, and are both faster and better at prosody, because they can hear hesitation and tone that a transcript throws away.</p>
+    <p>What you lose is control and legibility. Three separate components means you can swap any one vendor, fail over when one degrades, tune cost per stage, and — importantly for support — you get a transcript for free. That transcript is the QA record, the compliance artifact, the analytics source and the eval set. For a regulated support line, that's usually decisive.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>Streaming buys you speed. It does not tell you how much speed is enough — and that number is not an engineering preference, it's a fact about people.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 08 -->
+<section class="ch">
+  <span class="ch-num">08</span>
+  <h2>Why one second</h2>
+  <p>Human conversational timing is remarkably tight and remarkably consistent. Across languages studied in a well-known 2009 comparison, the gap between one person finishing and the next starting clusters in the low hundreds of milliseconds — the peak sits between 0 and 200 ms, with median gaps across ten languages falling between roughly 0 and 300 ms.</p>
+  <p>That's the instinct your voice agent is being measured against, whether or not anyone says so. People don't consciously time the pause; they just feel that something is wrong. Past about a second, they assume the line dropped, or start repeating themselves — which makes the next turn worse.</p>
+  <p>So the target is <strong>under one second</strong>, measured from the moment the customer stops speaking to the moment they hear the first sound of the reply. Here's where it goes:</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 250" role="img" aria-label="Latency timeline showing speech recognition running while the customer speaks, so after the customer stops only end-of-turn detection, LLM first token and TTS first audio remain, totalling under one second.">
+        <line x1="120" y1="212" x2="790" y2="212" stroke="var(--rule)" stroke-width="1"/>
+        <line x1="330" y1="26" x2="330" y2="222" stroke="var(--rust)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="330" y="240" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--rust)">they stop speaking &#8212; the clock starts</text>
+
+        <rect x="120" y="40" width="210" height="24" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/>
+        <text x="225" y="57" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">customer speaking</text>
+
+        <rect x="152" y="76" width="220" height="24" rx="2" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="262" y="93" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--teal)">STT partials &#8212; already happening, costs nothing</text>
+
+        <rect x="330" y="112" width="140" height="24" rx="2" fill="var(--rust-soft)" stroke="var(--rust)"/>
+        <text x="400" y="129" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--rust)">are they done? ~300 ms</text>
+
+        <rect x="470" y="148" width="150" height="24" rx="2" fill="var(--surface-2)" stroke="var(--slate)"/>
+        <text x="545" y="165" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">LLM first token 200&#8211;400</text>
+
+        <rect x="620" y="184" width="120" height="24" rx="2" fill="var(--surface-2)" stroke="var(--slate)"/>
+        <text x="680" y="201" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-2)">TTS audio 100&#8211;300</text>
+
+        <circle cx="740" cy="212" r="4" fill="var(--teal)"/>
+        <text x="752" y="206" font-family="Archivo,sans-serif" font-size="11" font-weight="600" fill="var(--teal)">it speaks</text>
+
+        <text x="120" y="24" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">transport is under 50 ms and mostly invisible &#8212; the honest cost is the waiting</text>
+      </svg>
+    </div>
+    <figcaption><b>Why the parts don't sum to the whole.</b> Recognition overlaps the customer's own speech, so it's free by the time it matters. What remains is dominated by something that isn't computation at all: the system deliberately pausing to be sure the person has finished.</figcaption>
+  </figure>
+
+  <p>Which points at the biggest structural lever, and it isn't model choice. Every stage above may sit in a different data center. Audio in, STT, LLM, TTS, audio out — that's four or five chances to pay a cross-country round trip, every single turn. <strong>Putting the inference next to the media path is worth more than any amount of model tuning</strong>, and it's the reason a realtime platform would bother hosting models at all.</p>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>Three hundred milliseconds of that budget is spent on a question that sounds trivial and turns out to be the hardest one in the field.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 09 -->
+<section class="ch">
+  <span class="ch-num">09</span>
+  <h2>Knowing when it's your turn</h2>
+  <p>How do you know someone has finished speaking? Not paused to think — <em>finished</em>.</p>
+  <p>The obvious approach is to listen for silence. A small, cheap model called <strong>VAD</strong> — voice activity detection — runs continuously on the raw audio and answers one question: is anyone speaking right now? It's fast and it understands nothing.</p>
+  <p>Try to build turn-taking on silence alone and you get an agent everyone hates, because of this:</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 200" role="img" aria-label="A customer saying my order number is, pausing, then giving the digits. Silence detection fires during the pause and interrupts. A model reading the transcript recognises the sentence is unfinished and waits.">
+        <text x="14" y="22" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-3)">The customer says:</text>
+        <text x="140" y="22" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--ink)">"my order number is&#8230; uh&#8230; 4 4 7 2 1"</text>
+
+        <rect x="40" y="44" width="180" height="28" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/>
+        <text x="130" y="63" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">"my order number is"</text>
+        <rect x="220" y="44" width="120" height="28" rx="2" fill="none" stroke="var(--rule)" stroke-dasharray="4 3"/>
+        <text x="280" y="63" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-3)">700 ms pause</text>
+        <rect x="340" y="44" width="160" height="28" rx="2" fill="var(--surface-3)" stroke="var(--rule)"/>
+        <text x="420" y="63" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">"uh&#8230; 4 4 7 2 1"</text>
+
+        <text x="14" y="110" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--bad)">silence only</text>
+        <line x1="120" y1="120" x2="790" y2="120" stroke="var(--rule)"/>
+        <circle cx="265" cy="120" r="4.5" fill="var(--bad)"/>
+        <text x="278" y="116" font-family="Archivo,sans-serif" font-size="11" fill="var(--bad)">fires &#8212; silence looks like silence</text>
+        <text x="278" y="132" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">"Sure, let me look that up!" &#8212; with no number at all</text>
+
+        <text x="14" y="170" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--good)">+ reads the words</text>
+        <line x1="120" y1="180" x2="790" y2="180" stroke="var(--rule)"/>
+        <line x1="265" y1="170" x2="265" y2="190" stroke="var(--ink-3)" stroke-width="1.3" stroke-dasharray="3 2"/>
+        <text x="274" y="176" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">ends on "is" &#8212; unfinished, wait</text>
+        <circle cx="510" cy="180" r="4.5" fill="var(--good)"/>
+        <text x="522" y="176" font-family="Archivo,sans-serif" font-size="11" fill="var(--good)">fires &#8212; the sentence completed</text>
+        <text x="522" y="192" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">responds, with the order number in hand</text>
+      </svg>
+    </div>
+    <figcaption><b>The information that silence throws away.</b> A sentence ending in "is" is grammatically incomplete — plainly visible in the transcript, entirely invisible to a model that only hears amplitude. So a second small model reads the running text and predicts whether the utterance sounds finished, at roughly 50 ms.</figcaption>
+  </figure>
+
+  <p>Both models stay, because they do different jobs. VAD is the cheap continuous ear — and it's also what powers <strong>barge-in</strong>, letting the customer cut the agent off mid-sentence the way you can with a person. The semantic model is the judgment about meaning.</p>
+
+  <h3>The part with no solution</h3>
+  <p>Turn detection is a dial with pain at both ends. Wait longer: fewer interruptions, sluggish agent. Wait less: snappy agent, talks over people. <strong>No setting removes the tradeoff.</strong> A better model gives you a better curve, not an escape from it — around a 300 ms budget, LiveKit's current model still sits near a 10% false-cutoff rate.</p>
+  <p>Which makes it a configuration conversation, not a default. Someone reading out a 16-digit account number needs a patient agent. Someone answering yes or no needs a fast one. Recognizing that this is a per-use-case decision — and asking the customer which one they are — is a more sophisticated answer than any number.</p>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>Everything so far assumes the customer is on a computer. Most support calls arrive over a network built for rotary telephones.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 10 -->
+<section class="ch">
+  <span class="ch-num">10</span>
+  <h2>The other network</h2>
+  <p>The phone system is a separate global network, roughly a century older than the internet, and it does not speak WebRTC. If customers dial a number, you have to bridge into it.</p>
+  <p>One distinction makes the whole subject tractable:</p>
+  <ul>
+    <li><strong>SIP is the signaling.</strong> The <em>who, where, when</em> — setting up, ringing, answering, hanging up. It's text-based and looks a lot like HTTP: requests with methods, replies with numeric codes. <strong>It carries no audio at all.</strong></li>
+    <li><strong>RTP is the media.</strong> The actual voice, in packets, over UDP — the same idea as WebRTC's media, older and simpler.</li>
+  </ul>
+  <p>If you remember one line: <strong>SIP is the phone ringing; RTP is the voice.</strong> Nearly every telephony question resolves into "is this a signaling problem or a media problem?"</p>
+
+  <h3>A call arriving, in six steps</h3>
+  <ol>
+    <li>The caller's provider sends an <code>INVITE</code> to your number. Inside it is a description of what codecs the caller speaks and where to send audio.</li>
+    <li><code>100 Trying</code> — received, working on it.</li>
+    <li><code>180 Ringing</code> — this is the ringing tone the caller hears.</li>
+    <li><code>200 OK</code> — answered, with the reply description: here's my codec and my address.</li>
+    <li><code>ACK</code> — confirmed. Signaling is done.</li>
+    <li><strong>RTP flows.</strong> Only now does any audio move.</li>
+  </ol>
+  <p>A few terms you'll hear and can now place: a <strong>trunk</strong> is the pipe between you and a telephony provider; a <strong>channel</strong> is one lane in it, meaning one simultaneous call, which is where concurrency and cost live; a <strong>DID</strong> is a phone number that routes to you; <strong>DTMF</strong> is keypad tones, sent as signaling events rather than as audio, which is why "press 1" survives compression.</p>
+  <p>And the payoff: once the bridge answers the call, a <strong>dispatch rule</strong> decides which room it belongs to, and the caller becomes an ordinary participant. From that moment the agent cannot tell — and does not need to know — whether this person is on a browser or a landline. <strong>One code path, two front doors.</strong></p>
+
+  <div class="aside">
+    <span class="lbl">The thing that will surprise you</span>
+    <p>Phone audio is usually 8 kHz narrowband — chapter 01's sample rate, and the reason phone calls sound thin. You're feeding speech recognition a much poorer signal than the browser gives you, so accuracy is genuinely lower on the phone leg. It's a real constraint, worth naming to a customer before they discover it, and a good reason to evaluate the phone path separately rather than assuming web results carry over.</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Which creates a problem</span>
+    <p>Sometimes the AI can't help. What happens next is the part customers care about most — and, because of chapter 06, it needs almost no new machinery.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 11 -->
+<section class="ch">
+  <span class="ch-num">11</span>
+  <h2>When it isn't enough</h2>
+  <p>Everyone has lived the failure this replaces: explain your problem to a menu, then to a bot, then to a person who asks you to start over. <strong>The entire problem is context loss</strong>, and every decision here follows from refusing to lose it.</p>
+  <p>Because a human specialist is just another participant, escalation has three possible shapes rather than one:</p>
+  <ul>
+    <li><strong>Cold transfer.</strong> Send the caller elsewhere — SIP has a request for exactly this. Cheap, simple, and it is the experience everybody hates: the AI vanishes and the customer starts again.</li>
+    <li><strong>Warm transfer.</strong> Put the caller on hold, open a private side room, dial the specialist in, have the agent brief them on what's happened, then move the specialist into the customer's room. The human arrives already knowing the story — roughly ten to fifteen seconds, and the customer repeats nothing.</li>
+    <li><strong>Conferenced.</strong> The specialist joins the same room and the AI stays, silent. It keeps transcribing, can be asked to look something up, and files the ticket afterwards. This is what your reference diagram draws.</li>
+  </ul>
+  <p>Worth knowing that the third differs from the framework's default warm-transfer flow, where both agent sessions end and the humans are left alone. Neither is wrong; they trade a silent AI listener against a clean two-person call, and that's a customer's decision to make — recording consent being part of it.</p>
+
+  <h3>When to escalate</h3>
+  <p>"When it can't handle it" is the answer everyone gives. The better ones: <strong>risk</strong> (money, health, legal), <strong>low confidence</strong> in what the customer wants, <strong>complexity</strong> past the agent's scope, <strong>regulation</strong>, <strong>detected frustration</strong>, and <strong>the customer asking</strong> — which must always work immediately. Refusing that request is the single fastest way to make someone hate a voice agent.</p>
+
+  <div class="bridge">
+    <span class="lbl">Which is the whole thing</span>
+    <p>Eleven chapters, and every box in the architecture has now been forced into existence by a problem. Which means you can do it again, for a scenario you've never seen.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 12 -->
+<section class="ch">
+  <span class="ch-num">12</span>
+  <h2>Now derive it for a scenario you've never seen</h2>
+  <p>Here's the reason this page exists. The chain you just walked — sound, packets, timing, addressing, a server in the middle, the room, the model chain, the second, the turn, the phone, the human — is the same for every voice agent anyone will ever ask you to draw. <strong>The core doesn't change with the scenario. Only the edges do.</strong></p>
+  <p>So if Mike opens with something other than smart-home support, draw the same spine and ask what's different at the boundaries:</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>If the scenario is</th><th>The spine is identical, but ask about</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Outbound — collections, reminders, renewals</strong></td><td>Now you place calls instead of receiving them, so it's an outbound trunk and a dialing service. Suddenly consent, calling-hours rules and answering-machine detection are architecture, not policy. Volume is scheduled rather than random — much easier to size for.</td></tr>
+        <tr><td><strong>Appointment scheduling</strong></td><td>Fewer integrations but harder ones: a calendar system that must not double-book. Writes need idempotency and real conflict handling. Conversations are short, so per-call overhead and cold starts matter proportionally more.</td></tr>
+        <tr><td><strong>Healthcare intake or triage</strong></td><td>Compliance dominates. HIPAA, transcript retention and redaction, consent recording, and a much lower tolerance for autonomous action — this is where propose-then-confirm and aggressive escalation thresholds earn their place. Note the platform's compliance tier has a real price floor.</td></tr>
+        <tr><td><strong>Drive-thru or in-store ordering</strong></td><td>Acoustics become the hard problem: background noise, multiple speakers, a customer talking to a passenger rather than to you. Noise cancellation and speaker separation move to the center; turn detection gets much harder; the menu is a live-inventory integration.</td></tr>
+        <tr><td><strong>Multilingual support</strong></td><td>Language detection at the start, per-language model choice, and turn detection that varies by language — pause conventions genuinely differ. Quality evaluation multiplies by the number of languages, which is usually the underestimated cost.</td></tr>
+        <tr><td><strong>Sales qualification</strong></td><td>CRM becomes the system of record and the write path matters more than the read path. Handoff isn't failure here, it's the goal — routing a warm lead to the right rep, with the transcript, is the product.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Notice what didn't move in any row: the room, the participant model, the streaming pipeline, the one-second budget, turn detection, the phone bridge. That's the spine. Everything in the table is an edge — an integration, a compliance constraint, a tuning decision.</p>
+
+  <div class="keep">
+    <span class="lbl">The move, if you get an unfamiliar scenario</span>
+    <p>Say it out loud: <em>"The core of this is the same as any voice agent — let me draw that first, then we can talk about what's specific to your situation, because that's where the interesting decisions are."</em> Then draw the spine and ask the discovery questions. You've turned an unfamiliar prompt into the one you rehearsed, in front of the interviewer, on purpose.</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="ch">
+  <span class="ch-num">&mdash;</span>
+  <h2>What to carry into the room</h2>
+  <p>If everything else falls out of your head, these six survive and most questions can be reconstructed from them:</p>
+  <ol>
+    <li><strong>TCP trades latency for completeness; live voice needs the opposite trade.</strong> That's why WebRTC.</li>
+    <li><strong>The AI is a participant, not a backend.</strong> Draw it inside the room.</li>
+    <li><strong>Under one second</strong>, because that's where human conversational timing sits.</li>
+    <li><strong>Co-location beats model tuning.</strong> Cross-region hops get paid four or five times per turn.</li>
+    <li><strong>SIP is the ringing, RTP is the voice.</strong> After the bridge, one code path.</li>
+    <li><strong>Handoff isn't a transfer</strong> — it's a person joining a conversation already in progress.</li>
+  </ol>
+
+  <footer>
+    <p>Companion to the AnyCompany Voice Agent Playbook. Written for a LiveKit Sales Engineer technical round, August 2026.</p>
+    <p>Turn-taking timing from <a href="https://www.pnas.org/doi/pdf/10.1073/pnas.0903616106">Stivers et al., <em>Universals and cultural variation in turn-taking in conversation</em></a> (PNAS, 2009). Latency budget and turn-detection figures from <a href="https://livekit.com/blog/voice-agent-architecture-stt-llm-tts-pipelines-explained">LiveKit's pipeline architecture write-up</a> and <a href="https://livekit.com/blog/solving-end-of-turn-detection">Turn Detector v1.0</a>. Telephony from the <a href="https://docs.livekit.io/telephony/">LiveKit telephony docs</a>.</p>
+  </footer>
+</section>
+
+</div>
+</main>

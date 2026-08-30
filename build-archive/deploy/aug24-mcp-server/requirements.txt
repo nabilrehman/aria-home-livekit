@@ -1,0 +1,4 @@
+mcp==1.13.1
+google-cloud-firestore==2.19.0
+cloud-sql-python-connector[pg8000]==1.12.1
+SQLAlchemy==2.0.36

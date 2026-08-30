@@ -1,0 +1,1013 @@
+<title>What LiveKit Ships</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE; --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26;
+  --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F; --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F; --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--serif); font-size:18px; line-height:1.68;
+  margin:0; padding:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px 96px}
+
+/* ---------- masthead ---------- */
+.masthead{padding:72px 0 40px; border-bottom:1px solid var(--rule); margin-bottom:8px}
+.eyebrow{
+  font-family:var(--mono); font-size:12px; font-weight:500;
+  letter-spacing:0.13em; text-transform:uppercase; color:var(--teal);
+  margin:0 0 18px;
+}
+h1{
+  font-family:var(--sans); font-weight:700; font-size:44px; line-height:1.1;
+  letter-spacing:-0.02em; margin:0 0 20px; text-wrap:balance;
+}
+.standfirst{font-size:20px; line-height:1.6; color:var(--ink-2); margin:0 0 22px}
+.meta{
+  font-family:var(--mono); font-size:12.5px; line-height:1.7; color:var(--ink-3);
+  margin:0; padding-top:8px; border-top:1px solid var(--rule);
+}
+
+/* ---------- chapters ---------- */
+section{padding-top:52px}
+.chapnum{
+  font-family:var(--mono); font-size:12px; font-weight:600;
+  letter-spacing:0.16em; color:var(--ink-3); margin:0 0 10px;
+}
+h2{
+  font-family:var(--sans); font-weight:600; font-size:29px; line-height:1.2;
+  letter-spacing:-0.015em; margin:0 0 20px; text-wrap:balance;
+}
+h3{
+  font-family:var(--sans); font-weight:600; font-size:20px; line-height:1.3;
+  margin:34px 0 12px; letter-spacing:-0.008em; text-wrap:balance;
+}
+p{margin:0 0 20px}
+a{color:var(--teal); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+a:focus-visible, summary:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+strong{font-weight:600}
+em{font-style:italic}
+code{
+  font-family:var(--mono); font-size:0.86em;
+  background:var(--surface-2); border:1px solid var(--rule);
+  border-radius:3px; padding:0.08em 0.34em;
+}
+ul{margin:0 0 20px; padding-left:22px}
+li{margin-bottom:9px}
+li::marker{color:var(--ink-3)}
+
+/* ---------- callouts ---------- */
+.box{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  padding:20px 22px; margin:28px 0; font-size:17px; line-height:1.6;
+}
+.box p:last-child{margin-bottom:0}
+.box.keep{border-left:4px solid var(--teal); background:var(--teal-soft); border-color:var(--rule)}
+.box.warn{border-left:4px solid var(--rust); background:var(--rust-soft); border-color:var(--rule)}
+.box .lab{
+  display:block; font-family:var(--mono); font-size:11px; font-weight:600;
+  letter-spacing:0.14em; text-transform:uppercase; margin-bottom:9px;
+}
+.box.keep .lab{color:var(--teal)}
+.box.warn .lab{color:var(--rust)}
+.box .lab{color:var(--ink-3)}
+
+/* ---------- figures ---------- */
+figure{margin:36px 0; padding:0}
+figure svg{display:block; width:100%; height:auto; max-width:100%}
+.figframe{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  padding:20px 18px; overflow-x:auto;
+}
+figcaption{
+  font-family:var(--mono); font-size:12.5px; line-height:1.6; color:var(--ink-3);
+  margin-top:12px; padding-left:2px;
+}
+@media (min-width:900px){
+  figure.wide{width:calc(100% + 130px); margin-left:-65px}
+}
+svg text{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto; margin:28px 0; border:1px solid var(--rule); border-radius:4px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:15px; line-height:1.5; font-family:var(--sans); font-weight:500}
+th,td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+thead th{
+  font-family:var(--mono); font-size:11.5px; font-weight:600; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--ink-3); background:var(--surface-2);
+  white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+.yes{color:var(--good); font-weight:600}
+.no{color:var(--bad); font-weight:600}
+.dim{color:var(--ink-3)}
+
+/* ---------- sources ---------- */
+.sources{margin-top:56px; padding-top:28px; border-top:1px solid var(--rule)}
+.sources ul{list-style:none; padding:0; margin:0; columns:1}
+.sources li{
+  font-family:var(--mono); font-size:12.5px; line-height:1.55;
+  margin-bottom:7px; word-break:break-all; color:var(--ink-3);
+}
+.sources a{color:var(--ink-2)}
+
+@media (max-width:560px){
+  h1{font-size:34px}
+  h2{font-size:24px}
+  body{font-size:17px}
+  .standfirst{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Interview prep · Part four</p>
+  <h1>What LiveKit Ships</h1>
+  <p class="standfirst">A tour of the platform surface — the media server, the Agents framework, telephony, egress and ingress, deployment, and the plan lines that decide what a customer can actually have. Written from the docs, with the weak spots left in.</p>
+  <p class="meta">Companion to <em>From Sound to Conversation</em>, <em>AnyCompany Voice Agent Playbook</em>, and <em>Inside the Room</em>. Those cover the physics of a voice agent, the whiteboard script, and what a room and an SFU really are. This one assumes all three and does not repeat them.<br>Verified against docs.livekit.io and livekit.com, August 2026. Sources listed at the end.</p>
+</header>
+
+<!-- ============ 01 ============ -->
+<section>
+<p class="chapnum">01</p>
+<h2>One server, one framework, four services</h2>
+
+<p>When a customer says "we're evaluating LiveKit," they might mean five different things, and your first job in a technical conversation is to find out which. The word covers an open-source project, a managed cloud, a Python library, a telephony product, and a recording service. They are genuinely separable — you can adopt some and not others — and knowing where the seams are is most of what makes you useful in the room.</p>
+
+<p>Start at the bottom. <strong>LiveKit server</strong> is an open-source WebRTC Selective Forwarding Unit written in Go, Apache 2.0 licensed. It does signalling, NAT traversal, RTP routing, adaptive degradation, and quality-of-service. You already know what an SFU is; the thing to notice here is that this single binary is the same code whether it's running on your laptop, in your EKS cluster, or inside LiveKit Cloud. The docs are explicit about this: Cloud "runs the same open-source LiveKit server available on GitHub and supports the same APIs and SDKs," and "the connection endpoint is the primary difference." That claim is load-bearing for a pre-sales conversation, because it is the answer to <em>what happens if we want out.</em></p>
+
+<p>Above the server sits the <strong>Agents framework</strong> — a Python SDK and a Node.js SDK that let an ordinary program join a room as a first-class participant, receive the audio, run it through models, and publish speech back. It is also open source. It is not a hosted product on its own; it's a library you run somewhere, and "somewhere" can be LiveKit Cloud or your own Kubernetes.</p>
+
+<p>Beside those two are the <strong>integration services</strong>, which exist because not everything speaks WebRTC. <strong>Telephony</strong> (the SIP service) bridges the phone network into a room. <strong>Egress</strong> pulls media out of a room and turns it into files or livestreams. <strong>Ingress</strong> pushes media from RTMP, WHIP, SRT, or a plain HTTP file into a room. Each of these is a separate service you deploy yourself when self-hosting, and each is simply <em>there</em>, preconfigured, on Cloud.</p>
+
+<p>And then the <strong>SDKs</strong>: client SDKs for the platforms your users are on, and server SDKs for your backend to mint tokens and call management APIs. Every one of these participants — a browser, a phone caller, an agent, an egress recorder, an ingress transcoder — shows up in the room the same way, as a participant with tracks. That uniformity is the platform's central design decision, and it is why the pieces compose as cleanly as they do.</p>
+
+<figure class="wide">
+  <div class="figframe">
+    <svg viewBox="0 0 880 400" role="img" aria-label="A LiveKit room at the centre with six connectors: client SDKs and the SIP service publish and subscribe realtime media, ingress transcodes external streams in, egress records media out, agent jobs exchange audio and data, and server APIs manage the room over HTTPS. Cloud-only additions are listed beneath.">
+      <defs>
+        <marker id="ar-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--teal)"/>
+        </marker>
+        <marker id="ar-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--slate)"/>
+        </marker>
+        <marker id="ar-t2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--teal)"/>
+        </marker>
+      </defs>
+
+      <!-- centre room -->
+      <rect x="345" y="140" width="190" height="106" rx="6" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="440" y="182" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Room</text>
+      <text x="440" y="203" text-anchor="middle" font-size="11" fill="var(--ink-2)">LiveKit server (SFU)</text>
+      <text x="440" y="220" text-anchor="middle" font-size="11" fill="var(--ink-2)">participants · tracks</text>
+
+      <!-- left: clients -->
+      <rect x="40" y="60" width="164" height="52" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="122" y="82" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Client SDKs</text>
+      <text x="122" y="99" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">web · iOS · Android · ESP32</text>
+      <path d="M204 92 L332 152" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t)"/>
+      <text x="228" y="112" font-size="10.5" fill="var(--teal)">publish / subscribe (WebRTC)</text>
+
+      <!-- left: SIP -->
+      <rect x="40" y="168" width="164" height="52" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="122" y="190" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Telephony (SIP)</text>
+      <text x="122" y="207" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">trunks · dispatch rules</text>
+      <path d="M204 194 L332 194" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t)"/>
+      <text x="216" y="185" font-size="10.5" fill="var(--teal)">caller → SIP participant</text>
+
+      <!-- left: ingress -->
+      <rect x="40" y="276" width="164" height="52" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="122" y="298" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Ingress</text>
+      <text x="122" y="315" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">RTMP · WHIP · SRT · file</text>
+      <path d="M204 296 L332 236" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t)"/>
+      <text x="212" y="272" font-size="10.5" fill="var(--teal)">transcode in</text>
+
+      <!-- right: agent -->
+      <rect x="676" y="60" width="164" height="52" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="758" y="82" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Agent job</text>
+      <text x="758" y="99" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">Python / Node process</text>
+      <path d="M548 152 L668 92" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t)"/>
+      <path d="M668 100 L548 160" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t2)"/>
+      <text x="560" y="112" font-size="10.5" fill="var(--teal)">audio + text both ways</text>
+
+      <!-- right: server api -->
+      <rect x="676" y="168" width="164" height="52" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="758" y="190" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Your backend</text>
+      <text x="758" y="207" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">server SDKs · webhooks</text>
+      <path d="M668 194 L548 194" stroke="var(--slate)" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ar-s)"/>
+      <text x="556" y="185" font-size="10.5" fill="var(--slate)">tokens, admin, events (HTTPS)</text>
+
+      <!-- right: egress -->
+      <rect x="676" y="276" width="164" height="52" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="758" y="298" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Egress</text>
+      <text x="758" y="315" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">MP4 · HLS · RTMP out</text>
+      <path d="M548 236 L668 296" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t)"/>
+      <text x="586" y="272" font-size="10.5" fill="var(--teal)">subscribe + encode</text>
+
+      <!-- bottom band -->
+      <line x1="40" y1="356" x2="840" y2="356" stroke="var(--rule)" stroke-width="1"/>
+      <text x="40" y="378" font-size="11" font-weight="600" fill="var(--rust)">CLOUD ONLY, ON TOP OF ALL THIS:</text>
+      <text x="300" y="378" font-size="11" fill="var(--ink-2)">managed agent hosting · LiveKit Inference · observability · Phone Numbers · Krisp · token revocation</text>
+    </svg>
+  </div>
+  <figcaption>Every component meets in the room. Teal lines carry realtime media; the dashed slate line is your backend making ordinary HTTPS calls. Nothing in the top half is Cloud-specific — the Cloud-only capabilities sit alongside, not underneath.</figcaption>
+</figure>
+
+<div class="box keep">
+  <span class="lab">Keep this one</span>
+  <p>LiveKit is an open-source SFU plus an open-source agent framework, and LiveKit Cloud is a managed platform built around them that adds hosting, inference, telephony numbers, and observability. The client and agent code is portable in both directions. That portability is the honest answer to lock-in, and it is unusual enough in this market to be worth saying plainly.</p>
+</div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section>
+<p class="chapnum">02</p>
+<h2>What Cloud is actually selling</h2>
+
+<p>Most managed offerings are "the same software, but we page the on-call." LiveKit Cloud is not that, and the difference is architectural rather than operational. It is worth understanding properly, because it is the single most defensible technical claim the company has.</p>
+
+<p>A conventional media server is <em>single-home</em>: a session lives on exactly one machine. You can run a hundred machines in a dozen data centres, but everyone in a given call must connect to the same one. That has three consequences the LiveKit engineering blog states directly. It's a single point of failure, since all the session state is in one process's memory. It caps scale at whatever one box can forward — their worked example puts a fifty-person video call at roughly 1.23 Gbps of outbound bandwidth, near the sustainable limit of most network links. And it puts distant participants a long way from the server, which matters more than raw latency suggests: WebRTC repairs lost packets by having the receiver send a NACK and the sender retransmit, so a far-away server makes every repair slower.</p>
+
+<p>Cloud is <em>multi-home</em>. A session stops being a machine and becomes a logical object that can span servers and data centres. Each participant connects to the nearest edge; the edges relay tracks to each other over a private overlay network — encrypted, multi-cloud, every instance addressable by every other — using a custom FlatBuffers-based relay protocol rather than WebRTC, because ICE and SDP buy nothing between two servers you already control. Participant presence is synchronised over a per-session pub/sub topic rather than a database, on the reasoning that the state is transient, there's a natural write authority (the server the participant is attached to), and eventual consistency is fine.</p>
+
+<p>Two consequences are worth memorising. First, the mesh reshapes itself per track: for a livestream with one publisher and twenty thousand viewers the relays organise into layers, and for a big conference the same servers form a full mesh. Second, <strong>live migrations</strong> — when a server needs to go away, the client does a WebRTC ICE restart pointed at a different server, and the new server reconstructs the participant's expected state, including existing subscriptions. A failure that would normally cost a five-second teardown-and-rejoin becomes under a second, and it works proactively too, so they can drain a sick machine before anyone notices.</p>
+
+<figure class="wide">
+  <div class="figframe">
+    <svg viewBox="0 0 880 340" role="img" aria-label="Left panel: single-home architecture, where participants in Tokyo, Frankfurt and Virginia all connect to one server in Virginia over long round trips. Right panel: multi-home mesh, where each participant connects to a nearby edge server and the edges relay media to each other over an overlay network.">
+      <defs>
+        <marker id="ar-t3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--teal)"/>
+        </marker>
+        <marker id="ar-r3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--rust)"/>
+        </marker>
+      </defs>
+
+      <text x="30" y="26" font-size="12" font-weight="600" fill="var(--ink-3)">SINGLE-HOME  ·  self-hosted default</text>
+      <text x="480" y="26" font-size="12" font-weight="600" fill="var(--ink-3)">MULTI-HOME MESH  ·  LiveKit Cloud</text>
+      <line x1="440" y1="14" x2="440" y2="326" stroke="var(--rule)" stroke-width="1" stroke-dasharray="4 5"/>
+
+      <!-- LEFT -->
+      <rect x="176" y="150" width="110" height="46" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="231" y="170" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">one server</text>
+      <text x="231" y="186" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">Virginia</text>
+
+      <circle cx="52" cy="70" r="6" fill="var(--teal)"/>
+      <text x="66" y="66" font-size="11" fill="var(--ink)">Tokyo</text>
+      <path d="M60 76 L170 152" stroke="var(--rust)" stroke-width="1.8" fill="none" marker-end="url(#ar-r3)"/>
+      <text x="70" y="120" font-size="10.5" fill="var(--rust)">~150 ms each way</text>
+
+      <circle cx="52" cy="172" r="6" fill="var(--teal)"/>
+      <text x="66" y="168" font-size="11" fill="var(--ink)">Frankfurt</text>
+      <path d="M60 174 L170 174" stroke="var(--rust)" stroke-width="1.8" fill="none" marker-end="url(#ar-r3)"/>
+      <text x="72" y="192" font-size="10.5" fill="var(--rust)">~90 ms</text>
+
+      <circle cx="52" cy="272" r="6" fill="var(--teal)"/>
+      <text x="66" y="268" font-size="11" fill="var(--ink)">Virginia</text>
+      <path d="M60 266 L170 196" stroke="var(--teal)" stroke-width="1.8" fill="none" marker-end="url(#ar-t3)"/>
+      <text x="76" y="240" font-size="10.5" fill="var(--teal)">~10 ms</text>
+
+      <text x="30" y="312" font-size="10.5" fill="var(--ink-3)">Server dies → session state is gone. Distant NACK repairs arrive late.</text>
+
+      <!-- RIGHT -->
+      <circle cx="502" cy="70" r="6" fill="var(--teal)"/>
+      <text x="516" y="66" font-size="11" fill="var(--ink)">Tokyo</text>
+      <rect x="590" y="52" width="88" height="36" rx="5" fill="var(--surface-2)" stroke="var(--teal)"/>
+      <text x="634" y="75" text-anchor="middle" font-size="10.5" fill="var(--ink)">edge · JP</text>
+      <path d="M510 70 L584 70" stroke="var(--teal)" stroke-width="1.8" fill="none" marker-end="url(#ar-t3)"/>
+      <text x="516" y="100" font-size="10.5" fill="var(--teal)">&lt;100 ms</text>
+
+      <circle cx="502" cy="172" r="6" fill="var(--teal)"/>
+      <text x="516" y="168" font-size="11" fill="var(--ink)">Frankfurt</text>
+      <rect x="590" y="154" width="88" height="36" rx="5" fill="var(--surface-2)" stroke="var(--teal)"/>
+      <text x="634" y="177" text-anchor="middle" font-size="10.5" fill="var(--ink)">edge · DE</text>
+      <path d="M510 172 L584 172" stroke="var(--teal)" stroke-width="1.8" fill="none" marker-end="url(#ar-t3)"/>
+
+      <circle cx="502" cy="274" r="6" fill="var(--teal)"/>
+      <text x="516" y="270" font-size="11" fill="var(--ink)">Virginia</text>
+      <rect x="590" y="256" width="88" height="36" rx="5" fill="var(--surface-2)" stroke="var(--teal)"/>
+      <text x="634" y="279" text-anchor="middle" font-size="10.5" fill="var(--ink)">edge · US</text>
+      <path d="M510 274 L584 274" stroke="var(--teal)" stroke-width="1.8" fill="none" marker-end="url(#ar-t3)"/>
+
+      <path d="M678 70 C 760 100, 760 142, 678 172" stroke="var(--slate)" stroke-width="1.8" fill="none" stroke-dasharray="6 4"/>
+      <path d="M678 172 C 760 202, 760 244, 678 274" stroke="var(--slate)" stroke-width="1.8" fill="none" stroke-dasharray="6 4"/>
+      <path d="M686 78 C 830 130, 830 214, 686 268" stroke="var(--slate)" stroke-width="1.8" fill="none" stroke-dasharray="6 4"/>
+      <text x="700" y="124" font-size="10.5" fill="var(--slate)">relay</text>
+      <text x="700" y="228" font-size="10.5" fill="var(--slate)">relay</text>
+      <text x="762" y="176" font-size="10.5" fill="var(--slate)">overlay network</text>
+
+      <text x="480" y="312" font-size="10.5" fill="var(--ink-3)">Edge dies → ICE restart to a sibling, state rebuilt. Session survives a whole data centre.</text>
+    </svg>
+  </div>
+  <figcaption>The same three-person session under both architectures. The mesh doesn't make the media path shorter in total — it makes each participant's <em>first hop</em> short, which is the hop where packet loss actually happens.</figcaption>
+</figure>
+
+<h3>Regions, residency, and the catch</h3>
+
+<p>Cloud publishes ten region groups for realtime traffic — <code>us</code>, <code>eu</code>, <code>asia</code>, <code>india</code>, <code>me</code>, <code>africa</code>, <code>aus</code>, <code>il</code>, <code>sa</code>, <code>uk</code> — with a note that the list changes and was last updated in May 2026. Some have more than one location and therefore in-region redundancy; the single-location ones (Africa, Australia, Israel, South America, UK) do not, and the docs say plainly they "can't offer the same availability guarantees."</p>
+
+<p><strong>Region pinning</strong> keeps a project's traffic inside a chosen group for data-residency reasons, and it is the one feature where the honest answer is a trade. The docs state it directly: "when you enable region pinning, you turn off automatic failover to the nearest region in the case of an outage." It's also gated to the Scale plan and has to be switched on by LiveKit support. And it works by embedding region selection in the signalling protocol, which means it only works with the realtime SDKs — SIP has to use region-specific endpoints instead, and SIP's region codes are not the same codes. <code>sa</code> means South America for realtime and Saudi Arabia for telephony. That's the kind of detail that makes you look like you've read the manual.</p>
+
+<div class="box warn">
+  <span class="lab">Say this honestly</span>
+  <p>Residency and resilience pull against each other here. If a customer needs EU-only processing, they get EU-only processing and they give up automatic cross-region failover — they're relying on France and Germany covering for each other instead of the whole network. That's a fine trade for most regulated buyers, but say it before they find out.</p>
+</div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section>
+<p class="chapnum">03</p>
+<h2>Agent servers, dispatch, and jobs</h2>
+
+<p>The Agents framework has a three-level structure that trips people up on first contact, so it's worth getting the vocabulary exactly right — the docs recently renamed some of it, and older material and blog posts still say "worker" where the docs now say "agent server."</p>
+
+<p>Your process, when it starts, registers itself with LiveKit server as an <strong>agent server</strong> and then waits. That registration is an outbound WebSocket, which has a pleasant operational consequence worth mentioning to any security team: agent servers "do not need to expose any inbound hosts or ports to the public internet." Nothing dials into your fleet.</p>
+
+<p>When work arrives, LiveKit routes a request to an available agent server, which accepts it and forks a <strong>job</strong> — a separate OS process that joins the room and runs your entrypoint function. One process per session. If a job segfaults or runs out of memory, it takes down that conversation and nothing else; if the parent agent server dies, all its children die with it. That isolation costs memory but it is the right default for something that will be running arbitrary model code on a live call.</p>
+
+<p>The middle step, <strong>dispatch</strong>, is where the design decisions live. There are four ways an agent gets attached to a room:</p>
+
+<ul>
+  <li><strong>Explicit, via the <code>AgentDispatchService</code> API</strong> from your backend. This is what the docs recommend for most applications, and it's the only path that gives you full control over timing plus a metadata string (up to 512 KiB, JSON by convention) handed to the job — the customer ID, the account context, the reason for the call.</li>
+  <li><strong>Explicit, via the access token.</strong> You embed a <code>RoomConfiguration</code> with agent dispatch entries in the participant's JWT. Note the trap: this only fires when the room is <em>first created</em>. If the room already exists, the token's dispatch config is silently ignored.</li>
+  <li><strong>Explicit, via a SIP dispatch rule</strong>, for inbound phone calls. Same mechanism, configured on the telephony side.</li>
+  <li><strong>Automatic</strong>, which happens when you don't set an agent name — every new room gets an agent. The docs carry a caution against it: it fires regardless of whether an agent is wanted and it can't pass metadata. Fine for a prototype, wrong for a product.</li>
+</ul>
+
+<p>Two numbers are worth carrying. Dispatch is optimised for "hundreds of thousands of new connections per second with a max dispatch time under 150 ms." And if an agent vanishes from a live room — crash, OOM, node loss — LiveKit server notices "within approximately 15 seconds and automatically dispatches a new agent to the room." Fifteen seconds of silence is a long time on a phone call, so that's a recovery story, not a resilience story, and worth framing as such.</p>
+
+<figure class="wide">
+  <div class="figframe">
+    <svg viewBox="0 0 880 360" role="img" aria-label="Agent servers register with LiveKit server over an outbound WebSocket. Four dispatch triggers — backend API call, access token room configuration, SIP dispatch rule, or automatic on room creation — cause LiveKit server to send a job request, which an agent server accepts by forking an isolated job process that joins the room.">
+      <defs>
+        <marker id="ar-t4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--teal)"/>
+        </marker>
+        <marker id="ar-s4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--slate)"/>
+        </marker>
+        <marker id="ar-r4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--rust)"/>
+        </marker>
+      </defs>
+
+      <!-- triggers -->
+      <text x="24" y="26" font-size="11" font-weight="600" fill="var(--ink-3)">DISPATCH TRIGGERS</text>
+      <rect x="24" y="38" width="176" height="30" rx="4" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="112" y="57" text-anchor="middle" font-size="10.5" fill="var(--ink)">backend → dispatch API</text>
+      <rect x="24" y="76" width="176" height="30" rx="4" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="112" y="95" text-anchor="middle" font-size="10.5" fill="var(--ink)">token · RoomConfiguration</text>
+      <rect x="24" y="114" width="176" height="30" rx="4" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="112" y="133" text-anchor="middle" font-size="10.5" fill="var(--ink)">SIP dispatch rule</text>
+      <rect x="24" y="152" width="176" height="30" rx="4" fill="var(--surface-3)" stroke="var(--rule)" stroke-dasharray="4 3"/>
+      <text x="112" y="171" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">automatic (not advised)</text>
+
+      <path d="M200 53 L286 118" stroke="var(--slate)" stroke-width="1.6" fill="none" marker-end="url(#ar-s4)"/>
+      <path d="M200 91 L286 126" stroke="var(--slate)" stroke-width="1.6" fill="none" marker-end="url(#ar-s4)"/>
+      <path d="M200 129 L286 134" stroke="var(--slate)" stroke-width="1.6" fill="none" marker-end="url(#ar-s4)"/>
+      <path d="M200 167 L286 142" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="4 3" fill="none" marker-end="url(#ar-s4)"/>
+
+      <!-- livekit server -->
+      <rect x="292" y="98" width="150" height="64" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="367" y="124" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">LiveKit server</text>
+      <text x="367" y="142" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">routes + load balances</text>
+
+      <!-- agent server -->
+      <rect x="546" y="86" width="188" height="88" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="640" y="110" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Agent server</text>
+      <text x="640" y="128" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">your container · idle pool warm</text>
+      <text x="640" y="146" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">reports load; stops at 0.7 CPU</text>
+      <text x="640" y="164" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">accepts or rejects each request</text>
+
+      <path d="M546 100 L448 108" stroke="var(--slate)" stroke-width="1.8" fill="none" marker-end="url(#ar-s4)"/>
+      <text x="452" y="82" font-size="10.5" fill="var(--slate)">1. registers (outbound WebSocket — no inbound ports)</text>
+
+      <path d="M448 148 L540 148" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t4)"/>
+      <text x="452" y="186" font-size="10.5" fill="var(--teal)">2. job request · &lt;150 ms</text>
+
+      <!-- job -->
+      <rect x="576" y="228" width="128" height="52" rx="5" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="640" y="250" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Job process</text>
+      <text x="640" y="267" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">one per session</text>
+      <path d="M640 174 L640 222" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t4)"/>
+      <text x="650" y="204" font-size="10.5" fill="var(--teal)">3. fork, isolated</text>
+
+      <!-- room -->
+      <rect x="292" y="228" width="150" height="52" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="367" y="258" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Room</text>
+      <path d="M570 254 L450 254" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t4)"/>
+      <text x="452" y="298" font-size="10.5" fill="var(--teal)">4. joins as participant, runs entrypoint</text>
+
+      <!-- failure notes -->
+      <line x1="24" y1="318" x2="856" y2="318" stroke="var(--rule)"/>
+      <path d="M24 340 L52 340" stroke="var(--rust)" stroke-width="1.8" marker-end="url(#ar-r4)"/>
+      <text x="60" y="344" font-size="10.5" fill="var(--ink-2)">job crashes → other jobs unaffected; server notices a missing agent in ~15 s and dispatches a replacement</text>
+      <path d="M24 358 L52 358" stroke="var(--rust)" stroke-width="1.8" marker-end="url(#ar-r4)"/>
+      <text x="60" y="362" font-size="10.5" fill="var(--ink-2)">SIGTERM → server drains: no new jobs, existing calls run on (default one hour)</text>
+    </svg>
+  </div>
+  <figcaption>Registration, dispatch, fork, join. The failure paths at the bottom are the ones an infrastructure buyer will ask about; both are in the docs rather than in marketing.</figcaption>
+</figure>
+
+<p>Two more knobs matter for capacity conversations. <strong>Prewarming</strong> keeps a pool of idle processes with your models already loaded, sized by CPU count by default, so a new call doesn't wait on a cold Python import. And <strong>load</strong> is a function you can override: the default reports average CPU over a five-second window and the server stops accepting jobs above <code>0.7</code>. On LiveKit Cloud deployments you cannot change those two parameters — they're for self-hosted fleets only. LiveKit's own sizing guidance for self-hosters is four cores and 8 GB per agent server, handling ten to twenty-five concurrent jobs depending on what's in the pipeline.</p>
+</section>
+
+<!-- ============ 04 ============ -->
+<section>
+<p class="chapnum">04</p>
+<h2>Choosing the brain</h2>
+
+<p>You already know the two shapes — a cascade of speech-to-text, LLM, and text-to-speech, versus a single speech-to-speech model. What's worth adding here is that LiveKit supports a third, and has an opinion about which to pick.</p>
+
+<p>The opinion is stated flatly: <em>"For most production agents, an STT-LLM-TTS pipeline is the right default."</em> That is a slightly unfashionable position and a useful one to be able to defend, because the reasons are all operational rather than aesthetic. Text at every boundary means you can log it, audit it, replay it, and swap any one stage without touching the others. Tool calling on text LLMs is more mature and more predictable than audio-native tool calling. Interim transcripts exist, so live captions work. And <code>say()</code> reads an exact script, which matters enormously the moment a compliance team wants a disclosure worded a particular way.</p>
+
+<p>The third shape is <strong>half-cascade</strong>: a realtime model for understanding the input, and a separate TTS for the output. You keep the model's ability to hear tone and hesitation, and you keep script-exact output. The cost is that you're now operating two models instead of one or three, and not every realtime provider supports a text-only response mode.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Dimension</th><th>STT-LLM-TTS</th><th>Realtime</th><th>Half-cascade</th></tr></thead>
+<tbody>
+<tr><td>End-to-end latency</td><td>Moderate</td><td class="yes">Fastest</td><td>Moderate</td></tr>
+<tr><td>Tool calling</td><td class="yes">Mature</td><td>Less mature</td><td>Less mature</td></tr>
+<tr><td>Realtime transcription</td><td class="yes">Yes</td><td class="no">Delayed</td><td class="no">Delayed</td></tr>
+<tr><td>Scripted speech (<code>say()</code>)</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td></tr>
+<tr><td>Hears tone and prosody</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+<tr><td>Auditability</td><td class="yes">Full text trail</td><td class="no">Limited</td><td>Output text only</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Reproduced from the pipeline-types page. In a customer-service design conversation, the middle column's two red rows — no live transcripts, no scripted speech — are usually what decides it.</p>
+
+<h3>LiveKit Inference</h3>
+
+<p>Whichever shape you pick, you have to get to a model. The default path used to be a plugin per provider plus an API key per provider, which is fine until you're managing a dozen keys and a dozen billing relationships. <strong>LiveKit Inference</strong> is Cloud's answer: a single interface to LLM, STT, and TTS models from OpenAI, Google, Deepgram, AssemblyAI, Cartesia, ElevenLabs, Speechmatics, xAI and others, with no provider keys and no plugins, billed through your LiveKit account.</p>
+
+<p>The claim that matters to a security reviewer is <strong>zero data retention</strong>: "your prompts, audio, and model outputs pass through only to generate a response. Neither LiveKit nor the underlying model providers log, store, or train on your data." Every model, every plan, no configuration. Note carefully what that <em>doesn't</em> cover — it is separate from agent observability, which you opt into and which does retain session data in Cloud, and separate from custom voices, which store the sample you upload.</p>
+
+<p>The plugin path still exists and is the escape hatch: forty-plus TTS providers, twenty-plus STT, twenty-plus LLM including Anthropic, Bedrock, Ollama for on-prem, and OpenAI-compatible endpoints for anything else. So "we already have an ElevenLabs contract" or "our LLM must run in our VPC" are both answerable without leaving the framework.</p>
+
+<div class="box">
+  <span class="lab">Worth having ready</span>
+  <p>Model rosters churn fast — the inference docs carry explicit deprecation and retirement dates per model, some only weeks out. Don't memorise model names for an interview. Memorise the shape: one interface, many providers, ZDR by default, plugins as the escape hatch, and a published retirement policy you should point a customer at rather than a list you'll get wrong.</p>
+</div>
+</section>
+
+<!-- ============ 05 ============ -->
+<section>
+<p class="chapnum">05</p>
+<h2>Structuring a conversation</h2>
+
+<p>A customer-service agent is never one prompt. It's an intent router, then a lookup, then some structured data collection, then an action, and possibly a handoff to a person. The framework gives you four constructs for that, and the interesting thing is that the docs are unusually forceful about not reaching for the fancy ones early.</p>
+
+<p><strong>AgentSession</strong> is the orchestrator — it collects input, runs the pipeline, calls the model, publishes the output, and emits events (<code>agent_state_changed</code>, <code>user_input_transcribed</code>, <code>conversation_item_added</code>, <code>close</code>) that your frontend and your logging both hang off. Inside it sits at least one <strong>Agent</strong>: instructions, tools, model choices. Those two you always have.</p>
+
+<p>The other three are optional and they differ in <em>who holds control of the session</em>. <strong>Tools</strong> are functions the model can call; they don't take control, they just return a value. <strong>Tasks</strong> are short-lived units that take temporary control, run their own turn loop to collect and validate something, and return a typed result — this is the supervisor pattern, and it's how you get a reliable credit-card capture without polluting the main prompt. <strong>Task groups</strong> sequence tasks and, critically, let a user go back and correct an earlier step. <strong>Handoffs</strong> transfer control permanently to a different agent, with context passed explicitly or deliberately reset.</p>
+
+<figure class="wide">
+  <div class="figframe">
+    <svg viewBox="0 0 880 320" role="img" aria-label="Four timelines of one session showing who holds control. Single agent plus tools: one agent throughout, with brief tool calls. Supervisor plus task: the agent lends control to a task that returns a typed result. Task group: a sequence of tasks with the ability to regress to an earlier one. Handoff: control transfers permanently to a second agent.">
+      <defs>
+        <marker id="ar-s5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--slate)"/>
+        </marker>
+        <marker id="ar-r5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--rust)"/>
+        </marker>
+      </defs>
+      <text x="24" y="22" font-size="11" font-weight="600" fill="var(--ink-3)">SESSION START</text>
+      <text x="856" y="22" text-anchor="end" font-size="11" font-weight="600" fill="var(--ink-3)">END</text>
+      <line x1="200" y1="30" x2="856" y2="30" stroke="var(--rule)"/>
+
+      <!-- row 1 -->
+      <text x="24" y="62" font-size="11.5" font-weight="600" fill="var(--ink)">single agent + tools</text>
+      <rect x="200" y="48" width="656" height="24" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="216" y="65" font-size="10.5" fill="var(--ink)">Agent A holds control the whole way</text>
+      <line x1="470" y1="48" x2="470" y2="72" stroke="var(--slate)" stroke-width="2"/>
+      <line x1="560" y1="48" x2="560" y2="72" stroke="var(--slate)" stroke-width="2"/>
+      <line x1="700" y1="48" x2="700" y2="72" stroke="var(--slate)" stroke-width="2"/>
+      <text x="620" y="88" font-size="10" fill="var(--slate)">│ = tool call: returns a value, never takes control</text>
+
+      <!-- row 2 -->
+      <text x="24" y="130" font-size="11.5" font-weight="600" fill="var(--ink)">supervisor + task</text>
+      <rect x="200" y="116" width="240" height="24" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="214" y="133" font-size="10.5" fill="var(--ink)">Agent A</text>
+      <rect x="440" y="116" width="180" height="24" rx="3" fill="var(--surface-3)" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3"/>
+      <text x="452" y="133" font-size="10.5" fill="var(--ink)">Task: collect card</text>
+      <rect x="620" y="116" width="236" height="24" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="634" y="133" font-size="10.5" fill="var(--ink)">Agent A, still in context</text>
+      <path d="M620 152 L448 152" stroke="var(--slate)" stroke-width="1.6" fill="none" marker-end="url(#ar-s5)"/>
+      <text x="452" y="166" font-size="10" fill="var(--slate)">typed result returned; supervisor kept full context throughout</text>
+
+      <!-- row 3 -->
+      <text x="24" y="208" font-size="11.5" font-weight="600" fill="var(--ink)">task group</text>
+      <rect x="200" y="194" width="120" height="24" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="212" y="211" font-size="10.5" fill="var(--ink)">Agent A</text>
+      <rect x="326" y="194" width="150" height="24" rx="3" fill="var(--surface-3)" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3"/>
+      <text x="338" y="211" font-size="10.5" fill="var(--ink)">name</text>
+      <rect x="482" y="194" width="150" height="24" rx="3" fill="var(--surface-3)" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3"/>
+      <text x="494" y="211" font-size="10.5" fill="var(--ink)">address</text>
+      <rect x="638" y="194" width="218" height="24" rx="3" fill="var(--surface-3)" stroke="var(--slate)" stroke-width="1.6" stroke-dasharray="5 3"/>
+      <text x="650" y="211" font-size="10.5" fill="var(--ink)">date of birth</text>
+      <path d="M660 230 C 600 250, 420 250, 400 226" stroke="var(--slate)" stroke-width="1.6" fill="none" marker-end="url(#ar-s5)"/>
+      <text x="452" y="252" font-size="10" fill="var(--slate)">"actually, my address changed" — built-in regression to an earlier step</text>
+
+      <!-- row 4 -->
+      <text x="24" y="292" font-size="11.5" font-weight="600" fill="var(--ink)">handoff</text>
+      <rect x="200" y="278" width="300" height="24" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="214" y="295" font-size="10.5" fill="var(--ink)">Agent A (triage)</text>
+      <rect x="500" y="278" width="356" height="24" rx="3" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.6"/>
+      <text x="514" y="295" font-size="10.5" fill="var(--ink)">Agent B (billing) — A no longer participates</text>
+      <path d="M500 270 L500 258" stroke="var(--rust)" stroke-width="1.6" marker-end="url(#ar-r5)"/>
+      <text x="510" y="264" font-size="10" fill="var(--rust)">control transfers; context passed explicitly, summarised, or reset</text>
+    </svg>
+  </div>
+  <figcaption>Four ways to shape one call, drawn as control ownership over time. The framework's own advice is to start on the top row and only move down when you hit a named limitation.</figcaption>
+</figure>
+
+<p>The named limitations are worth quoting, because "when should we split this into multiple agents?" is exactly the question a customer will ask you: instruction bloat, where the prompt gets big enough that the model degrades at its main job; conflicting tool access between phases; multi-turn data collection that needs its own validation loop; and backtracking. Absent one of those, one agent with a changing tool set is the recommendation.</p>
+
+<p>There is also a set of <strong>prebuilt tasks</strong> that will save a customer real weeks: <code>GetNameTask</code>, <code>GetEmailTask</code>, <code>GetAddressTask</code>, <code>GetDOBTask</code>, <code>GetPhoneNumberTask</code>, <code>GetCreditCardTask</code>, <code>GetDtmfTask</code>, and <code>WarmTransferTask</code>. Each handles the ugly part — spoken digits, noisy transcription, international formats, validation and re-ask. Similarly there are prebuilt tools including <code>EndCallTool</code> and <code>send_dtmf_events</code>. If you draw a customer-service flow on a whiteboard, being able to say "these five boxes ship in the box" is a strong moment.</p>
+
+<p>For reaching outside, tools can be plain functions, they can be forwarded to the frontend over RPC so the browser fulfils them, or they can come from an <strong>MCP server</strong> over streamable HTTP, SSE, or a local stdio process, with header-based auth and tool filtering. One caveat: the MCP page is marked available in Python and <em>not</em> Node.js. Parity between the two SDKs is generally good but not total, and it's better to check than to promise.</p>
+</section>
+
+<!-- ============ 06 ============ -->
+<section>
+<p class="chapnum">06</p>
+<h2>Telephony</h2>
+
+<p>For a customer-service buyer this is usually the deciding section, and it's the one with the most moving parts. Note before you go looking: <strong>the telephony docs moved from <code>/sip/</code> to <code>/telephony/</code></strong>. Older links redirect or dead-end, and some pages still contain stale <code>/sip/</code> cross-references. If you cite a URL in the interview, cite the new one.</p>
+
+<p>Telephony adds exactly two concepts to the three you already know. A <strong>trunk</strong> is the configured relationship with a SIP provider — an inbound trunk accepts calls and can be locked down by source IP or dialled number, an outbound trunk places them and can be stored once or passed inline per call. A <strong>dispatch rule</strong> is attached to a trunk and decides which room an inbound caller lands in. Everything else is the primitives you already have: the caller becomes a <strong>SIP participant</strong>, which is an ordinary participant with some extra attributes, managed by the ordinary participant APIs.</p>
+
+<p>There are three rule types and the choice has privacy consequences. An <em>individual</em> rule gives every caller their own room, named after their phone number plus a random suffix. A <em>direct</em> rule puts everyone in one named room. A <em>callee</em> rule names the room after the number that was dialled, optionally randomised per caller. The docs warn about both ends of this: shared rooms mean unrelated callers can hear each other, and individual rules put a phone number into a room name, which propagates into logs and traces throughout LiveKit and <em>is not removed by PII redaction</em>. For a regulated customer the right answer is to route each call to a predetermined room with an opaque ID.</p>
+
+<figure class="wide">
+  <div class="figframe">
+    <svg viewBox="0 0 880 240" role="img" aria-label="An inbound call path: the caller reaches a carrier, which sends a SIP INVITE to a LiveKit inbound trunk, which authenticates it. The dispatch rule chooses a room name and creates a SIP participant, and the room configuration on that rule dispatches the agent into the same room.">
+      <defs>
+        <marker id="ar-t6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--teal)"/>
+        </marker>
+        <marker id="ar-s6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--slate)"/>
+        </marker>
+      </defs>
+      <rect x="20" y="70" width="106" height="48" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="73" y="90" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Caller</text>
+      <text x="73" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">PSTN handset</text>
+
+      <rect x="164" y="70" width="122" height="48" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="225" y="90" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Carrier / DID</text>
+      <text x="225" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">Twilio, Telnyx… or LK</text>
+      <path d="M126 94 L158 94" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t6)"/>
+
+      <rect x="324" y="70" width="130" height="48" rx="5" fill="var(--surface-2)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="389" y="90" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Inbound trunk</text>
+      <text x="389" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">auth by IP / number</text>
+      <path d="M286 94 L318 94" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t6)"/>
+      <text x="288" y="60" font-size="10.5" fill="var(--teal)">SIP INVITE (UDP/TCP/TLS)</text>
+      <text x="326" y="140" font-size="10.5" fill="var(--rust)">Krisp applied here, at the trunk</text>
+
+      <rect x="492" y="70" width="136" height="48" rx="5" fill="var(--surface-2)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="560" y="90" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Dispatch rule</text>
+      <text x="560" y="107" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">picks the room name</text>
+      <path d="M454 94 L486 94" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t6)"/>
+
+      <rect x="666" y="52" width="180" height="84" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="756" y="76" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Room</text>
+      <text x="756" y="96" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">SIP participant + agent</text>
+      <text x="756" y="114" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">audio is now just audio</text>
+      <path d="M628 94 L660 94" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t6)"/>
+
+      <path d="M560 128 C 560 190, 690 200, 748 148" stroke="var(--slate)" stroke-width="1.8" stroke-dasharray="6 4" fill="none" marker-end="url(#ar-s6)"/>
+      <text x="556" y="212" font-size="10.5" fill="var(--slate)">rule's roomConfig.agents → agent dispatched to the same room, with metadata</text>
+
+      <text x="20" y="30" font-size="11" font-weight="600" fill="var(--ink-3)">INBOUND CALL PATH</text>
+    </svg>
+  </div>
+  <figcaption>Once the caller is a participant, nothing downstream knows or cares that they arrived by phone. That's the whole trick — the agent code is identical for web and telephone.</figcaption>
+</figure>
+
+<h3>LiveKit Phone Numbers</h3>
+
+<p>You can bring your own carrier — the docs list Twilio, Telnyx, Plivo, Wavix, Sinch, didlogic and Exotel as tested, with a note that the service is designed to work with all SIP providers but compatibility testing is limited to those. Or you can buy the number from LiveKit. <strong>LiveKit Phone Numbers</strong> sells local and toll-free US numbers directly, with no trunk configuration at all: buy a number, attach a dispatch rule, done. Every Cloud plan includes one free US local number.</p>
+
+<div class="box warn">
+  <span class="lab">Two real limits</span>
+  <p>LiveKit Phone Numbers is <strong>US-only</strong> and <strong>inbound-only</strong> — outbound is described as "coming soon." A customer wanting outbound campaigns, or numbers in the UK or India, needs a third-party trunk. That doesn't block anything, but it changes the setup story from "click a button" to "configure a carrier," and you should say so before they discover it in a POC.</p>
+</div>
+
+<h3>Transfers, and the rest of the feature list</h3>
+
+<p>Escalation to a human is the feature customer-service buyers care about most, and there are two mechanisms with genuinely different semantics. A <strong>cold transfer</strong> (call forwarding) issues a SIP REFER; the carrier re-points the call at another number or SIP endpoint and the caller's LiveKit session closes. It's simple and it's final — no context travels, and if the destination doesn't answer, you've already let go. A <strong>warm transfer</strong> keeps the LiveKit session alive: the agent dials the human into the conversation, briefs them with a summary, can put the caller on hold music meanwhile, and can come back to the caller if the transfer fails. There's a <code>WarmTransferTask</code> that implements the whole pattern.</p>
+
+<figure class="wide">
+  <div class="figframe">
+    <svg viewBox="0 0 880 260" role="img" aria-label="Cold transfer: a SIP REFER hands the call to the carrier, which reconnects the caller to a human, and the LiveKit session ends with no context transferred. Warm transfer: the agent dials the human into a second room, passes a spoken summary, and the caller's session stays alive throughout with hold music.">
+      <defs>
+        <marker id="ar-t7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--teal)"/>
+        </marker>
+        <marker id="ar-r7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--rust)"/>
+        </marker>
+      </defs>
+
+      <text x="20" y="24" font-size="11" font-weight="600" fill="var(--ink-3)">COLD TRANSFER · SIP REFER</text>
+      <rect x="20" y="38" width="120" height="42" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="80" y="55" text-anchor="middle" font-size="10.5" fill="var(--ink)">Room</text>
+      <text x="80" y="71" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">caller + agent</text>
+      <path d="M140 59 L228 59" stroke="var(--rust)" stroke-width="2" marker-end="url(#ar-r7)"/>
+      <text x="146" y="50" font-size="10.5" fill="var(--rust)">REFER</text>
+      <rect x="234" y="38" width="120" height="42" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="294" y="64" text-anchor="middle" font-size="10.5" fill="var(--ink)">Carrier re-points</text>
+      <path d="M354 59 L442 59" stroke="var(--rust)" stroke-width="2" marker-end="url(#ar-r7)"/>
+      <rect x="448" y="38" width="120" height="42" rx="5" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.6"/>
+      <text x="508" y="64" text-anchor="middle" font-size="10.5" fill="var(--ink)">Human, on PSTN</text>
+      <line x1="602" y1="42" x2="638" y2="76" stroke="var(--bad)" stroke-width="2.2"/>
+      <line x1="638" y1="42" x2="602" y2="76" stroke="var(--bad)" stroke-width="2.2"/>
+      <text x="654" y="55" font-size="10.5" fill="var(--bad)">LiveKit session closes.</text>
+      <text x="654" y="72" font-size="10.5" fill="var(--ink-2)">No summary. No way back.</text>
+
+      <line x1="20" y1="106" x2="856" y2="106" stroke="var(--rule)"/>
+
+      <text x="20" y="136" font-size="11" font-weight="600" fill="var(--ink-3)">WARM TRANSFER · AGENT-ASSISTED</text>
+      <rect x="20" y="150" width="120" height="66" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="80" y="172" text-anchor="middle" font-size="10.5" fill="var(--ink)">Room</text>
+      <text x="80" y="188" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">caller + agent</text>
+      <text x="80" y="205" text-anchor="middle" font-size="10" fill="var(--rust)">hold music</text>
+
+      <path d="M140 174 L246 174" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t7)"/>
+      <text x="146" y="166" font-size="10.5" fill="var(--teal)">agent dials out</text>
+      <rect x="252" y="150" width="150" height="48" rx="5" fill="var(--surface-2)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="327" y="170" text-anchor="middle" font-size="10.5" fill="var(--ink)">Second room</text>
+      <text x="327" y="186" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">agent briefs the human</text>
+
+      <path d="M402 174 L470 174" stroke="var(--rust)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ar-r7)"/>
+      <text x="404" y="166" font-size="10.5" fill="var(--rust)">summary</text>
+      <rect x="476" y="150" width="120" height="48" rx="5" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.6"/>
+      <text x="536" y="178" text-anchor="middle" font-size="10.5" fill="var(--ink)">Human agent</text>
+
+      <path d="M536 210 C 480 244, 160 244, 92 222" stroke="var(--teal)" stroke-width="2" fill="none" marker-end="url(#ar-t7)"/>
+      <text x="240" y="240" font-size="10.5" fill="var(--teal)">human joins the caller's room; AI agent steps out — or comes back if nobody answered</text>
+
+      <text x="616" y="170" font-size="10.5" fill="var(--good)">Caller's session never drops.</text>
+      <text x="616" y="187" font-size="10.5" fill="var(--ink-2)">Failure is recoverable.</text>
+    </svg>
+  </div>
+  <figcaption>Cold transfer hands the call to the phone network and lets go. Warm transfer keeps the caller inside LiveKit, which is what makes a summary — and a retry — possible at all.</figcaption>
+</figure>
+
+<p>The rest of the telephony surface, briefly: <strong>DTMF</strong> both ways (RFC 2833 / 4733), so your agent can navigate someone else's IVR and callers can press keys into yours. <strong>Answering machine detection</strong>, which classifies an outbound answer as person, voicemail, IVR, or unavailable — essential for outbound campaigns and, notably, a thing you'd otherwise buy separately. <strong>HD voice</strong> via wideband codecs. <strong>Secure trunking</strong> with TLS signalling and SRTP media. <strong>Region-based SIP endpoints</strong> and a <code>destination_country</code> parameter for outbound, both for regulatory isolation. And <strong>Krisp noise cancellation applied at the trunk</strong> for inbound and outbound calls — a Cloud-only capability, and a real one, because phone audio is 8 kHz and full of car noise, and cleaning it before STT improves transcription, turn detection, and recordings all at once.</p>
+
+<p>Finally, the honest gaps. The docs publish an explicit support matrix, and four rows say "not supported": <strong>SIP REGISTER</strong>, <strong>SIPREC</strong>, and <strong>video over SIP</strong>. A customer whose contact-centre recording compliance runs on SIPREC will need a different approach — LiveKit's own egress, most likely — and it's much better for you to raise that than for their telecoms architect to.</p>
+</section>
+
+<!-- ============ 07 ============ -->
+<section>
+<p class="chapnum">07</p>
+<h2>Egress and Ingress</h2>
+
+<p>These two are the least-known parts of the platform and among the most immediately useful in a customer-service deal, because "record every call" is table stakes and "record every call" is not something the agent framework does for you.</p>
+
+<p><strong>Egress</strong> takes media out of a room. It comes in five shapes, and the shapes matter because they have very different costs. <em>RoomComposite</em> renders the room through a headless Chrome using a web layout you can customise, then encodes with GStreamer — the expensive, flexible option, and it stops automatically when the room ends. <em>Web egress</em> is the same machinery pointed at any web page, not necessarily a LiveKit room. <em>Participant egress</em> captures one participant's audio and video together. <em>TrackComposite</em> syncs one audio and one video track. And <em>Track egress</em> exports a single track with no transcoding at all — which is how you stream audio to a third-party captioning service over WebSocket. <em>Auto egress</em> isn't a sixth type but a switch on <code>CreateRoom</code> that starts recording the moment a room exists.</p>
+
+<p>Outputs go to MP4, OGG, WebM, HLS segments, or out over RTMP to YouTube, Twitch, or anywhere else. For a voice-only deployment, the useful detail is that <strong>audio-only egress is billed at a lower rate</strong>, but only if you use an egress type that supports it: set <code>audio_only=true</code> on RoomComposite and do <em>not</em> set a layout or custom base URL, because either of those forces the job through the video pipeline. That's a genuine cost-saving tip and precisely the kind of thing a solutions engineer earns their keep with.</p>
+
+<p><strong>Ingress</strong> is the mirror. It exposes public RTMP and WHIP endpoints, or pulls from an HTTP or SRT server, transcodes through GStreamer, and publishes into a room as an ordinary participant — with simulcast layers you configure at creation time. For voice agents it's a niche capability, but it's the reason "can your agent listen to our existing broadcast feed?" has a yes.</p>
+
+<figure class="wide">
+  <div class="figframe">
+    <svg viewBox="0 0 880 260" role="img" aria-label="Ingress accepts RTMP, WHIP, SRT or HTTP file sources, transcodes them with GStreamer, and joins the room publishing tracks. Egress joins the room as a subscriber, optionally composites through headless Chrome, encodes, and writes MP4, HLS or RTMP to storage or a streaming platform.">
+      <defs>
+        <marker id="ar-t8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--teal)"/>
+        </marker>
+      </defs>
+      <text x="20" y="24" font-size="11" font-weight="600" fill="var(--ink-3)">INGRESS · media in</text>
+      <text x="856" y="24" text-anchor="end" font-size="11" font-weight="600" fill="var(--ink-3)">EGRESS · media out</text>
+
+      <rect x="20" y="72" width="118" height="76" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="79" y="94" text-anchor="middle" font-size="10.5" fill="var(--ink)">OBS · encoder</text>
+      <text x="79" y="111" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">RTMP / WHIP</text>
+      <text x="79" y="128" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">SRT / HTTP file</text>
+
+      <rect x="176" y="72" width="130" height="76" rx="5" fill="var(--surface-2)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="241" y="98" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Ingress</text>
+      <text x="241" y="116" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">GStreamer transcode</text>
+      <text x="241" y="133" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">+ simulcast layers</text>
+      <path d="M138 110 L170 110" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t8)"/>
+
+      <rect x="352" y="60" width="176" height="100" rx="6" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="440" y="98" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">Room</text>
+      <text x="440" y="120" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">both services join as</text>
+      <text x="440" y="136" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">participants, kind INGRESS / EGRESS</text>
+      <path d="M306 110 L346 110" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t8)"/>
+
+      <rect x="574" y="72" width="130" height="76" rx="5" fill="var(--surface-2)" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="639" y="94" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Egress</text>
+      <text x="639" y="112" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">headless Chrome for</text>
+      <text x="639" y="128" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">composites; direct otherwise</text>
+      <path d="M528 110 L568 110" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t8)"/>
+
+      <rect x="742" y="72" width="118" height="76" rx="5" fill="var(--surface-2)" stroke="var(--rule)"/>
+      <text x="801" y="94" text-anchor="middle" font-size="10.5" fill="var(--ink)">S3 / GCS / Azure</text>
+      <text x="801" y="111" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">MP4 · HLS · OGG</text>
+      <text x="801" y="128" text-anchor="middle" font-size="10.5" fill="var(--ink-2)">RTMP to YouTube…</text>
+      <path d="M704 110 L736 110" stroke="var(--teal)" stroke-width="2" marker-end="url(#ar-t8)"/>
+
+      <line x1="20" y1="188" x2="856" y2="188" stroke="var(--rule)"/>
+      <text x="20" y="210" font-size="10.5" fill="var(--ink-2)"><tspan font-weight="600" fill="var(--ink)">Five egress shapes:</tspan> RoomComposite (Chrome, flexible, priciest) · Web (any page) · Participant · TrackComposite (one A + one V) · Track (raw, no transcode)</text>
+      <text x="20" y="232" font-size="10.5" fill="var(--ink-2)"><tspan font-weight="600" fill="var(--ink)">Cost lever:</tspan> audio-only RoomComposite is billed lower — but only with no layout and no custom base URL, or it silently takes the video path.</text>
+      <text x="20" y="254" font-size="10.5" fill="var(--ink-2)"><tspan font-weight="600" fill="var(--ink)">Watch out:</tspan> a server-side subscription manager must skip participants of kind EGRESS, INGRESS and AGENT or it will overwrite what a recording captures.</text>
+    </svg>
+  </div>
+  <figcaption>Both services are just participants with unusual jobs. That's what lets recording work identically for a web call, a phone call, and an agent-only session.</figcaption>
+</figure>
+
+<div class="box warn">
+  <span class="lab">Limits to state up front</span>
+  <p>Egress has hard time caps: three hours for file output, twelve for HLS segments, streaming, and raw track export. Hitting one ends the egress with <code>LIMIT_REACHED</code> — the data already captured is still delivered, and you get an <code>egress_ended</code> webhook. Concurrency is also low on the free plan: two ingress and two egress requests. Anyone planning always-on recording of a call centre is on a paid plan by definition.</p>
+</div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section>
+<p class="chapnum">08</p>
+<h2>Data, state, and the client surface</h2>
+
+<p>Voice is not the only thing moving through a room, and for a customer-service agent the non-voice channels are what make the experience feel finished — showing the transcript live, pushing an order summary into the page, letting the agent trigger a UI change, handing the user a PDF.</p>
+
+<p>There are five data mechanisms and they differ along one axis: whether delivery is guaranteed or whether staying realtime matters more.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>You want to…</th><th>Use</th><th>Delivery</th></tr></thead>
+<tbody>
+<tr><td>Send text — chat, streaming LLM output, live transcript</td><td>Text streams</td><td>Guaranteed, chunked, topic-routed</td></tr>
+<tr><td>Send a file, image, or blob</td><td>Byte streams</td><td>Guaranteed, with progress</td></tr>
+<tr><td>Call a method on another participant and await a result</td><td>RPC</td><td>Guaranteed, request/response</td></tr>
+<tr><td>Stream sensors, telemetry, game state</td><td>Data tracks</td><td>Lossy — late frames are dropped</td></tr>
+<tr><td>Share state everyone should see</td><td>Attributes / room metadata</td><td>Guaranteed, server-synchronised</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>RPC</strong> deserves a moment because it changes what an agent can do. A frontend registers named methods before joining; the agent calls them and waits for a return value. Combined with tool forwarding, this means an LLM tool call can be fulfilled <em>by the browser</em> — read something only the client knows, or manipulate the UI directly. "The agent highlights the right field on the form while it talks you through it" is an RPC, and it demos extremely well.</p>
+
+<p><strong>Participant attributes</strong> are a per-participant string key-value store, synchronised by the server and delivered automatically to anyone who joins later; initial values can be baked into the access token so they're present the instant the participant connects. Room metadata is the room-wide equivalent. Both have limits worth knowing: metadata caps at 512 KiB, attributes at 64 KiB across all keys, and neither is built for high-frequency updates — the docs say more than once every few seconds is the wrong tool, and to reach for data packets instead.</p>
+
+<h3>Clients</h3>
+
+<p>The SDK spread is genuinely broad, and "same API everywhere, humans and agents alike" is one of the platform's better arguments.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Layer</th><th>Available for</th></tr></thead>
+<tbody>
+<tr><td>Client (realtime) SDKs</td><td>JavaScript, Swift, Android, Flutter, React Native, Unity, Unity WebGL, Node.js, Python, Rust, C++, ESP32</td></tr>
+<tr><td>Server SDKs</td><td>Go, Node.js, Python, Rust, Ruby, Kotlin/Java, PHP</td></tr>
+<tr><td>UI component libraries</td><td>React, SwiftUI, Android Compose, Flutter, plus Agents UI (Shadcn)</td></tr>
+<tr><td>Agents framework</td><td>Python, Node.js</td></tr>
+<tr><td>Starter apps</td><td>React/Next.js, SwiftUI, Jetpack Compose, Flutter, React Native, Unity, embeddable web widget</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Two entries there are worth flagging in conversation. <strong>ESP32</strong> means a microcontroller can be a participant — that's the physical-AI and hardware story, and it's real rather than aspirational. And the <strong>embed widget</strong> puts a Cloud agent on any website with a script tag, which is often the fastest possible path to a customer seeing their own brand talking back.</p>
+
+<p>On the media side, beyond the Krisp and ai-coustics noise models discussed earlier, there's <strong>end-to-end encryption</strong> (including a documented path for using it with agents), <strong>screen sharing</strong>, <strong>frame metadata</strong>, and <strong>virtual avatars</strong> — fifteen-plus provider plugins including Tavus, Hedra, D-ID, Simli, Beyond Presence and bitHuman. The avatar publishes video into the room the same way any participant does, so a talking face is a plugin choice rather than an architecture change.</p>
+
+<p>One detail that reads well to a technical evaluator: enhanced noise cancellation runs on Cloud's transport, so it applies "regardless of where your agent runs." Self-hosting the agent doesn't cost you the audio cleanup, as long as the media is going through Cloud. And the docs warn not to stack it — if you're cancelling in the agent, don't also run a cancellation model in the frontend, because these models are trained on raw audio and pre-processed input produces unpredictable results.</p>
+</section>
+
+<!-- ============ 09 ============ -->
+<section>
+<p class="chapnum">09</p>
+<h2>Who is allowed to do what</h2>
+
+<p>The auth model is small enough to hold in your head, which is a virtue. Every connection carries an <strong>access token</strong>: a JWT, signed with your API secret, minted by <em>your</em> backend. LiveKit never sees your users' credentials and has no notion of your user accounts. The token says who this participant is, which room they may join, and what they may do there.</p>
+
+<p>The payload is a standard JWT — <code>exp</code>, <code>iss</code> (your API key), <code>sub</code> (participant identity), <code>nbf</code> — plus LiveKit's own claims. The <code>video</code> grant carries the room permissions: <code>roomJoin</code>, <code>roomCreate</code>, <code>roomAdmin</code>, <code>roomRecord</code>, <code>ingressAdmin</code>, and the per-participant capabilities <code>canPublish</code>, <code>canSubscribe</code>, <code>canPublishData</code>, <code>canPublishSources</code> (restrict to camera, or microphone, or screen share), <code>canUpdateOwnMetadata</code>, and <code>hidden</code>. A separate <code>sip</code> grant gates telephony: <code>admin</code> to manage trunks and dispatch rules, <code>call</code> to place outbound calls. And the token can carry a <code>RoomConfiguration</code>, which is how token-based agent dispatch works.</p>
+
+<p>Two behaviours you should know because they come up in security review. Tokens are <strong>proactively refreshed</strong> by the server while a client is connected, so a long network drop doesn't lock someone out — refreshed tokens last ten minutes or the remainder of the original, whichever is longer — and they're re-issued automatically when a participant's name, permissions, or metadata change. And <strong>token revocation</strong>, which invalidates a participant's existing token when you remove them or change their permissions, is <em>Cloud only</em>. Self-hosted deployments have no revocation; the documented mitigation is short TTLs and not re-issuing tokens for someone you've just removed. That's a real, quotable difference between the two deployment models and one of the few places where self-hosting is straightforwardly weaker on security.</p>
+
+<div class="box warn">
+  <span class="lab">The PII trap, twice</span>
+  <p>Participant identity and room name are recorded in logs and traces throughout LiveKit's infrastructure and <strong>are not removed by PII redaction</strong>. Use opaque UUIDs and map them in your own backend. This is the same trap as the individual SIP dispatch rule that names rooms after phone numbers — one warning, two places it bites. For a healthcare or financial customer, raise it unprompted; it lands as competence rather than as a problem.</p>
+</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section>
+<p class="chapnum">10</p>
+<h2>Shipping it and watching it</h2>
+
+<p>Deployment on Cloud is deliberately unglamorous. A <code>livekit.toml</code> in your repo describes the deployment; <code>lk agent deploy</code> uploads your build context (1 GB cap — use <code>.dockerignore</code>), builds a container from your Dockerfile, and rolls it out. There's a GitHub Action if you'd rather deploy from CI, with an optional Slack notification and the usual environment-with-required-reviewers trick for manual approval.</p>
+
+<p>The rollout is where the voice-specific thinking shows. New instances come up alongside the old ones; traffic only moves once the new instance's <strong>health check</strong> passes, with a five-minute allowance (so a <code>prewarm</code> that takes longer than five minutes will quietly prevent your deploy from taking effect). Old instances then stop accepting new sessions but stay alive <strong>for up to an hour</strong> to finish the calls they're already on. Nobody gets hung up on mid-sentence because you shipped. On self-hosted Kubernetes you get the same behaviour by setting <code>terminationGracePeriodSeconds</code> generously — the docs suggest ten-plus minutes for voice — because agent servers drain on SIGTERM rather than dying.</p>
+
+<p>Rolling back is a single command with no rebuild, and it drains the same way. It's a paid-plan feature; on the free plan you revert your code and redeploy.</p>
+
+<div class="box warn">
+  <span class="lab">Cold starts</span>
+  <p>On the free Build plan, production agents scale to zero after the last session ends, and the next caller waits <strong>10 to 20 seconds</strong> for the agent to join. Paid plans (Ship and Scale) keep agents warm. Non-production deployments always scale to zero on every plan. If a prospect pilots on the free tier and reports "it takes forever to answer," this is almost certainly why — and it's a pricing artefact, not a product one.</p>
+</div>
+
+<p>Agent deployments are region-scoped: currently <code>us-east</code> (Ashburn), <code>eu-central</code> (Frankfurt), and <code>ap-south</code> (Mumbai). One deployment lives in one region, but you can deploy the same agent to several. Cloud also applies <strong>geographic affinity</strong> when dispatching, preferring to match a user with an agent server near them.</p>
+
+<h3>Observability</h3>
+
+<p>This is a genuinely strong part of the product and it's the one that separates a demo from something you'd run a contact centre on. Cloud's <strong>agent insights</strong> give you, per session, a unified timeline of turn-by-turn transcripts, OpenTelemetry-style traces broken into spans for every pipeline stage with token counts and durations attached, runtime logs from the agent server, and an <strong>audio recording of the actual call</strong> — collected locally and uploaded when the session ends. Tool calls and handoffs appear inline, so you can see the exact moment the model chose wrong.</p>
+
+<p>Four operational details. Traces stream live while the session runs; transcripts and recordings upload afterwards. If noise cancellation is on, the recording is post-cancellation — you hear what the STT heard, which is the right choice for debugging. Retention is <strong>30 days</strong>, full stop, on every plan; if a customer needs seven years of call recordings for compliance, that's egress writing to their own bucket, not observability. And observability only works when your media is on Cloud — it works for self-hosted agents connected to Cloud media servers, but not with self-hosted media servers.</p>
+
+<p>Around that sit <strong>log drains</strong> to Datadog, CloudWatch, Sentry, New Relic, Splunk, Google Cloud, or syslog — necessary because session logs only cover things that happen inside a session, and crashes, startup failures and dispatch errors happen outside one. <strong>OpenTelemetry export</strong> for sending traces to Langfuse or anywhere else. And <strong>PII redaction</strong>, off by default, bundled at no extra cost, applied before storage, with a sensible one-way override: a session can force redaction on even when the project setting is off, but can never turn it off for a project that requires it.</p>
+
+<div class="box warn">
+  <span class="lab">Read this one out loud to a free-tier prospect</span>
+  <p>Projects on the free Build plan are enrolled in LiveKit's model improvement program — some anonymised session data may be retained beyond 30 days to improve models such as the turn detector. Paid plans (Ship, Scale, Enterprise) are excluded and their data is fully deleted after 30 days. This applies to observability data only; models called through LiveKit Inference are zero-retention on every plan.</p>
+</div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section>
+<p class="chapnum">11</p>
+<h2>What the plans gate</h2>
+
+<p>Four tiers: <strong>Build</strong> (free), <strong>Ship</strong> (from $50/mo), <strong>Scale</strong> (from $500/mo), <strong>Enterprise</strong> (custom, annual commitment so LiveKit can pre-provision capacity). Almost everything is metered on top with an included monthly allowance; on the free tier the allowance is a hard cap and requests simply fail past it, while paid tiers bill overage. Allowances reset monthly and don't roll over.</p>
+
+<p>You will not be asked to recite prices. You may well be asked "can we have X?", and the useful thing is knowing which line X sits above.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Capability</th><th>Build</th><th>Ship</th><th>Scale</th><th>Enterprise</th></tr></thead>
+<tbody>
+<tr><td>Concurrent agent sessions</td><td class="num">5</td><td class="num">20</td><td class="num">up to 600</td><td class="num">custom</td></tr>
+<tr><td>Agent deployments</td><td class="num">1</td><td class="num">2</td><td class="num">4</td><td class="num">custom</td></tr>
+<tr><td>Cold-start prevention (always warm)</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>Instant rollback</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>Custom voice clones</td><td class="no">—</td><td class="num">20</td><td class="num">50</td><td class="num">custom</td></tr>
+<tr><td>Team collaboration</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>Role-based access</td><td class="no">—</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>Region pinning</td><td class="no">—</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>Metrics / analytics export APIs</td><td class="no">—</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>SOC 2 Type II + pentest reports</td><td class="no">—</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>HIPAA — signed BAA</td><td class="no">—</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>Email support</td><td class="no">—</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>SSO, shared Slack, support SLA, designated SE</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">yes</td></tr>
+<tr><td>Zero data retention (Inference)</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>99.99% uptime target</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr><td>End-to-end encryption</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Reading down that table, the shape of the business is obvious. <strong>Scale is the compliance tier.</strong> SOC 2 Type II reports, a signed HIPAA BAA, role-based access, region pinning and analytics export all appear at $500/mo and not before. Any regulated enterprise — healthcare, financial services, anyone with a data-residency clause — is on Scale minimum before the first architecture conversation is finished. Enterprise is where SSO, a support SLA, volume pricing and a designated solutions engineer live.</p>
+
+<p>A couple of other numbers that shape a POC: the free tier includes 1,000 agent session minutes, 5,000 WebRTC participant minutes, 1,000 third-party SIP minutes, one free US local number with 50 inbound minutes, $2.50 of inference credit (roughly 50 minutes of conversation), and 100 concurrent participants. That is enough to build something real and nowhere near enough to pilot with actual customers, which is presumably the intent.</p>
+
+<div class="box">
+  <span class="lab">Do the arithmetic once</span>
+  <p>The pricing calculator's own worked example for a phone call on Build/Ship comes to roughly <strong>$0.067 per minute</strong> all-in: $0.010 agent session, $0.010 telephony, $0.010 observability, plus inference at about $0.037 (with TTS at $0.030 dominating). Two things fall out. TTS is over half the model cost, so voice selection is a cost decision as much as a brand one. And observability is a line item — real value, but not free, and worth naming rather than letting a customer discover it on an invoice.</p>
+</div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section>
+<p class="chapnum">12</p>
+<h2>Self-hosting, honestly</h2>
+
+<p>The open-source path is real, not a trap, and you should be comfortable recommending it when it fits. A single LiveKit server node has no external dependencies at all. Add Redis and it becomes a distributed cluster: nodes report stats to Redis, become aware of each other, and route so that everyone in a room lands on the same node. Egress, Ingress and SIP each deploy as separate services, also coordinating over Redis. Agents run as containers on Kubernetes or anything similar, registering outbound to your server.</p>
+
+<p>What you give up is specific and the docs are unusually candid about it.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th></th><th>Self-hosted</th><th>LiveKit Cloud</th></tr></thead>
+<tbody>
+<tr><td>Architecture</td><td>Single-home SFU</td><td>Global mesh SFU</td></tr>
+<tr><td>Connection model</td><td>One server per room</td><td>Each user hits the nearest edge</td></tr>
+<tr><td>Max users per room</td><td class="num">~3,000</td><td>No stated limit</td></tr>
+<tr><td>Managed agent hosting</td><td class="no">You run and scale it</td><td>Builds, autoscale, instant rollback</td></tr>
+<tr><td>Inference</td><td class="no">Bring your own keys</td><td>Included, zero-retention</td></tr>
+<tr><td>Agent observability</td><td class="no">Build it yourself via OTel hooks</td><td>Transcripts, traces, recordings, log drains</td></tr>
+<tr><td>Enhanced noise cancellation</td><td class="no">ai-coustics with your own licence; no Krisp</td><td>Krisp + ai-coustics, incl. at the SIP trunk</td></tr>
+<tr><td>Phone numbers</td><td>Bring your own trunking provider</td><td>LiveKit Phone Numbers, or your own</td></tr>
+<tr><td>Token revocation</td><td class="no">Not available</td><td class="yes">Included</td></tr>
+<tr><td>Uptime target</td><td class="dim">yours to own</td><td class="num">99.99%</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The middle three rows are where most of the real cost sits. Losing managed hosting means you own autoscaling for a workload whose sessions last minutes rather than milliseconds — the docs give useful guidance here (scale up at a lower threshold than your <code>load_threshold</code>, shorten scale-up cooldowns because voice load spikes are sustained, lengthen scale-down cooldowns because draining takes time), but it's still your problem. Losing observability means building a transcript-and-trace pipeline from OpenTelemetry hooks, which is weeks of work you weren't planning. And losing Krisp meaningfully degrades telephony transcription quality.</p>
+
+<p>Note also that agent observability works for self-hosted <em>agents</em> as long as your media is on Cloud — so a hybrid where the agent runs in the customer's VPC and the media rides Cloud is a supported, documented middle position. That's frequently the right answer for a customer whose objection is really "our code must run in our account."</p>
+
+<div class="box keep">
+  <span class="lab">Keep this one</span>
+  <p>Self-hosting is the right recommendation when the constraint is regulatory or contractual — data must not leave our infrastructure, full stop — and when the scale is modest and single-region. It's the wrong recommendation when the customer wants global low latency, elastic scale, or a short time to production, because they will end up rebuilding the mesh, the autoscaler, and the observability stack themselves. Say which one you think they are, and why.</p>
+</div>
+</section>
+
+<!-- ============ CODA ============ -->
+<section>
+<p class="chapnum">CODA</p>
+<h2>What I'd be ready to say, and what I wouldn't</h2>
+
+<p>Ten facts that survive contact with a whiteboard, and are specific enough to signal that you've actually read the documentation rather than the landing page:</p>
+
+<ul>
+<li>Cloud is a <strong>multi-home mesh</strong>, not a managed single-home server. A session spans data centres; each participant connects to the nearest edge; failures are handled by ICE-restart <strong>live migrations</strong> in under a second.</li>
+<li><strong>Dispatch</strong> is under 150 ms; a vanished agent is replaced in about 15 seconds; every job runs in its own process.</li>
+<li>Rolling deploys drain for <strong>up to an hour</strong> so live calls finish. Nobody gets cut off by a release.</li>
+<li>The docs recommend the <strong>STT-LLM-TTS pipeline</strong> as the production default — for auditability, tool-calling maturity, live transcripts, and scripted speech.</li>
+<li><strong>LiveKit Inference</strong> is zero data retention by default, on every plan, with no configuration.</li>
+<li><strong>Krisp runs at the SIP trunk</strong> on Cloud, cleaning phone audio before STT ever sees it.</li>
+<li><strong>Warm transfer</strong> keeps the caller's session alive and can fail back to the agent. Cold transfer is a SIP REFER and is one-way.</li>
+<li><strong>Egress</strong> is a first-class recording product with five shapes and a real audio-only cost saving.</li>
+<li>Observability retention is <strong>30 days</strong>, always. Long-term retention is an egress-to-your-bucket design.</li>
+<li><strong>Scale is the compliance tier</strong> — SOC 2 reports, HIPAA BAA, RBAC, region pinning.</li>
+</ul>
+
+<p>And the things to say "I'd check" about, because pretending otherwise is how credibility dies:</p>
+
+<ul>
+<li><strong>SIP gaps.</strong> No REGISTER, no SIPREC, no video over SIP. If their recording compliance runs on SIPREC, that needs a design conversation, not a yes.</li>
+<li><strong>LiveKit Phone Numbers is US-only and inbound-only.</strong> Outbound is "coming soon" with no date I could find.</li>
+<li><strong>Region pinning disables cross-region failover</strong> and requires LiveKit support to enable it. It's a trade, and it's Scale-plan-only.</li>
+<li><strong>Python/Node parity isn't total.</strong> MCP support, for one, is documented for Python only. Check per feature rather than assuming.</li>
+<li><strong>Model rosters churn</strong> with published retirement dates, some only weeks out. Never quote a model name from memory.</li>
+<li><strong>The mesh engineering post dates from 2022.</strong> The architecture is still the reference description, but specific numbers in it may have moved.</li>
+<li><strong>Concurrency ceilings above Scale are negotiated</strong>, not published — Enterprise requires an annual commitment so capacity can be provisioned ahead.</li>
+<li>I could not find published detail on <strong>SLA remedies</strong> (what 99.99% actually entitles you to), on <strong>ISO 27001 or GDPR</strong> beyond a "standard DPA" line, or on <strong>on-prem/private deployment</strong> terms beyond "contact sales."</li>
+</ul>
+
+<div class="box keep">
+  <span class="lab">The move</span>
+  <p>In a pre-sales conversation, the person who names the limit before the customer finds it is the person the customer believes about everything else. There are eight limits on this page. Use one or two, unprompted, at the moment it's relevant — and then say what you'd do about it.</p>
+</div>
+</section>
+
+<div class="sources">
+  <p class="chapnum">SOURCES FETCHED</p>
+  <p style="font-size:15px; color:var(--ink-2); margin-bottom:18px">Every URL below was retrieved and read while writing this page, in August 2026. Where a page and this summary disagree, the page is right.</p>
+  <ul>
+    <li><a href="https://docs.livekit.io/llms.txt">docs.livekit.io/llms.txt</a> — full documentation index</li>
+    <li><a href="https://docs.livekit.io/intro.md">/intro.md</a> · <a href="https://docs.livekit.io/intro/about.md">/intro/about.md</a> · <a href="https://docs.livekit.io/intro/basics.md">/intro/basics.md</a> · <a href="https://docs.livekit.io/intro/cloud.md">/intro/cloud.md</a></li>
+    <li><a href="https://docs.livekit.io/reference/internals/livekit-sfu.md">/reference/internals/livekit-sfu.md</a></li>
+    <li><a href="https://docs.livekit.io/agents.md">/agents.md</a></li>
+    <li><a href="https://docs.livekit.io/agents/server.md">/agents/server.md</a> · <a href="https://docs.livekit.io/agents/server/lifecycle.md">/lifecycle.md</a> · <a href="https://docs.livekit.io/agents/server/agent-dispatch.md">/agent-dispatch.md</a> · <a href="https://docs.livekit.io/agents/server/job.md">/job.md</a> · <a href="https://docs.livekit.io/agents/server/options.md">/options.md</a> · <a href="https://docs.livekit.io/agents/server/startup-modes.md">/startup-modes.md</a></li>
+    <li><a href="https://docs.livekit.io/agents/models.md">/agents/models.md</a> · <a href="https://docs.livekit.io/agents/models/pipelines.md">/pipelines.md</a> · <a href="https://docs.livekit.io/agents/models/inference.md">/inference.md</a></li>
+    <li><a href="https://docs.livekit.io/agents/logic/sessions.md">/agents/logic/sessions.md</a> · <a href="https://docs.livekit.io/agents/logic/workflows.md">/workflows.md</a> · <a href="https://docs.livekit.io/agents/logic/agents-handoffs.md">/agents-handoffs.md</a> · <a href="https://docs.livekit.io/agents/logic/tools/mcp.md">/tools/mcp.md</a></li>
+    <li><a href="https://docs.livekit.io/telephony.md">/telephony.md</a> · <a href="https://docs.livekit.io/telephony/start/phone-numbers.md">/start/phone-numbers.md</a> · <a href="https://docs.livekit.io/telephony/accepting-calls.md">/accepting-calls.md</a> · <a href="https://docs.livekit.io/telephony/accepting-calls/dispatch-rule.md">/dispatch-rule.md</a> · <a href="https://docs.livekit.io/telephony/making-calls.md">/making-calls.md</a> · <a href="https://docs.livekit.io/telephony/features.md">/features.md</a> · <a href="https://docs.livekit.io/telephony/features/transfers.md">/features/transfers.md</a></li>
+    <li><a href="https://docs.livekit.io/transport/media/ingress-egress/egress.md">/transport/media/ingress-egress/egress.md</a> · <a href="https://docs.livekit.io/transport/media/ingress-egress/ingress.md">/ingress.md</a> · <a href="https://docs.livekit.io/transport/media/noise-cancellation.md">/transport/media/noise-cancellation.md</a></li>
+    <li><a href="https://docs.livekit.io/transport/data.md">/transport/data.md</a> · <a href="https://docs.livekit.io/transport/data/rpc.md">/rpc.md</a> · <a href="https://docs.livekit.io/transport/data/state/participant-attributes.md">/state/participant-attributes.md</a></li>
+    <li><a href="https://docs.livekit.io/frontends/reference/tokens-grants.md">/frontends/reference/tokens-grants.md</a></li>
+    <li><a href="https://docs.livekit.io/deploy/agents.md">/deploy/agents.md</a> · <a href="https://docs.livekit.io/deploy/agents/managing-deployments.md">/managing-deployments.md</a> · <a href="https://docs.livekit.io/deploy/agents/builds.md">/builds.md</a> · <a href="https://docs.livekit.io/deploy/custom/deployments.md">/deploy/custom/deployments.md</a></li>
+    <li><a href="https://docs.livekit.io/deploy/observability.md">/deploy/observability.md</a> · <a href="https://docs.livekit.io/deploy/observability/insights.md">/insights.md</a></li>
+    <li><a href="https://docs.livekit.io/deploy/admin/quotas-and-limits.md">/deploy/admin/quotas-and-limits.md</a> · <a href="https://docs.livekit.io/deploy/admin/regions/endpoints.md">/regions/endpoints.md</a> · <a href="https://docs.livekit.io/deploy/admin/regions/region-pinning.md">/regions/region-pinning.md</a></li>
+    <li><a href="https://docs.livekit.io/transport/self-hosting.md">/transport/self-hosting.md</a> · <a href="https://docs.livekit.io/transport/self-hosting/distributed.md">/distributed.md</a></li>
+    <li><a href="https://livekit.com/pricing">livekit.com/pricing</a> — plans, gating, and the per-minute calculator</li>
+    <li><a href="https://livekit.com/blog/scaling-webrtc-with-distributed-mesh/">livekit.com/blog/scaling-webrtc-with-distributed-mesh</a> — the mesh architecture, October 2022</li>
+  </ul>
+</div>
+
+</div>

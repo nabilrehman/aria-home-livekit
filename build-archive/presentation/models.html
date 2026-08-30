@@ -1,0 +1,646 @@
+<title>The Model Decision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+  :root{
+    --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+    --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+    --teal:#0E7C7B; --teal-soft:#E0EFEE; --rust:#B4541E; --rust-soft:#F8E9DF;
+    --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26;
+    --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+    --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+      --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+      --teal:#4FB3B0; --teal-soft:#12302F; --rust:#DB8A57; --rust-soft:#2E1F16;
+      --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F; --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:var(--serif); font-size:18px; line-height:1.68;
+    font-weight:400; margin:0;
+    padding:0 24px;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:72px 0 120px}
+
+  /* ---------- masthead ---------- */
+  .eyebrow{
+    font-family:var(--mono); font-size:12px; font-weight:500;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--teal);
+    margin:0 0 20px;
+  }
+  h1{
+    font-family:var(--sans); font-weight:700; font-size:clamp(2.1rem,6vw,3.1rem);
+    line-height:1.04; letter-spacing:-.02em; margin:0 0 22px; text-wrap:balance;
+  }
+  .standfirst{
+    font-size:1.28rem; line-height:1.5; color:var(--ink-2); margin:0 0 36px;
+    max-width:36ch;
+  }
+  .meta{
+    font-family:var(--mono); font-size:12.5px; color:var(--ink-3);
+    border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:14px 0; display:flex; flex-wrap:wrap; gap:6px 22px; margin:0 0 8px;
+  }
+  .meta b{color:var(--ink-2); font-weight:500}
+
+  /* ---------- structure ---------- */
+  .chapnum{
+    font-family:var(--mono); font-size:12px; font-weight:500;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+    margin:0 0 6px;
+  }
+  section{margin-top:64px}
+  section:first-of-type{margin-top:56px}
+  h2{
+    font-family:var(--sans); font-weight:700; font-size:1.72rem; line-height:1.14;
+    letter-spacing:-.015em; margin:0 0 18px; text-wrap:balance;
+  }
+  h3{
+    font-family:var(--sans); font-weight:600; font-size:1.16rem; line-height:1.25;
+    letter-spacing:-.01em; margin:38px 0 12px; color:var(--ink);
+  }
+  h3 .tag{
+    font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.06em;
+    color:var(--teal); background:var(--teal-soft); padding:2px 7px; border-radius:3px;
+    vertical-align:middle; margin-left:8px; text-transform:uppercase;
+  }
+  p{margin:0 0 20px}
+  a{color:var(--teal); text-decoration:none; border-bottom:1px solid var(--rule)}
+  a:hover{border-color:var(--teal)}
+  strong{font-weight:600; color:var(--ink)}
+  em{font-style:italic}
+  .lede{font-size:1.16rem; color:var(--ink-2)}
+
+  .term{
+    font-weight:600; color:var(--ink);
+    border-bottom:2px solid var(--teal-soft);
+  }
+  code{
+    font-family:var(--mono); font-size:.86em; background:var(--surface-2);
+    padding:1px 6px; border-radius:4px; color:var(--ink);
+  }
+
+  /* ---------- callouts ---------- */
+  .box{
+    border-radius:8px; padding:20px 24px; margin:28px 0;
+    font-size:.98rem; line-height:1.6;
+  }
+  .box p{margin:0 0 12px} .box p:last-child{margin:0}
+  .box .lbl{
+    font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.12em;
+    text-transform:uppercase; display:block; margin-bottom:9px;
+  }
+  .keep{background:var(--teal-soft); border-left:4px solid var(--teal)}
+  .keep .lbl{color:var(--teal)}
+  .caveat{background:var(--rust-soft); border-left:4px solid var(--rust)}
+  .caveat .lbl{color:var(--rust)}
+  .aside{background:var(--surface); border:1px solid var(--rule)}
+  .aside .lbl{color:var(--ink-3)}
+
+  .say{
+    background:var(--surface); border:1px solid var(--teal);
+    border-radius:8px; padding:20px 24px; margin:28px 0;
+    position:relative;
+  }
+  .say .lbl{
+    font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--teal); display:block; margin-bottom:10px;
+  }
+  .say .quote{
+    font-size:1.12rem; line-height:1.5; color:var(--ink); font-weight:400;
+  }
+  .say .quote::before{content:"\201C"} .say .quote::after{content:"\201D"}
+
+  /* ---------- tables ---------- */
+  .tablewrap{overflow-x:auto; margin:28px 0; -webkit-overflow-scrolling:touch}
+  table{
+    border-collapse:collapse; width:100%; font-size:.9rem; line-height:1.4;
+    min-width:520px;
+  }
+  caption{
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.04em; color:var(--ink-3);
+    text-align:left; margin-bottom:10px; text-transform:uppercase;
+  }
+  th,td{
+    text-align:left; padding:11px 14px; border-bottom:1px solid var(--rule);
+    vertical-align:top;
+  }
+  thead th{
+    font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink-2);
+    border-bottom:2px solid var(--rule); background:var(--surface-2);
+  }
+  tbody th{
+    font-family:var(--sans); font-weight:600; font-size:.9rem; color:var(--ink);
+    white-space:nowrap;
+  }
+  td{color:var(--ink-2); font-family:var(--serif)}
+  tbody tr:last-child th,tbody tr:last-child td{border-bottom:none}
+  .yes{color:var(--good); font-weight:600} .no{color:var(--bad); font-weight:600}
+  .mid{color:var(--ink-3)}
+
+  /* ---------- figures ---------- */
+  figure{margin:34px 0; padding:0}
+  figure svg{display:block; width:100%; height:auto; max-width:100%}
+  .figframe{
+    background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+    padding:26px 24px 20px;
+  }
+  figcaption{
+    font-family:var(--mono); font-size:12px; line-height:1.5; color:var(--ink-3);
+    margin-top:14px; padding-top:12px; border-top:1px solid var(--rule);
+  }
+  figcaption b{color:var(--ink-2); font-weight:500}
+  @media (min-width:900px){
+    figure.wide{width:calc(100% + 130px); margin-left:-65px; margin-right:-65px}
+  }
+  /* svg helpers */
+  .s-ink{fill:var(--ink)} .s-ink2{fill:var(--ink-2)} .s-ink3{fill:var(--ink-3)}
+  .st{font-family:var(--mono); fill:var(--ink-2)}
+  .st-h{font-family:var(--sans); font-weight:600; fill:var(--ink)}
+  .stroke{stroke:var(--ink-3); fill:none}
+  .box-s{fill:var(--surface-2); stroke:var(--rule)}
+
+  /* ---------- lists ---------- */
+  ul.clean{list-style:none; padding:0; margin:22px 0}
+  ul.clean li{
+    position:relative; padding:0 0 0 26px; margin:0 0 14px; line-height:1.55;
+  }
+  ul.clean li::before{
+    content:""; position:absolute; left:2px; top:.62em;
+    width:7px; height:7px; border-radius:50%; background:var(--teal);
+  }
+  ol.q{padding:0; margin:22px 0; counter-reset:q; list-style:none}
+  ol.q li{
+    position:relative; padding:16px 0 16px 52px; border-top:1px solid var(--rule);
+    line-height:1.5;
+  }
+  ol.q li:last-child{border-bottom:1px solid var(--rule)}
+  ol.q li::before{
+    counter-increment:q; content:counter(q,decimal-leading-zero);
+    position:absolute; left:0; top:16px;
+    font-family:var(--mono); font-size:13px; font-weight:600; color:var(--teal);
+  }
+  ol.q b{display:block; font-family:var(--sans); font-weight:600; font-size:1rem; margin-bottom:2px; color:var(--ink)}
+  ol.q span{color:var(--ink-2); font-size:.96rem}
+
+  hr.div{border:none; border-top:1px solid var(--rule); margin:56px 0 0}
+  .foot{
+    font-family:var(--mono); font-size:12px; line-height:1.6; color:var(--ink-3);
+    margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
+  }
+  .foot a{color:var(--ink-3)}
+  :focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">Voice Agents · Field Guide</p>
+  <h1>The Model Decision</h1>
+  <p class="standfirst">Which speech-to-text, language, and speech models to run — and how to reason about it out loud with a customer.</p>
+  <div class="meta">
+    <span><b>For:</b> a pre-sales conversation about a voice agent</span>
+    <span><b>Grounded in:</b> docs.livekit.io/agents/models</span>
+  </div>
+
+  <p class="lede">Every voice agent has to do three things: hear you, think, and answer. The interesting part of a sales conversation is almost never <em>whether</em> to do those things — it's <em>which model does each one</em>, and why. This page is built to take you from "I know roughly what an LLM is" to being the calmest person in the room when a customer asks "so which models should we use?" We'll open the hood on how each stage actually works, learn the vocabulary you'll hear thrown around, and finish with a decision framework and a set of discovery questions you can run live.</p>
+
+  <div class="box keep">
+    <span class="lbl">The one idea to hold onto</span>
+    <p>There is no single "best" set of models, and confidently claiming there is will cost you credibility. Model choice is a set of <strong>tradeoffs against a specific customer's constraints</strong> — latency, languages, accuracy, cost, compliance, and how much control they need. Your job in the room isn't to name a winner. It's to ask the right questions and reason through the tradeoffs honestly, including when to tell them <em>not</em> to over-optimize.</p>
+  </div>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 01</p>
+    <h2>The two shapes a voice agent can take</h2>
+    <p>Before any specific model, there's a fork in the road that colors every other decision, so we start here. A voice agent can be built in one of two shapes, and LiveKit supports both.</p>
+
+    <p>The first shape is the <span class="term">cascaded pipeline</span> — also called sequential or STT-LLM-TTS. You chain together three specialized models. Audio comes in and a <strong>speech-to-text</strong> (STT) model transcribes it to text; a <strong>large language model</strong> (LLM) reads that text and writes a reply; a <strong>text-to-speech</strong> (TTS) model turns the reply back into audio. Three models, three clean handoffs, each one swappable without touching the others.</p>
+
+    <p>The second shape is a <span class="term">realtime model</span>, sometimes called speech-to-speech or S2S. Here a single model takes audio in and produces audio out, with no transcription step on the way in and no separate synthesis step on the way out. It hears you and speaks back, directly.</p>
+
+    <p>The sibling pages in this series already walk through the pipeline mechanics and the latency budget in detail, so we won't re-derive them — the short version is that a natural conversation needs the agent to start responding in <strong>under about a second</strong>, and each model in the chain spends part of that budget. What this page cares about is the <em>choice</em>: which shape, and then which model in each slot. The figure below is the mental model to carry into every other chapter.</p>
+
+    <figure class="wide">
+      <div class="figframe">
+        <svg viewBox="0 0 720 300" role="img" aria-label="The cascaded pipeline routes audio through three swappable text-based models — STT, LLM, TTS — while a realtime model maps audio directly to audio in one step.">
+          <!-- title rows -->
+          <text x="14" y="26" class="st-h" font-size="13">CASCADED PIPELINE</text>
+          <text x="14" y="44" class="st" font-size="11" fill="var(--ink-3)">three specialized models, text passes between them</text>
+
+          <!-- mic in -->
+          <circle cx="40" cy="96" r="15" class="box-s" stroke-width="1.5"/>
+          <text x="40" y="100" text-anchor="middle" class="st" font-size="12">🎤</text>
+          <text x="40" y="130" text-anchor="middle" class="st" font-size="10">user audio</text>
+
+          <!-- STT -->
+          <rect x="86" y="76" width="118" height="42" rx="7" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="145" y="94" text-anchor="middle" class="st-h" font-size="12" fill="var(--teal)">STT</text>
+          <text x="145" y="109" text-anchor="middle" class="st" font-size="9.5">speech → text</text>
+
+          <!-- LLM -->
+          <rect x="256" y="76" width="118" height="42" rx="7" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="315" y="94" text-anchor="middle" class="st-h" font-size="12" fill="var(--teal)">LLM</text>
+          <text x="315" y="109" text-anchor="middle" class="st" font-size="9.5">text → text</text>
+
+          <!-- TTS -->
+          <rect x="426" y="76" width="118" height="42" rx="7" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="485" y="94" text-anchor="middle" class="st-h" font-size="12" fill="var(--teal)">TTS</text>
+          <text x="485" y="109" text-anchor="middle" class="st" font-size="9.5">text → speech</text>
+
+          <!-- speaker out -->
+          <circle cx="596" cy="96" r="15" class="box-s" stroke-width="1.5"/>
+          <text x="596" y="100" text-anchor="middle" class="st" font-size="12">🔊</text>
+          <text x="596" y="130" text-anchor="middle" class="st" font-size="10">agent audio</text>
+
+          <!-- arrows with labels -->
+          <g stroke="var(--ink-3)" stroke-width="1.5" fill="none" marker-end="url(#ar)">
+            <line x1="57" y1="96" x2="84" y2="96"/>
+            <line x1="206" y1="96" x2="254" y2="96"/>
+            <line x1="376" y1="96" x2="424" y2="96"/>
+            <line x1="546" y1="96" x2="577" y2="96"/>
+          </g>
+          <text x="230" y="70" text-anchor="middle" class="st" font-size="9" fill="var(--ink-3)">"reset my pin"</text>
+          <text x="400" y="70" text-anchor="middle" class="st" font-size="9" fill="var(--ink-3)">"Sure, I can…"</text>
+
+          <!-- readable trail note -->
+          <text x="14" y="158" class="st" font-size="10" fill="var(--teal)">↑ every arrow is inspectable text — you get a full transcript for free</text>
+
+          <!-- divider -->
+          <line x1="14" y1="180" x2="706" y2="180" stroke="var(--rule)" stroke-width="1"/>
+
+          <!-- realtime -->
+          <text x="14" y="208" class="st-h" font-size="13">REALTIME MODEL</text>
+          <text x="14" y="226" class="st" font-size="11" fill="var(--ink-3)">one model, audio straight through</text>
+
+          <circle cx="40" cy="270" r="15" class="box-s" stroke-width="1.5"/>
+          <text x="40" y="274" text-anchor="middle" class="st" font-size="12">🎤</text>
+
+          <rect x="150" y="250" width="410" height="42" rx="7" fill="none" stroke="var(--rust)" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <text x="355" y="268" text-anchor="middle" class="st-h" font-size="12" fill="var(--rust)">speech-to-speech model</text>
+          <text x="355" y="283" text-anchor="middle" class="st" font-size="9.5" fill="var(--ink-3)">hears prosody · replies with emotion · no text in the middle</text>
+
+          <circle cx="670" cy="270" r="15" class="box-s" stroke-width="1.5"/>
+          <text x="670" y="274" text-anchor="middle" class="st" font-size="12">🔊</text>
+
+          <g stroke="var(--ink-3)" stroke-width="1.5" fill="none" marker-end="url(#ar)">
+            <line x1="57" y1="270" x2="148" y2="270"/>
+            <line x1="562" y1="270" x2="651" y2="270"/>
+          </g>
+
+          <defs>
+            <marker id="ar" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto">
+              <polygon points="0 0, 7 3, 0 6" fill="var(--ink-3)"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+      <figcaption><b>The fork that colors everything.</b> The cascade turns audio into text three times over, so every handoff is something you can read, log, and swap. The realtime model keeps everything as audio — faster and more expressive, but there's no text in the middle to inspect.</figcaption>
+    </figure>
+
+    <p>Hold that picture. Chapters 2–4 open up the three boxes on top; Chapter 5 opens the dashed box on the bottom. Everything after that is about choosing between them for a real customer.</p>
+  </section>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 02</p>
+    <h2>Speech-to-text: turning sound into words</h2>
+    <p>Start with the hardest-working, most underappreciated model in the chain. If STT mishears the customer, nothing downstream can recover — the LLM answers a question that was never asked. So a good STT choice quietly determines whether the whole agent feels competent.</p>
+
+    <p>What is STT actually doing? Sound arrives as a stream of numbers — a microphone sampling air pressure thousands of times a second. The <span class="term">sample rate</span> is how many of those measurements happen per second; phone calls famously run at 8&nbsp;kHz, a deliberately <span class="term">narrowband</span> signal that throws away the high frequencies that distinguish "f" from "s." That's why telephone audio is harder to transcribe than a laptop mic, and it's a real thing to flag when a customer says "it's a call-center use case." The STT model's job is to map that raw waveform onto the sequence of <span class="term">phonemes</span> — the atomic speech sounds — and then onto the most likely words, using a learned sense of how the language actually goes together ("reset my <em>pin</em>," not "reset my <em>pen</em>").</p>
+
+    <h3>Streaming is the whole game <span class="tag">for voice</span></h3>
+    <p>Here's the distinction that matters most for voice, and it's worth being crisp about. A <span class="term">batch</span> STT model waits for the whole audio clip, then returns a perfect transcript — great for transcribing a podcast, useless for conversation. A <span class="term">streaming</span> STT model emits words as it hears them, revising as it goes. Those early, still-changing guesses are called <span class="term">interim results</span> (or partials); the finalized text is the <span class="term">final</span>. Streaming is what lets the agent begin thinking before you've finished your sentence, and it's what feeds live captions. For a voice agent, "does it stream?" is a gating question, not a nice-to-have.</p>
+
+    <p>Two more terms you'll hear. <span class="term">WER</span>, word error rate, is the standard accuracy score — the percentage of words inserted, deleted, or substituted versus a human reference. Lower is better; single-digit WER on clean audio is strong, but WER climbs fast with accents, jargon, background noise, and narrowband phone audio, which is exactly why you test on the customer's real audio rather than trusting a headline number. <span class="term">Diarization</span> is labeling <em>who</em> spoke — separating the agent, the caller, and a third party on the line — which matters for transcripts and analytics but less for the live loop.</p>
+
+    <h3>Endpointing: knowing when they're done</h3>
+    <p>An STT model also has to guess when you've <em>stopped</em> talking so the agent can reply. That's <span class="term">endpointing</span>, and it's deceptively hard: pause too eagerly and you interrupt someone mid-thought; wait too long and the agent feels sluggish. Some newer STT models fold sophisticated end-of-turn detection right into the transcription step — we'll come back to this as its own model choice in Chapter 6, because LiveKit treats turn detection as a first-class decision.</p>
+
+    <div class="box aside">
+      <span class="lbl">Providers in LiveKit Inference · STT</span>
+      <p>The docs list <strong>Deepgram</strong> (Flux and Nova families — Flux is English-only and built for conversational endpointing, Nova-3 covers 48 languages), <strong>AssemblyAI</strong> (Universal-Streaming, plus a multilingual variant), <strong>Cartesia</strong> (Ink), <strong>Speechmatics</strong> (61 languages), and <strong>xAI</strong>. The broader plugin ecosystem adds Amazon Transcribe, Azure, Google Cloud, Groq, OpenAI, NVIDIA, Sarvam, Soniox, and more. Which specific model is best shifts month to month — reason about the <em>provider and its strengths</em> (languages, phone-call tuning, medical vocabulary), not a model name you'll have to walk back.</p>
+    </div>
+
+    <div class="say">
+      <span class="lbl">Say it like this</span>
+      <p class="quote">For a phone-based agent, your STT choice is doing the heaviest lifting, because 8-kilohertz call audio is genuinely harder to transcribe than a laptop mic. I'd want to benchmark two or three providers on <em>your</em> actual call recordings — including the accents and the account-specific jargon — before we commit, rather than trust a leaderboard.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 03</p>
+    <h2>The LLM: why voice is not chat</h2>
+    <p>The LLM is the brain — it reads the transcript, decides what to do, and writes the reply. It's tempting to reach for the biggest, smartest model you know from chat. For voice, that instinct is often wrong, and understanding <em>why</em> is one of the most valuable things you can carry into a sales conversation.</p>
+
+    <h3>Time-to-first-token beats raw brilliance</h3>
+    <p>In a chat window, you'll happily wait three seconds for a brilliant answer. In a spoken conversation, three seconds of silence is unbearable — the customer thinks the line dropped. What matters is <span class="term">TTFT</span>, time-to-first-token: how long until the model produces its <em>first</em> word, not its last. (A <span class="term">token</span> is the chunk a model reads and writes in — roughly a short word or word-piece.) Because the pipeline streams, the TTS can start speaking the moment the first few tokens arrive, so a model that <em>starts</em> fast feels responsive even if it isn't the smartest model on the market. The related number is <span class="term">tokens-per-second</span>, the streaming speed once it's going — it needs to keep ahead of the pace of natural speech, but past that threshold, more raw speed buys you little.</p>
+
+    <div class="box keep">
+      <span class="lbl">The counter-intuitive rule</span>
+      <p>For most voice agents, a fast mid-sized model beats a slow frontier model. The frontier model may reason better on paper, but the latency it adds makes the <em>conversation</em> worse, and a customer-service script rarely needs PhD-level reasoning. LiveKit's own default reflects this: they recommend <strong>Gemma&nbsp;4&nbsp;31B</strong>, a latency-optimized open-weight model served on their own infrastructure, precisely because it's tuned for the voice loop rather than for benchmark glory.</p>
+    </div>
+
+    <h3>Instruction-following and tool calls</h3>
+    <p>A customer-service agent rarely just chats — it has to <em>do</em> things: look up an order, check a balance, book an appointment. It does this through <span class="term">tool calls</span> (function calls), where the model, instead of talking, emits a structured request like <code>lookup_order(id)</code> that your code executes. So the quality that matters isn't eloquence, it's <strong>reliable instruction-following</strong>: does the model call the right tool, with the right arguments, at the right moment, and stay on script? A smaller model that follows instructions crisply will outperform a bigger one that improvises. This is also, per the docs, an area where the cascaded pipeline's text-based tool calling is more mature and predictable than the audio-native alternative — a real point in the cascade's favor for transactional agents.</p>
+
+    <p>One more term: the <span class="term">context window</span> is how much text the model can consider at once — the system prompt, the tools, and the running conversation all live there. Long calls, long knowledge-base snippets, and detailed instructions all consume it. It rarely decides the model choice for a short support call, but it's the thing to watch if the agent carries a large policy document or a very long conversation history.</p>
+
+    <div class="box aside">
+      <span class="lbl">Providers in LiveKit Inference · LLM</span>
+      <p>The catalog spans <strong>OpenAI</strong> (GPT family, including small "mini"/"nano" tiers built for speed), <strong>Google</strong> (Gemini Flash line, plus LiveKit's own Gemma default), <strong>DeepSeek</strong>, <strong>Moonshot Kimi</strong>, <strong>xAI Grok</strong>, and open-weight options like GPT-OSS. Note the pattern in the docs: models get <em>retired on weeks of notice</em> and the tables are full of "deprecated, use X instead." That's your cue to sell the <em>gateway</em>, not a model — an agent pointed at LiveKit Inference rides those swaps with a one-line change instead of a migration.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 04</p>
+    <h2>Text-to-speech: what makes a voice sound human</h2>
+    <p>TTS is where the agent gets a personality, and it's the stage customers react to most viscerally in a demo — a robotic voice sinks the whole experience no matter how smart the LLM is. So it's worth understanding what separates a natural voice from a stilted one.</p>
+
+    <h3>Prosody is the difference</h3>
+    <p>Reading words aloud correctly is the easy part; modern TTS nailed that years ago. The hard part is <span class="term">prosody</span> — the melody, rhythm, stress, and intonation of speech. It's the rise at the end of a question, the emphasis that lands on the <em>right</em> word, the micro-pause before bad news. Older TTS stitched together recorded fragments and sounded flat because it had no model of prosody. Today's neural TTS predicts prosody from context, which is why the best voices can sound genuinely warm — and why some can now inject emotion, pacing, and even non-verbal sounds on cue (LiveKit exposes this as an "expressive mode" that lets the LLM mark up the delivery). For a consumer brand, prosody quality is often the single most scrutinized thing in the whole stack.</p>
+
+    <h3>First-byte latency, again</h3>
+    <p>Just like the LLM, TTS lives or dies on how fast it <em>starts</em>. The metric is <span class="term">TTFB</span>, time-to-first-byte: how quickly the first chunk of audio comes back so the agent can begin speaking. A streaming TTS emits audio in chunks as the text arrives from the LLM, so the two stages overlap and the customer hears a reply almost immediately. A model with gorgeous output but slow first-byte will still feel laggy in conversation. Naturalness and speed are a genuine tradeoff here, and the right balance depends entirely on the use case — which is a decision, not a default.</p>
+
+    <div class="box aside">
+      <span class="lbl">Providers in LiveKit Inference · TTS</span>
+      <p><strong>Cartesia</strong> (Sonic — low-latency, many languages), <strong>Deepgram</strong> (Aura), <strong>Fish Audio</strong>, <strong>Inworld</strong>, <strong>Rime</strong>, <strong>xAI</strong>, and <strong>ElevenLabs</strong> (known for expressive, characterful voices). Two capabilities worth knowing about because customers ask for them by name: <strong>custom voices</strong> — clone a brand voice from a short sample and reuse it across providers — and the <strong>expressive mode</strong> above. As always, providers and models churn; anchor on capability (latency, language coverage, voice cloning, expressiveness) rather than a model string.</p>
+    </div>
+
+    <div class="say">
+      <span class="lbl">Say it like this</span>
+      <p class="quote">For your brand, I'd treat the voice as a product decision, not a technical one — we should shortlist a couple of providers and let your marketing team actually listen. And if you want the agent to sound like a specific person, we can clone a voice from a short sample. The thing I'd watch is first-byte latency: the most beautiful voice still feels broken if it's slow to start talking.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 05</p>
+    <h2>The other shape: realtime, speech-to-speech</h2>
+    <p>Now open the dashed box. A realtime model collapses all three stages into one: audio in, audio out, no text in the middle. This isn't just a smaller diagram — it changes what the agent can do, for better and for worse, and knowing the mechanics lets you make the call with confidence instead of hype.</p>
+
+    <p>The upside is real and comes from the same fact: nothing gets flattened into text. Because the model hears the <em>audio</em>, it picks up prosody, tone, hesitation, sarcasm — verbal cues that vanish the instant speech becomes a transcript. And because it generates audio directly, its output can carry genuine emotion and emphasis rather than relying on a separate TTS to guess. Collapsing three hand-offs into one also removes inter-stage latency, so a realtime model has the lowest baseline delay of any option. When the experience needs to feel effortless and human — a companion, a coach, a natural-sounding front door — this is compelling.</p>
+
+    <p>The costs are just as real, and honesty here is what makes you trustworthy. With no text in the middle, you lose the transcript — the docs are explicit that realtime models <strong>don't emit interim transcripts</strong>, and user transcriptions can lag and even arrive <em>after</em> the agent has replied. You lose <span class="term">scripted speech</span>: there's no reliable way to make the model say an <em>exact</em> sentence (no dependable <code>say()</code>), so a mandated legal disclosure or a fixed confirmation isn't guaranteed verbatim. Tool calling is less mature than the text path. You're locked to a single provider for the whole audio path. And auditing is harder — there's no clean text trail at every stage for QA or compliance. There's a middle option, the <span class="term">half-cascade</span>: use a realtime model for <em>understanding</em> but hand its text reply to a separate TTS you control, buying back scripted output and voice control while keeping prosody-aware listening.</p>
+
+    <figure class="wide">
+      <div class="figframe">
+        <svg viewBox="0 0 720 250" role="img" aria-label="Cascade converts speech to text and back, which yields a full transcript but flattens away vocal nuance; realtime keeps audio end to end, preserving prosody but leaving no inspectable transcript.">
+          <!-- left: cascade -->
+          <text x="14" y="24" class="st-h" font-size="12" fill="var(--teal)">CASCADE — text in the middle</text>
+          <!-- audio wave in -->
+          <path d="M14 70 q6 -12 12 0 q6 12 12 0 q6 -12 12 0 q6 12 12 0" class="stroke" stroke="var(--ink-3)" stroke-width="1.5"/>
+          <text x="14" y="98" class="st" font-size="9">voice</text>
+          <!-- to text -->
+          <line x1="70" y1="68" x2="104" y2="68" stroke="var(--ink-3)" stroke-width="1.5" marker-end="url(#a2)"/>
+          <rect x="106" y="52" width="150" height="32" rx="5" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.3"/>
+          <text x="181" y="72" text-anchor="middle" class="st" font-size="10" fill="var(--teal)">"I lost my card"</text>
+          <text x="181" y="100" text-anchor="middle" class="st" font-size="8.5" fill="var(--bad)">✕ tone &amp; worry stripped out</text>
+          <line x1="258" y1="68" x2="292" y2="68" stroke="var(--ink-3)" stroke-width="1.5" marker-end="url(#a2)"/>
+          <path d="M296 70 q6 -12 12 0 q6 12 12 0 q6 -12 12 0" class="stroke" stroke="var(--ink-3)" stroke-width="1.5"/>
+          <text x="14" y="135" class="st" font-size="9.5" fill="var(--good)">✓ full transcript · ✓ swap any stage · ✓ scripted lines</text>
+
+          <line x1="14" y1="158" x2="706" y2="158" stroke="var(--rule)"/>
+
+          <!-- right: realtime -->
+          <text x="14" y="188" class="st-h" font-size="12" fill="var(--rust)">REALTIME — audio all the way</text>
+          <path d="M14 216 q6 -12 12 0 q6 12 12 0 q6 -12 12 0 q6 12 12 0" class="stroke" stroke="var(--ink-3)" stroke-width="1.5"/>
+          <line x1="70" y1="214" x2="104" y2="214" stroke="var(--rust)" stroke-width="1.5" marker-end="url(#a3)"/>
+          <rect x="106" y="198" width="220" height="32" rx="5" fill="none" stroke="var(--rust)" stroke-width="1.3" stroke-dasharray="5 4"/>
+          <text x="216" y="218" text-anchor="middle" class="st" font-size="10" fill="var(--rust)">one model · hears the worry</text>
+          <line x1="328" y1="214" x2="362" y2="214" stroke="var(--rust)" stroke-width="1.5" marker-end="url(#a3)"/>
+          <path d="M366 216 q6 -12 12 0 q6 12 12 0 q6 -12 12 0 q6 12 12 0" class="stroke" stroke="var(--rust)" stroke-width="1.5"/>
+          <text x="400" y="219" class="st" font-size="9" fill="var(--good)">✓ prosody kept · ✓ lowest latency</text>
+          <text x="14" y="243" class="st" font-size="9.5" fill="var(--bad)">✕ transcript lags · ✕ no exact scripts · ✕ one provider · ✕ harder to audit</text>
+
+          <defs>
+            <marker id="a2" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto"><polygon points="0 0, 7 3, 0 6" fill="var(--ink-3)"/></marker>
+            <marker id="a3" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto"><polygon points="0 0, 7 3, 0 6" fill="var(--rust)"/></marker>
+          </defs>
+        </svg>
+      </div>
+      <figcaption><b>The same call, two shapes.</b> Turning "I lost my card" into text lets you log it, swap models, and script the reply — but the fear in the caller's voice never reaches the LLM. Realtime keeps that nuance and answers faster, at the cost of the inspectable trail. The half-cascade splits the difference: realtime <em>listening</em>, a TTS you control <em>speaking</em>.</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <caption>How the shapes compare — from the LiveKit pipeline-types docs</caption>
+        <thead>
+          <tr><th>Dimension</th><th>Cascaded pipeline</th><th>Realtime</th><th>Half-cascade</th></tr>
+        </thead>
+        <tbody>
+          <tr><th>End-to-end latency</th><td>Moderate</td><td class="yes">Fastest</td><td>Moderate</td></tr>
+          <tr><th>Live transcription</th><td class="yes">Yes</td><td class="no">Delayed</td><td>Delayed in, text out</td></tr>
+          <tr><th>Exact scripted speech</th><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td></tr>
+          <tr><th>Hears tone / prosody</th><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th>Tool calling maturity</th><td class="yes">Mature</td><td class="mid">Less mature</td><td class="mid">Less mature</td></tr>
+          <tr><th>Auditability</th><td class="yes">Full text trail</td><td class="no">Limited</td><td>Output text only</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="box keep">
+      <span class="lbl">The honest default</span>
+      <p>Per LiveKit's own guidance: <strong>for most production agents, the cascaded pipeline is the right default.</strong> It's the easiest to debug, audit, and control, and its tool calling is the most reliable — which is exactly what a transactional customer-service agent needs. Reach for realtime when <em>latency or emotional expressiveness genuinely outweigh control</em>, and reach for half-cascade when you want realtime's ears but the cascade's mouth. Recommending realtime for a compliance-heavy support line, just because it's newer and faster, is the kind of mistake that surfaces in production.</p>
+    </div>
+
+    <div class="box aside">
+      <span class="lbl">Realtime providers in the docs</span>
+      <p>OpenAI Realtime API, Google Gemini Live, Amazon Nova Sonic, xAI Grok Voice, plus Phonic, Ultravox, and NVIDIA PersonaPlex. It's an early, fast-moving space — LiveKit adds providers as they emerge — so frame it as "a capability that's maturing," not a settled default.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 06</p>
+    <h2>Turn detection is a model choice too</h2>
+    <p>Here's a decision people forget is a decision: how does the agent know you've finished talking? Get it wrong and every other model's quality is wasted, because the agent either talks over the customer or leaves dead air. LiveKit treats this as its own model choice, and you should too.</p>
+
+    <p>The floor is <span class="term">VAD</span>, voice activity detection — a lightweight model (LiveKit uses Silero) that just tells speech from silence. VAD alone is fast and cheap but naive: it hears a pause and assumes you're done. The classic failure is a caller who says <em>"I'd like to book a flight… from Dublin… this Friday"</em> — the natural pauses fool VAD into barging in before they've finished. The fix is a semantic <span class="term">turn detector</span>: LiveKit's model reads both <em>what</em> was said and <em>how</em> it was said (intonation, rhythm) to predict whether the thought is actually complete, and it waits through those mid-sentence pauses. There's also <span class="term">barge-in</span> — the mirror-image skill of noticing when the <em>user</em> interrupts the agent and gracefully yielding, so the customer never has to talk over a monologue.</p>
+
+    <figure>
+      <div class="figframe">
+        <svg viewBox="0 0 680 190" role="img" aria-label="On the same audio with mid-sentence pauses, a VAD-only system commits the turn three times too early and interrupts, while the semantic turn detector waits and commits once at the true end.">
+          <!-- timeline -->
+          <text x="10" y="22" class="st-h" font-size="12">"Book a flight … from Dublin … this Friday."</text>
+          <line x1="10" y1="46" x2="620" y2="46" stroke="var(--rule)" stroke-width="1"/>
+          <!-- speech chunks -->
+          <g>
+            <rect x="10" y="34" width="150" height="24" rx="3" fill="var(--surface-3)"/>
+            <rect x="230" y="34" width="140" height="24" rx="3" fill="var(--surface-3)"/>
+            <rect x="440" y="34" width="120" height="24" rx="3" fill="var(--surface-3)"/>
+          </g>
+          <text x="620" y="42" class="st" font-size="9" fill="var(--ink-3)">time →</text>
+
+          <!-- VAD row -->
+          <text x="10" y="92" class="st-h" font-size="11" fill="var(--rust)">VAD only</text>
+          <line x1="10" y1="108" x2="620" y2="108" stroke="var(--ink-3)" stroke-width="1"/>
+          <g fill="var(--rust)">
+            <polygon points="180,100 190,108 180,116 170,108"/>
+            <polygon points="390,100 400,108 390,116 380,108"/>
+          </g>
+          <text x="180" y="132" text-anchor="middle" class="st" font-size="8.5" fill="var(--rust)">interrupts!</text>
+          <text x="390" y="132" text-anchor="middle" class="st" font-size="8.5" fill="var(--rust)">interrupts!</text>
+
+          <!-- turn detector row -->
+          <text x="10" y="160" class="st-h" font-size="11" fill="var(--teal)">Turn detector</text>
+          <line x1="10" y1="176" x2="620" y2="176" stroke="var(--teal)" stroke-width="1.4"/>
+          <circle cx="565" cy="176" r="6" fill="var(--teal)"/>
+          <text x="565" y="164" text-anchor="middle" class="st" font-size="8.5" fill="var(--teal)">waits, then replies ✓</text>
+        </svg>
+      </div>
+      <figcaption><b>Why turn detection is its own model.</b> On the same audio, VAD alone commits at every pause and talks over the caller; the semantic model rides through the pauses and answers once, at the true end of the turn. <b>Note:</b> realtime models bring their own built-in turn handling, which is why LiveKit recommends leaning on it when you go speech-to-speech.</figcaption>
+    </figure>
+
+    <p>The practical guidance from the docs: the semantic turn detector is the recommended default for cascaded pipelines; drop to VAD-only when you need absolute minimum latency or a language the detector doesn't cover; and when you use a realtime model, lean on <em>its</em> built-in turn handling, since the separate detector needs interim transcripts a realtime model doesn't provide. It's a small decision that punches far above its weight in how the conversation <em>feels</em>.</p>
+  </section>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 07</p>
+    <h2>LiveKit Inference: the gateway you're actually selling</h2>
+    <p>Everything so far has been provider-neutral on purpose. Now the centerpiece, and the thing that ties the room together: LiveKit doesn't just <em>support</em> these models, it offers a unified gateway to them called <span class="term">LiveKit Inference</span>. Understanding why it exists is most of the pre-sales value of this whole page.</p>
+
+    <p>The problem it solves is real. Without a gateway, a serious voice agent means separate accounts, API keys, rate limits, and invoices for Deepgram <em>and</em> OpenAI <em>and</em> Cartesia — three vendor relationships to manage before you've shipped anything. And every hop your audio takes to a far-away model API adds milliseconds you can't spare in a sub-second budget. LiveKit Inference answers both: it's <strong>one API, one bill, one set of rate limits</strong> for models across OpenAI, Google, AssemblyAI, Deepgram, Cartesia, ElevenLabs, and more, and it's <strong>co-located with the media path</strong> — the models run on the same infrastructure that's already carrying the call, so the audio doesn't detour across the internet to reach them.</p>
+
+    <div class="box keep">
+      <span class="lbl">The co-location argument — your strongest latency point</span>
+      <p>In a voice agent, latency is cumulative: STT, LLM, TTS, and every <em>network hop between them</em> all eat the same one-second budget. If each model lives at a different vendor's data center, the audio ping-pongs across the internet three times per turn. By running the models next to the media, LiveKit removes those detours. That's the crisp version of "why not just call the model APIs myself?" — you can, but you'll pay for it in the exact currency voice can least afford.</p>
+    </div>
+
+    <h3>Zero data retention, by default</h3>
+    <p>This one lands hard in regulated conversations, so keep it ready. LiveKit Inference is <strong>zero data retention (ZDR) by default</strong>: prompts, audio, and model outputs pass through only to generate the response — neither LiveKit nor the underlying providers log, store, or train on the data. It applies to every LLM, STT, and TTS model, on every plan, with no configuration. For a bank or a healthcare provider, "your customers' voice data isn't being retained or used to train anyone's model" is often the sentence that unblocks the deal.</p>
+
+    <h3>The pricing shape</h3>
+    <p>Bill it accurately and you'll never get caught out. Inference is <strong>usage-based</strong>, priced per unit of consumption, and included in LiveKit Cloud. The free Build plan includes a monthly allowance expressed as <strong>credits measured in USD</strong> that you can spend across any mix of models; on the free plan that allowance is a hard cap (requests fail rather than incur overage), it resets on the first of each month, and it doesn't roll over. Separately, every plan includes a generous pool of <strong>free inference requests per month for local development and testing</strong> (the docs cite 40,000), so building and iterating doesn't burn production budget. Discounted rates come on the Scale plan and custom rates on Enterprise. The exact dollar figures move, so quote the <em>shape</em> — usage-based, free credits to start, discounts as you scale — and point to the live pricing page for numbers.</p>
+
+    <div class="say">
+      <span class="lbl">Say it like this</span>
+      <p class="quote">Instead of you signing three separate model vendors and stitching their invoices together, LiveKit Inference gives you one API and one bill across all of them — and because the models run right next to the call media, you're not paying a latency tax to reach them. It's zero-data-retention by default, so nobody's storing or training on your customers' voices, and there are free credits to prototype before you commit to anything.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 08</p>
+    <h2>Beyond the gateway: plugins, self-host, residency</h2>
+    <p>Inference is the easy path, not a walled garden — and saying so out loud reassures customers who fear lock-in. Beyond it, LiveKit's plugin ecosystem lets you bring <em>any</em> supported provider with your own account and key, mixing freely: an Inference STT with a plugin LLM, or whatever the requirement dictates. Because so many providers speak the OpenAI API format, one plugin covers a long tail of them just by pointing at a different base URL. And the whole framework is open source, so a provider that isn't covered can be added.</p>
+
+    <p>Two reasons a customer reaches past the gateway, and you should welcome both. First, <strong>control</strong>: some teams want to own the vendor relationship, negotiate their own rates, or use a model that isn't in Inference yet — plugins let them keep their existing contracts. Second, and more strategic in enterprise deals, <strong>data residency</strong>. A regulated customer may be contractually barred from letting audio leave a specific jurisdiction or their own cloud. That's a model-topology question as much as a model-quality one: the answer may be self-hosting components, a provider with a regional endpoint, or LiveKit's region-pinning to keep traffic inside a geography for GDPR-style requirements. The point to internalize is that "which model" and "<em>where the model runs</em>" are two different axes, and in regulated deals the second one can override every performance argument on the first.</p>
+
+    <div class="box caveat">
+      <span class="lbl">Don't over-promise here</span>
+      <p>Data-residency and self-hosting specifics vary by provider, plan, and region, and features like region-pinning sit on higher tiers. If a customer raises a hard residency requirement, the honest move is "that's a real constraint and it shapes the architecture — let's map exactly where the audio can and can't go," not an on-the-spot guarantee. Getting this wrong in the room is worse than saying "let me confirm the specifics."</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <section>
+    <p class="chapnum">Chapter 09</p>
+    <h2>The decision framework — and the questions that get you there</h2>
+    <p>This is the payoff. Everything above collapses into a handful of questions whose answers point at an architecture. You're not memorizing model names; you're running a diagnostic. The tree below is how to think on your feet, and the discovery questions after it are how you fill in the branches live.</p>
+
+    <figure class="wide">
+      <div class="figframe">
+        <svg viewBox="0 0 720 360" role="img" aria-label="A decision tree: compliance or exact scripts required points to cascade; otherwise if sub-second latency and emotional expressiveness dominate, realtime, optionally half-cascade to regain scripted output; default is the cascaded pipeline on LiveKit Inference.">
+          <!-- root -->
+          <rect x="250" y="14" width="220" height="46" rx="8" fill="var(--surface-2)" stroke="var(--rule)" stroke-width="1.5"/>
+          <text x="360" y="34" text-anchor="middle" class="st-h" font-size="12">Need a transcript, exact</text>
+          <text x="360" y="50" text-anchor="middle" class="st-h" font-size="12">scripts, or compliance?</text>
+
+          <!-- yes branch left -->
+          <line x1="300" y1="60" x2="170" y2="96" stroke="var(--ink-3)" stroke-width="1.5" marker-end="url(#ad)"/>
+          <text x="212" y="82" class="st" font-size="10" fill="var(--teal)">yes →</text>
+          <rect x="60" y="98" width="220" height="46" rx="8" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="170" y="118" text-anchor="middle" class="st-h" font-size="12" fill="var(--teal)">Cascaded pipeline</text>
+          <text x="170" y="134" text-anchor="middle" class="st" font-size="9.5">full control · auditable · mature tools</text>
+
+          <!-- no branch right -->
+          <line x1="420" y1="60" x2="540" y2="96" stroke="var(--ink-3)" stroke-width="1.5" marker-end="url(#ad)"/>
+          <text x="470" y="82" class="st" font-size="10" fill="var(--ink-3)">no ↓</text>
+          <rect x="430" y="98" width="230" height="46" rx="8" fill="var(--surface-2)" stroke="var(--rule)" stroke-width="1.5"/>
+          <text x="545" y="118" text-anchor="middle" class="st-h" font-size="12">Is sub-second latency +</text>
+          <text x="545" y="134" text-anchor="middle" class="st-h" font-size="12">emotion the whole point?</text>
+
+          <!-- from second: no -> cascade default -->
+          <line x1="470" y1="144" x2="300" y2="192" stroke="var(--ink-3)" stroke-width="1.5" marker-end="url(#ad)"/>
+          <text x="360" y="168" class="st" font-size="10" fill="var(--ink-3)">no →</text>
+          <rect x="150" y="194" width="230" height="46" rx="8" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="265" y="214" text-anchor="middle" class="st-h" font-size="12" fill="var(--teal)">Cascade is still the default</text>
+          <text x="265" y="230" text-anchor="middle" class="st" font-size="9.5">most agents live here — don't over-engineer</text>
+
+          <!-- from second: yes -> realtime -->
+          <line x1="600" y1="144" x2="600" y2="192" stroke="var(--rust)" stroke-width="1.5" marker-end="url(#adr)"/>
+          <text x="612" y="172" class="st" font-size="10" fill="var(--rust)">yes ↓</text>
+          <rect x="490" y="194" width="220" height="46" rx="8" fill="none" stroke="var(--rust)" stroke-width="1.5" stroke-dasharray="5 4"/>
+          <text x="600" y="214" text-anchor="middle" class="st-h" font-size="12" fill="var(--rust)">Realtime model</text>
+          <text x="600" y="230" text-anchor="middle" class="st" font-size="9.5">lowest latency · expressive · less control</text>
+
+          <!-- realtime but need a script -> half cascade -->
+          <line x1="600" y1="240" x2="600" y2="284" stroke="var(--rust)" stroke-width="1.5" marker-end="url(#adr)"/>
+          <text x="612" y="264" class="st" font-size="9.5" fill="var(--ink-3)">but need scripts?</text>
+          <rect x="470" y="286" width="240" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rust)" stroke-width="1.3"/>
+          <text x="590" y="305" text-anchor="middle" class="st-h" font-size="12">Half-cascade</text>
+          <text x="590" y="321" text-anchor="middle" class="st" font-size="9.5">realtime ears + a TTS you control</text>
+
+          <!-- residency override banner -->
+          <rect x="60" y="286" width="330" height="44" rx="8" fill="var(--rust-soft)" stroke="var(--rust)" stroke-width="1.3"/>
+          <text x="76" y="305" class="st-h" font-size="11" fill="var(--rust)">⚑ Residency overrides all of it</text>
+          <text x="76" y="321" class="st" font-size="9.5" fill="var(--ink-2)">audio can't leave a region/cloud → self-host or pin first</text>
+
+          <defs>
+            <marker id="ad" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto"><polygon points="0 0, 7 3, 0 6" fill="var(--ink-3)"/></marker>
+            <marker id="adr" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto"><polygon points="0 0, 7 3, 0 6" fill="var(--rust)"/></marker>
+          </defs>
+        </svg>
+      </div>
+      <figcaption><b>How to think on your feet.</b> Compliance and scripting push you to the cascade; only a genuine latency-and-emotion mandate justifies realtime, with half-cascade as the escape hatch when you still need exact lines. A hard data-residency constraint sits above the whole tree — settle <em>where</em> before you argue about <em>which</em>.</figcaption>
+    </figure>
+
+    <h3>The discovery questions to ask before you recommend anything</h3>
+    <p>Ask these <em>before</em> naming a single model. The answers pick the architecture for you, and asking them is what separates a consultant from a catalog.</p>
+
+    <ol class="q">
+      <li><b>Is this regulated, and what happens to the audio?</b><span>Banking, healthcare, or a data-residency clause changes everything — it can force self-hosting or region-pinning and take realtime off the table. This is the first question because it can override every other answer.</span></li>
+      <li><b>Do you need a transcript, and what for?</b><span>QA scoring, compliance review, evals, and analytics all need text — and that's a strong vote for the cascade. If they say "we don't care about transcripts," realtime opens up. Have the reasons ready: this is where "why would I want a transcript?" comes up.</span></li>
+      <li><b>Are there lines that must be spoken exactly?</b><span>Legal disclosures, fixed confirmations, mandated scripts — these need reliable scripted speech, which points to cascade or half-cascade, not pure realtime.</span></li>
+      <li><b>What's the latency bar, and on what network?</b><span>A snappy consumer app has a tighter budget than a support line where callers expect a beat. And "is this over the phone?" matters — narrowband audio is harder for STT and shapes the provider choice.</span></li>
+      <li><b>Which languages, and which accents?</b><span>Language coverage varies sharply by provider and narrows the shortlist fast. Always test on the customer's <em>real</em> accents and jargon, not a benchmark.</span></li>
+      <li><b>How transactional is it?</b><span>Heavy tool-calling — lookups, bookings, actions — favors the cascade's mature, predictable function calling. A mostly-conversational agent has more freedom.</span></li>
+      <li><b>How price-sensitive, at what volume?</b><span>Model cost compounds over millions of minutes. But resist premature optimization: get it working and natural first, then tune cost. Cheapest-model-first is a common way to ship something customers hate.</span></li>
+      <li><b>Build-vs-buy: how much do they want to own?</b><span>A team that wants one bill and no vendor sprawl is a clean fit for LiveKit Inference. A team that insists on owning model contracts wants plugins. Neither is wrong — match the recommendation to the appetite.</span></li>
+    </ol>
+
+    <div class="box keep">
+      <span class="lbl">The most credible thing you can say</span>
+      <p>Pre-sales credibility comes from restraint, not enthusiasm. The strongest move in the room is often: <em>"Start with the cascaded pipeline on LiveKit Inference — it's the honest default, it's auditable, and it's swappable. Let's benchmark two or three providers on your real audio, ship it, and only reach for realtime or a fancier model where the data says the experience actually needs it."</em> Naming the boring, correct answer — and being willing to say "you don't need that yet" — is what makes a customer trust you with the parts that <em>are</em> hard.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+  <p class="foot">
+    Grounded in LiveKit's Models documentation — Overview, Pipeline types, STT / LLM / TTS overviews, Realtime models, LiveKit Inference, Turn detection, and Quotas &amp; limits — at docs.livekit.io/agents/models. Model names and pricing change frequently and are deliberately not treated as durable facts here; check the live docs and pricing pages for current specifics. A primer for a Sales Engineer conversation, not a configuration reference.
+  </p>
+
+</div>

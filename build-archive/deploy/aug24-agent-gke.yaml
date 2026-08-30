@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aug24-agent
+  labels: {app: aug24-agent, demo: aug24}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: aug24-agent}}
+  template:
+    metadata:
+      labels: {app: aug24-agent, demo: aug24}
+    spec:
+      # ── the whole reason we moved to GKE ──
+      # give a draining pod up to 10 min to let live calls finish before it dies
+      terminationGracePeriodSeconds: 600
+      containers:
+        - name: worker
+          image: us-central1-docker.pkg.dev/bq-demos-469816/aug24-repo/worker:v1
+          # start in production mode with a long drain window
+          command: ["uv","run","src/agent.py","start","--drain-timeout","600"]
+          resources:
+            requests: {cpu: "1", memory: "2Gi"}
+            limits: {cpu: "2", memory: "4Gi"}
+          envFrom:
+            - secretRef: {name: aug24-livekit}

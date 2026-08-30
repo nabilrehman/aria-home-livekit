@@ -1,0 +1,568 @@
+<title>Wiring Up a Phone Number</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --surface-2:#EBEEF0; --surface-3:#E1E5E9;
+  --ink:#171B21; --ink-2:#4A535F; --ink-3:#78838F; --rule:#D6DBE0;
+  --teal:#0E7C7B; --teal-soft:#E0EFEE;
+  --rust:#B4541E; --rust-soft:#F8E9DF;
+  --slate:#5C6B7A; --good:#2E6F4E; --bad:#A32F26;
+  --shadow:0 1px 2px rgba(23,27,33,.05), 0 4px 14px rgba(23,27,33,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+    --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+    --teal:#4FB3B0; --teal-soft:#12302F;
+    --rust:#DB8A57; --rust-soft:#2E1F16;
+    --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1216; --surface:#161B21; --surface-2:#1D242B; --surface-3:#262F38;
+  --ink:#E8EBEE; --ink-2:#A8B3BF; --ink-3:#7C8894; --rule:#2A323B;
+  --teal:#4FB3B0; --teal-soft:#12302F;
+  --rust:#DB8A57; --rust-soft:#2E1F16;
+  --slate:#93A2B0; --good:#5FB183; --bad:#E0796E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif; font-size:18px; line-height:1.68; -webkit-font-smoothing:antialiased}
+h1,h2,h3,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,pre,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+a{color:var(--teal); text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--teal); outline-offset:3px; border-radius:2px}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px}
+
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:56px; padding-bottom:40px}
+.kicker{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin:0 0 16px}
+h1{font-size:clamp(34px,6vw,54px); line-height:1.02; letter-spacing:-.03em; font-weight:700; margin:0 0 20px; text-wrap:balance}
+.dek{font-size:20px; color:var(--ink-2); margin:0 0 24px}
+.startline{border-top:1px solid var(--rule); padding-top:16px; font-size:16px; color:var(--ink-2)}
+.startline b{color:var(--ink); font-weight:600}
+
+main{padding:8px 0 80px}
+.ch{margin:0 0 12px; padding:44px 0 0; scroll-margin-top:16px}
+.ch-num{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.15em; color:var(--teal); display:block; margin-bottom:10px}
+h2{font-size:clamp(25px,3.7vw,33px); line-height:1.13; letter-spacing:-.024em; margin:0 0 20px; font-weight:700; text-wrap:balance}
+h3{font-size:19px; margin:30px 0 9px; font-weight:600; letter-spacing:-.01em}
+p{margin:0 0 17px}
+ul,ol{margin:0 0 17px; padding-left:24px}
+li{margin:0 0 9px}
+li::marker{color:var(--ink-3)}
+code:not(pre code){background:var(--surface-2); padding:.1em .38em; border-radius:2px; font-size:.84em; border:1px solid var(--rule)}
+
+.bridge{margin:30px 0 0; padding:18px 20px 18px 22px; background:var(--rust-soft); border-left:3px solid var(--rust); border-radius:0 3px 3px 0}
+.bridge .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--rust); display:block; margin-bottom:7px; font-weight:600}
+.bridge p{margin:0; font-size:17px; color:var(--ink)}
+.keep{margin:26px 0; padding:16px 20px; background:var(--teal-soft); border-left:3px solid var(--teal); border-radius:0 3px 3px 0}
+.keep .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:7px; font-weight:600}
+.keep p{margin:0; font-size:17px}
+.keep p + p{margin-top:11px}
+.aside{margin:26px 0; padding:16px 19px; background:var(--surface); border:1px solid var(--rule); border-radius:3px}
+.aside .lbl{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:7px; font-weight:600}
+.aside p{margin:0; font-size:16.5px}
+.aside p + p{margin-top:11px}
+
+figure{margin:32px 0; width:100%}
+@media(min-width:900px){figure{width:calc(100% + 130px); margin-left:-65px}}
+.figbox{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:20px 18px; overflow-x:auto; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; min-width:480px; height:auto; color:var(--ink)}
+figcaption{font-size:14.5px; color:var(--ink-2); margin:11px auto 0; line-height:1.5; max-width:700px}
+figcaption b{color:var(--ink); font-weight:600}
+
+.tablebox{overflow-x:auto; margin:24px 0; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+@media(min-width:900px){.tablebox{width:calc(100% + 130px); margin-left:-65px}}
+table{border-collapse:collapse; width:100%; min-width:540px; font-size:15.5px}
+th,td{padding:11px 15px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600; background:var(--surface-2); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace; font-size:13px}
+
+pre{background:var(--surface-2); border:1px solid var(--rule); border-radius:3px; padding:15px 17px; overflow-x:auto; margin:18px 0; font-size:13.5px; line-height:1.65}
+pre code{background:none; border:0; padding:0}
+.c-teal{color:var(--teal)} .c-rust{color:var(--rust)} .c-grey{color:var(--ink-3)} .c-bad{color:var(--bad)} .c-good{color:var(--good)}
+
+/* the callable number */
+.dial{border:2px solid var(--teal); border-radius:5px; background:var(--teal-soft); padding:24px 26px; margin:30px 0; text-align:center}
+.dial .lbl{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); margin:0 0 10px}
+.dial .num{font-family:Archivo,sans-serif; font-size:clamp(30px,6vw,44px); font-weight:700; letter-spacing:-.02em; margin:0 0 8px; line-height:1}
+.dial .num a{color:var(--ink); text-decoration:none}
+.dial .num a:hover{color:var(--teal)}
+.dial .sub{font-size:15px; color:var(--ink-2); margin:0}
+
+.scen{border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:0; margin:0 0 14px; overflow:hidden}
+.scen .top{padding:14px 18px 12px; border-bottom:1px solid var(--rule); background:var(--surface-2)}
+.scen .say{font-family:Archivo,sans-serif; font-size:16.5px; font-weight:600; margin:0; line-height:1.35}
+.scen .say::before{content:"“"} .scen .say::after{content:"”"}
+.scen .body{padding:13px 18px 15px}
+.scen .body p{margin:0 0 8px; font-size:15.5px}
+.scen .body p:last-child{margin-bottom:0}
+.scen .body b{font-family:Archivo,sans-serif; font-size:13.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); font-weight:600}
+
+hr{border:0; border-top:1px solid var(--rule); margin:44px 0 0}
+footer{border-top:1px solid var(--rule); margin-top:50px; padding:26px 0 60px; color:var(--ink-3); font-size:14.5px}
+footer p{margin:0 0 9px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">Companion piece · with a number you can actually dial</p>
+    <h1>Wiring Up a Phone Number</h1>
+    <p class="dek">What has to exist before a telephone can reach your agent — trunks, numbers, dispatch rules — plus the two things people confuse them with.</p>
+    <p class="startline"><b>Read it with a phone in your hand.</b> The last chapter is a live number and a menu of things to say to it.</p>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<!-- 01 -->
+<section class="ch">
+  <span class="ch-num">01</span>
+  <h2>Four things, and only two are yours</h2>
+
+  <p>Someone dials a number and ends up talking to your agent. Between those two moments sit four things, and the useful surprise is how few of them you have to build.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 250" role="img" aria-label="The inbound path: a phone reaches a carrier, which sends SIP to LiveKit. An inbound trunk is optional and only needed with your own carrier. A dispatch rule is always required and decides the room and which agent joins.">
+        <defs>
+          <marker id="p-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="p-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)"/></marker>
+        </defs>
+
+        <rect x="16" y="98" width="104" height="46" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="68" y="120" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink)">a phone</text>
+        <text x="68" y="135" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">any handset</text>
+
+        <line x1="120" y1="121" x2="164" y2="121" stroke="var(--teal)" stroke-width="2" marker-end="url(#p-teal)"/>
+
+        <rect x="170" y="98" width="112" height="46" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="226" y="120" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="600" fill="var(--ink)">a carrier</text>
+        <text x="226" y="135" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">owns the number</text>
+
+        <line x1="282" y1="121" x2="326" y2="121" stroke="var(--teal)" stroke-width="2" marker-end="url(#p-teal)"/>
+        <text x="304" y="112" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--teal)">SIP</text>
+
+        <rect x="332" y="90" width="128" height="62" rx="3" fill="none" stroke="var(--ink-3)" stroke-dasharray="5 3"/>
+        <text x="396" y="112" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12" font-weight="600" fill="var(--ink-3)">inbound trunk</text>
+        <text x="396" y="127" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">optional</text>
+        <text x="396" y="141" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">only if you bring the carrier</text>
+
+        <line x1="460" y1="121" x2="504" y2="121" stroke="var(--teal)" stroke-width="2" marker-end="url(#p-teal)"/>
+
+        <rect x="510" y="88" width="140" height="66" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+        <text x="580" y="110" text-anchor="middle" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--teal)">dispatch rule</text>
+        <text x="580" y="125" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">always required</text>
+        <text x="580" y="139" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">picks the room + the agent</text>
+
+        <line x1="650" y1="121" x2="694" y2="121" stroke="var(--teal)" stroke-width="2" marker-end="url(#p-teal)"/>
+
+        <circle cx="748" cy="121" r="46" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="748" y="112" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" font-weight="700" fill="var(--teal)">ROOM</text>
+        <text x="748" y="128" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-2)">caller + agent</text>
+
+        <text x="16" y="196" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-2)">Buy the number from LiveKit and the dashed box disappears entirely — the carrier</text>
+        <text x="16" y="212" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink-2)">relationship and SIP authentication are managed for you.</text>
+        <text x="16" y="234" font-family="Archivo,sans-serif" font-size="11.5" font-weight="600" fill="var(--teal)">Then the only object you own on the inbound path is the dispatch rule.</text>
+      </svg>
+    </div>
+    <figcaption><b>The inbound path.</b> Run <code>lk sip inbound list</code> on a LiveKit-Phone-Numbers setup and you get an empty table. That emptiness <em>is</em> the product — it's the managed carrier relationship, rendered as a CLI output.</figcaption>
+  </figure>
+
+  <div class="bridge">
+    <span class="lbl">So the first question in any telephony conversation</span>
+    <p>Is not "how do I configure this" — it's "whose number is it?" Everything else follows from that answer.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 02 -->
+<section class="ch">
+  <span class="ch-num">02</span>
+  <h2>The trunk, and why you might not need one</h2>
+
+  <p>The word comes from the old telephone exchanges. A <em>local line</em> ran to one house. A <strong>trunk line</strong> was the thick bundle of wires running between two exchanges, carrying many conversations at once. That's the whole image, and it survived into the internet era intact.</p>
+
+  <p>The modern version has no wires. <strong>A SIP trunk is a contract, not a cable.</strong> It's a configuration object that says: <em>calls arriving from this address, for these phone numbers, proving themselves this way, are allowed in.</em> That's it. Delete the object and the calls stop being accepted — nothing physical changes.</p>
+
+  <h3>What's actually inside one</h3>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 240" role="img" aria-label="A SIP trunk is a configuration object containing which numbers it covers, how the caller proves identity, which codecs are allowed, and how many simultaneous calls fit. Channels within the trunk each carry one call.">
+        <rect x="20" y="30" width="330" height="190" rx="4" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.6"/>
+        <text x="40" y="54" font-family="IBM Plex Mono,monospace" font-size="10.5" fill="var(--teal)" letter-spacing="1">INBOUND TRUNK &#183; a config object</text>
+
+        <g font-family="Archivo,sans-serif" font-size="11.5">
+          <text x="40" y="84" fill="var(--ink-3)">numbers</text>
+          <text x="150" y="84" fill="var(--ink)">+1 484 964 9126</text>
+          <text x="40" y="112" fill="var(--ink-3)">who may call</text>
+          <text x="150" y="112" fill="var(--ink)">a password, or an IP range</text>
+          <text x="40" y="140" fill="var(--ink-3)">codecs</text>
+          <text x="150" y="140" fill="var(--ink)">which audio formats</text>
+          <text x="40" y="168" fill="var(--ink-3)">encryption</text>
+          <text x="150" y="168" fill="var(--ink)">off / allow / require</text>
+          <text x="40" y="196" fill="var(--ink-3)">extras</text>
+          <text x="150" y="196" fill="var(--ink)">noise cancellation, headers</text>
+        </g>
+
+        <text x="392" y="54" font-family="Archivo,sans-serif" font-size="12" font-weight="700" fill="var(--ink-2)" letter-spacing=".6">CHANNELS &#183; one call each</text>
+        <g>
+          <rect x="392" y="72" width="300" height="20" rx="2" fill="var(--teal-soft)" stroke="var(--teal)"/>
+          <text x="404" y="87" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--teal)">call in progress</text>
+          <rect x="392" y="98" width="300" height="20" rx="2" fill="var(--teal-soft)" stroke="var(--teal)"/>
+          <text x="404" y="113" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--teal)">call in progress</text>
+          <rect x="392" y="124" width="300" height="20" rx="2" fill="none" stroke="var(--rule)" stroke-dasharray="4 3"/>
+          <text x="404" y="139" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">free</text>
+          <rect x="392" y="150" width="300" height="20" rx="2" fill="none" stroke="var(--rule)" stroke-dasharray="4 3"/>
+          <text x="404" y="165" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">free</text>
+        </g>
+        <text x="392" y="196" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">How many channels you have IS your</text>
+        <text x="392" y="211" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">concurrency limit &#8212; and usually your bill.</text>
+      </svg>
+    </div>
+    <figcaption><b>A trunk is a bundle; a channel is one lane in it.</b> "How many channels" is the concurrency question — how many customers can be on the phone with you at once. It's usually where the cost sits, and it's the number a carrier quotes you.</figcaption>
+  </figure>
+
+  <h3>How a call proves it's allowed in</h3>
+
+  <p>Two ways, and the choice is more consequential than it looks.</p>
+
+  <p><strong>Credentials</strong> — a username and password, the way you'd expect. Clean, portable, works from anywhere. But support varies by carrier: Twilio's Elastic SIP Trunking doesn't support it on inbound at all, and authenticates by source IP instead.</p>
+
+  <p><strong>IP allowlisting</strong> — "only accept calls from these addresses." No password to leak, but it breaks the moment your carrier changes infrastructure, and it's weaker than it sounds. Telnyx has a genuine trap here: if LiveKit doesn't send a username on the first attempt, Telnyx matches on source IP alone — and that IP might belong to <em>a different customer of theirs</em>. The fix is forcing a password challenge by sending the username in a header.</p>
+
+  <div class="aside">
+    <span class="lbl">That Telnyx detail is worth remembering</span>
+    <p>Not because you'll configure Telnyx, but because it's the kind of thing a security reviewer asks about and almost nobody has an answer for. Knowing that a carrier can mis-attribute a call by IP is a genuinely senior observation.</p>
+  </div>
+
+  <h3>Inbound and outbound are not mirror images</h3>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th></th><th>Inbound trunk</th><th>Outbound trunk</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Job</strong></td><td>authorize calls arriving at you</td><td>store what you need to place calls</td></tr>
+        <tr><td><strong>Key fields</strong></td><td>numbers, allowed callers, allowed IPs</td><td>carrier address, credentials, numbers you may call from</td></tr>
+        <tr><td><strong>Optional?</strong></td><td>only if you rent the number from LiveKit</td><td><strong>always</strong> — you can pass the config inline on every call</td></tr>
+        <tr><td><strong>Who initiates</strong></td><td>the carrier sends you an INVITE</td><td>you send the carrier an INVITE</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>That "always optional" on the outbound side surprises people. If your configuration is stable you store it once and reference the ID. If every customer brings their own carrier — a multi-tenant platform — you pass the trunk config inline with each call and store nothing.</p>
+
+  <div class="aside">
+    <span class="lbl">The mistake worth knowing</span>
+    <p>People create a trunk <em>per call</em>, usually to vary the caller ID. Trunks are long-lived cached objects, and creating one per call bypasses that cache and degrades reliability at scale.</p>
+    <p>One trunk per number, reused forever. Per-caller isolation comes from the dispatch rule, not the trunk. To vary caller ID, set the number on the call request instead.</p>
+  </div>
+
+  <div class="keep">
+    <span class="lbl">The one-line version</span>
+    <p>A trunk is the agreement between you and a phone carrier about which calls are allowed and how many fit at once. It's configuration, not infrastructure — and if you rent your number from LiveKit, you never create one.</p>
+  </div>
+
+  <h3>What LiveKit Phone Numbers actually is</h3>
+
+  <p>A US number rented straight from LiveKit, with the carrier relationship managed. Sixty seconds to a working inbound line, no trunk, no provider account.</p>
+
+  <p>And three limits worth naming before someone else finds them: <strong>inbound only</strong> (outbound is "coming soon"), <strong>US only</strong>, and <strong>no cold transfer</strong> — SIP REFER isn't supported on it. Every plan includes one free US local number, and on the free tier that allowance is a hard cap rather than something you can exceed and get billed for.</p>
+
+  <div class="keep">
+    <span class="lbl">Say it like this</span>
+    <p>"If you're just proving the concept, rent the number from us and you'll be taking calls this afternoon with no trunk at all. If you already have numbers with Twilio, or you need outbound, or you need cold transfer to your existing queue, then you bring your own carrier and we configure a trunk. That's the fork, and it's worth deciding early because it changes what else is available to you."</p>
+  </div>
+
+  <div class="bridge">
+    <span class="lbl">Which leaves the one piece you can never skip</span>
+    <p>A call has arrived. Something has to decide where it goes.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 03 -->
+<section class="ch">
+  <span class="ch-num">03</span>
+  <h2>The dispatch rule is the routing table</h2>
+
+  <p>This is the only inbound object that is never optional, and it's where all the interesting decisions live. It answers two questions: <strong>which room does this caller land in</strong>, and <strong>which agent gets summoned there</strong>.</p>
+
+  <p>The second half is a field called <code>roomConfig.agents</code>, carrying an <code>agentName</code>. That string has to match the name in your code exactly:</p>
+
+  <pre><code><span class="c-grey"># in the dispatch rule</span>
+"roomConfig": { "agents": [{ "agentName": "anycompany-agent" }] }
+
+<span class="c-grey"># in your Python</span>
+@server.rtc_session(agent_name=<span class="c-teal">"anycompany-agent"</span>)</code></pre>
+
+  <p>That's the entire link between "a phone rang" and "your process wakes up." Get it wrong and the call connects to a room where nobody is listening.</p>
+
+  <h3>Three types, and the choice is architectural</h3>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 230" role="img" aria-label="Three dispatch rule types. Individual gives each caller their own room. Direct puts every caller into one shared room where they hear each other. Callee names the room after the number that was dialled.">
+        <text x="16" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--good)">INDIVIDUAL</text>
+        <text x="16" y="38" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">one room per caller</text>
+        <g font-family="Archivo,sans-serif" font-size="9.5" text-anchor="middle">
+          <circle cx="46" cy="76" r="14" fill="var(--surface)" stroke="var(--rule)"/><text x="46" y="80" fill="var(--ink-2)">A</text>
+          <circle cx="46" cy="116" r="14" fill="var(--surface)" stroke="var(--rule)"/><text x="46" y="120" fill="var(--ink-2)">B</text>
+          <circle cx="46" cy="156" r="14" fill="var(--surface)" stroke="var(--rule)"/><text x="46" y="160" fill="var(--ink-2)">C</text>
+          <rect x="88" y="62" width="128" height="28" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/><text x="152" y="80" fill="var(--teal)">call-_A_x9f2</text>
+          <rect x="88" y="102" width="128" height="28" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/><text x="152" y="120" fill="var(--teal)">call-_B_k3m1</text>
+          <rect x="88" y="142" width="128" height="28" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/><text x="152" y="160" fill="var(--teal)">call-_C_p7q4</text>
+        </g>
+        <g stroke="var(--teal)" stroke-width="1.4">
+          <line x1="60" y1="76" x2="86" y2="76"/><line x1="60" y1="116" x2="86" y2="116"/><line x1="60" y1="156" x2="86" y2="156"/>
+        </g>
+        <text x="16" y="200" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--good)">Production telephony. Everyone isolated.</text>
+        <text x="16" y="215" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--bad)">But: caller's number ends up in the room name.</text>
+
+        <line x1="248" y1="14" x2="248" y2="220" stroke="var(--rule)"/>
+
+        <text x="278" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--bad)">DIRECT</text>
+        <text x="278" y="38" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">everyone into one room</text>
+        <g font-family="Archivo,sans-serif" font-size="9.5" text-anchor="middle">
+          <circle cx="304" cy="76" r="14" fill="var(--surface)" stroke="var(--rule)"/><text x="304" y="80" fill="var(--ink-2)">A</text>
+          <circle cx="304" cy="116" r="14" fill="var(--surface)" stroke="var(--rule)"/><text x="304" y="120" fill="var(--ink-2)">B</text>
+          <circle cx="304" cy="156" r="14" fill="var(--surface)" stroke="var(--rule)"/><text x="304" y="160" fill="var(--ink-2)">C</text>
+          <rect x="356" y="98" width="126" height="36" rx="3" fill="var(--rust-soft)" stroke="var(--rust)"/><text x="419" y="120" fill="var(--rust)">support-floor</text>
+        </g>
+        <g stroke="var(--rust)" stroke-width="1.4">
+          <line x1="318" y1="78" x2="354" y2="106"/><line x1="318" y1="116" x2="354" y2="116"/><line x1="318" y1="154" x2="354" y2="126"/>
+        </g>
+        <text x="278" y="200" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--bad)">Strangers can hear each other.</text>
+        <text x="278" y="215" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">A conference primitive, not a contact centre.</text>
+
+        <line x1="510" y1="14" x2="510" y2="220" stroke="var(--rule)"/>
+
+        <text x="540" y="22" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--teal)">CALLEE</text>
+        <text x="540" y="38" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">room named after the number DIALLED</text>
+        <g font-family="Archivo,sans-serif" font-size="9.5" text-anchor="middle">
+          <rect x="540" y="62" width="104" height="28" rx="3" fill="var(--surface)" stroke="var(--rule)"/><text x="592" y="80" fill="var(--ink-2)">dialled billing</text>
+          <rect x="540" y="102" width="104" height="28" rx="3" fill="var(--surface)" stroke="var(--rule)"/><text x="592" y="120" fill="var(--ink-2)">dialled sales</text>
+          <rect x="540" y="142" width="104" height="28" rx="3" fill="var(--surface)" stroke="var(--rule)"/><text x="592" y="160" fill="var(--ink-2)">dialled support</text>
+          <rect x="676" y="62" width="124" height="28" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/><text x="738" y="80" fill="var(--teal)">number-billing-…</text>
+          <rect x="676" y="102" width="124" height="28" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/><text x="738" y="120" fill="var(--teal)">number-sales-…</text>
+          <rect x="676" y="142" width="124" height="28" rx="3" fill="var(--teal-soft)" stroke="var(--teal)"/><text x="738" y="160" fill="var(--teal)">number-support-…</text>
+        </g>
+        <g stroke="var(--teal)" stroke-width="1.4">
+          <line x1="646" y1="76" x2="674" y2="76"/><line x1="646" y1="116" x2="674" y2="116"/><line x1="646" y1="156" x2="674" y2="156"/>
+        </g>
+        <text x="540" y="200" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--good)">How one deployment serves many product lines.</text>
+        <text x="540" y="215" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--ink-3)">Set randomize:true or callers share a room.</text>
+      </svg>
+    </div>
+    <figcaption><b>Same call, three destinations.</b> Direct and callee-without-randomize both put unrelated callers into the <em>same room</em>, where they can hear each other. That's occasionally what you want and usually a bug.</figcaption>
+  </figure>
+
+  <div class="aside">
+    <span class="lbl">Two traps</span>
+    <p><strong>Empty trunk list matches everything.</strong> A rule with no <code>trunk_ids</code> applies to all trunks, so two such rules compete unpredictably. With rented numbers you disambiguate by assigning the rule to the number; with your own trunks you must scope it.</p>
+    <p><strong>Individual rules put the caller's phone number in the room name.</strong> Room names land in logs and traces, and PII redaction does not strip them. Use <code>hide_phone_number</code>, or pre-create a room with an opaque ID and route to that.</p>
+  </div>
+
+  <h3>The passthrough that makes one agent serve many brands</h3>
+
+  <p>A rule can carry <code>metadata</code> and <code>attributes</code> through to the agent, and the two arrive at different times. Job metadata reaches your agent <strong>at dispatch, before the caller is even in the room</strong> — so you can pre-load a knowledge base or warm a connection. Participant attributes arrive with the caller.</p>
+
+  <p>That's how you run one deployment across billing, sales and support: one rule per number, each carrying its own queue and configuration, all pointing at the same <code>agentName</code>.</p>
+
+  <div class="bridge">
+    <span class="lbl">Before the demo, two things people confuse this with</span>
+    <p>One is a genuinely different product. The other is a word that means three different things.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 04 -->
+<section class="ch">
+  <span class="ch-num">04</span>
+  <h2>Ingress is not this</h2>
+
+  <p>Ingress also brings outside media into a room, which is why it gets confused with SIP. It is not a telephony feature and it will not answer a phone.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 820 190" role="img" aria-label="SIP is bidirectional with call signalling — ringing, answering, DTMF, hangup. Ingress is a one-way publish with no signalling and no return path.">
+        <defs>
+          <marker id="i-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--teal)"/></marker>
+          <marker id="i-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--slate)"/></marker>
+        </defs>
+        <text x="16" y="24" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--teal)">SIP</text>
+        <rect x="16" y="46" width="104" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="68" y="70" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">a caller</text>
+        <circle cx="268" cy="66" r="34" fill="var(--teal-soft)" stroke="var(--teal)"/>
+        <text x="268" y="70" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="700" fill="var(--teal)">ROOM</text>
+        <line x1="120" y1="58" x2="232" y2="58" stroke="var(--teal)" stroke-width="2" marker-end="url(#i-teal)"/>
+        <line x1="232" y1="76" x2="120" y2="76" stroke="var(--teal)" stroke-width="2" marker-end="url(#i-teal)"/>
+        <text x="176" y="104" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--teal)">two-way audio</text>
+        <text x="176" y="120" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--teal)">+ ring, answer, DTMF, hangup, transfer</text>
+        <text x="16" y="152" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">It is a conversation. Signalling is the whole</text>
+        <text x="16" y="167" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">reason a phone call can exist.</text>
+
+        <line x1="410" y1="14" x2="410" y2="180" stroke="var(--rule)"/>
+
+        <text x="444" y="24" font-family="Archivo,sans-serif" font-size="12.5" font-weight="700" fill="var(--slate)">INGRESS</text>
+        <rect x="444" y="46" width="118" height="40" rx="3" fill="var(--surface)" stroke="var(--rule)"/>
+        <text x="503" y="63" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11.5" fill="var(--ink)">OBS · a file</text>
+        <text x="503" y="77" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10" fill="var(--ink-3)">RTMP · WHIP · URL</text>
+        <circle cx="708" cy="66" r="34" fill="var(--surface-2)" stroke="var(--rule)"/>
+        <text x="708" y="70" text-anchor="middle" font-family="Archivo,sans-serif" font-size="11" font-weight="700" fill="var(--ink-2)">ROOM</text>
+        <line x1="562" y1="66" x2="670" y2="66" stroke="var(--slate)" stroke-width="2" marker-end="url(#i-slate)"/>
+        <text x="616" y="58" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--slate)">one way</text>
+        <text x="616" y="104" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--bad)">no return path · no signalling</text>
+        <text x="616" y="120" text-anchor="middle" font-family="Archivo,sans-serif" font-size="10.5" fill="var(--bad)">no dialling · no PSTN</text>
+        <text x="444" y="152" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">It is a broadcast. It publishes and that is all.</text>
+        <text x="444" y="167" font-family="Archivo,sans-serif" font-size="11" fill="var(--ink-2)">It cannot hear anyone.</text>
+      </svg>
+    </div>
+    <figcaption><b>Both are media bridges; only one is a conversation.</b> Ingress takes RTMP, WHIP or a URL pull, transcodes it, and joins the room as a publishing participant. It never subscribes, so nothing in the room can reach back to the source.</figcaption>
+  </figure>
+
+  <p>Where it legitimately appears near a contact centre: hold music or brand audio published from a file, a live all-hands or training feed being transcribed, a supervisor's camera joining a video escalation. For a voice agent, it's almost always irrelevant.</p>
+
+  <div class="keep">
+    <span class="lbl">Say it like this</span>
+    <p>"Ingress and SIP are both media bridges, but SIP is bidirectional and carries call signalling — ringing, answering, DTMF, hangup. Ingress is a one-way publish. For a voice agent, SIP is the whole story; Ingress only enters the picture if you're bringing broadcast or file-based media into the same room."</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 05 -->
+<section class="ch">
+  <span class="ch-num">05</span>
+  <h2>"Region" means three different things</h2>
+
+  <p>By default, calls route to whichever LiveKit region is closest to their origin, and that is the recommended setup. Pinning exists for one reason — <strong>regulation</strong>, not performance — and it costs you something real.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Axis</th><th>What it controls</th><th>Values look like</th></tr></thead>
+      <tbody>
+        <tr><td><strong>SIP endpoint</strong></td><td>where inbound calls terminate — you give this to your carrier</td><td class="mono">{subdomain}.eu.sip.livekit.cloud</td></tr>
+        <tr><td><strong>Outbound origination</strong></td><td>a <em>parameter</em>, not an endpoint — where your outbound calls appear to come from</td><td class="mono">destination_country: "de"</td></tr>
+        <tr><td><strong>Agent deployment</strong></td><td>where your worker container runs</td><td class="mono">us-east · eu-central · ap-south</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Three separate lists, and they don't share a vocabulary. The trap worth remembering: <strong><code>sa</code> means South America for realtime and Saudi Arabia for SIP.</strong></p>
+
+  <p>The architectural point is co-location. If your SIP terminates in Frankfurt and your agent runs in <code>us-east</code>, you have added a transatlantic hop to <em>every single turn</em> — which is the latency lever from the primer, thrown the wrong way.</p>
+
+  <div class="aside">
+    <span class="lbl">The honest trade</span>
+    <p>Pinning turns off automatic cross-region failover. You are exchanging redundancy for compliance. If someone asks for it purely to reduce latency, push back — global routing already picks the nearest region, and pinning can only make it worse.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- 06 -->
+<section class="ch">
+  <span class="ch-num">06</span>
+  <h2>Now call it</h2>
+
+  <p>Everything above is wired up on a real number. Pick it up and dial.</p>
+
+  <div class="dial">
+    <p class="lbl">AnyCompany Smart Home support</p>
+    <p class="num"><a href="tel:+14849649126">+1 (484) 964-9126</a></p>
+    <p class="sub">a real US number · answered by a Python process on a laptop</p>
+  </div>
+
+  <p>Each of these exercises something different. Say the order number slowly, digit by digit — the phone leg gives speech recognition a much poorer signal than a browser does, and you will hear the difference.</p>
+
+  <div class="scen">
+    <div class="top"><p class="say">What's the status of order four four seven two one?</p></div>
+    <div class="body">
+      <p><b>Proves</b> the whole inbound path — number, dispatch rule, agent dispatch, room creation — in one sentence.</p>
+      <p>It should say the thermostat has shipped and give a delivery date. Nothing in the agent's code knows this is a phone call.</p>
+    </div>
+  </div>
+
+  <div class="scen">
+    <div class="top"><p class="say">Where exactly is my package for order four four seven two one?</p></div>
+    <div class="body">
+      <p><b>Proves</b> filler speech covering an unpredictable backend.</p>
+      <p>The carrier call is deliberately slow. Listen for the holding lines escalating — <em>"still waiting"</em>, then <em>"they're being slow today"</em> — and count how long you're comfortable before you'd normally say "hello?"</p>
+    </div>
+  </div>
+
+  <div class="scen">
+    <div class="top"><p class="say">I'd like a refund on order four four seven two one.</p></div>
+    <div class="body">
+      <p><b>Proves</b> progress updates and filler working together across a multi-step operation.</p>
+      <p>Confirm the number when asked. Then listen for it narrating each phase in its own words rather than going quiet for six seconds.</p>
+    </div>
+  </div>
+
+  <div class="scen">
+    <div class="top"><p class="say">What's the status of order nine nine nine nine nine?</p></div>
+    <div class="body">
+      <p><b>Proves</b> it refuses to invent an answer.</p>
+      <p>It should say the order doesn't exist and ask you to check. If it ever describes a status for 99999, that is a hallucination and the most important bug in the system.</p>
+    </div>
+  </div>
+
+  <div class="scen">
+    <div class="top"><p class="say">It's four four seven… [pause] …two one.</p></div>
+    <div class="body">
+      <p><b>Proves</b> semantic turn detection.</p>
+      <p>Leave a real gap in the middle. A system using silence alone would cut you off after "seven" and look up a three-digit number.</p>
+    </div>
+  </div>
+
+  <div class="scen">
+    <div class="top"><p class="say">I don't want to talk to a bot. Get me a person.</p></div>
+    <div class="body">
+      <p><b>Proves</b> escalation as an arrival rather than a transfer.</p>
+      <p>It should escalate immediately without insisting on troubleshooting first. An explicit request for a human must always work — refusing it is the fastest way to make someone hate a voice agent.</p>
+    </div>
+  </div>
+
+  <div class="aside">
+    <span class="lbl">The comparison worth making</span>
+    <p>Ask the same question in a browser and on the phone, and listen to the transcripts diverge. The phone gives you roughly 8 kHz narrowband against Opus at 48 kHz, so recognition is measurably worse on the same words.</p>
+    <p>That's a real constraint to raise with a customer before they discover it, and a good reason to evaluate the phone path separately rather than assuming web results carry over.</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="ch">
+  <span class="ch-num">&mdash;</span>
+  <h2>Five things to carry</h2>
+
+  <ol>
+    <li><strong>The dispatch rule is the only inbound object you can't skip.</strong> Rent the number and the trunk disappears entirely.</li>
+    <li><strong><code>agentName</code> is the whole linkage</strong> between "a phone rang" and "your process wakes up." It has to match your code exactly.</li>
+    <li><strong>Individual rules leak the caller's number into room names</strong>, which reach logs and traces and are not covered by PII redaction.</li>
+    <li><strong>Ingress is a one-way publish.</strong> No signalling, no dialling, no PSTN. It cannot answer a phone.</li>
+    <li><strong>Pin a region for regulation, never for latency</strong> — and remember you're giving up automatic failover to do it.</li>
+  </ol>
+
+  <footer>
+    <p>Companion to <a href="https://claude.ai/code/artifact/eca37b35-b278-4b09-b3ac-4571b3660c64">From Sound to Conversation</a>, <a href="https://claude.ai/code/artifact/cf30cc8a-a9ed-4e69-abee-301642ef2340">Inside the Room</a>, <a href="https://claude.ai/code/artifact/ed2f4e3f-af24-409e-875e-db5cc0499953">Talking While You Wait</a>, <a href="https://claude.ai/code/artifact/c7cafc7b-638e-4917-82b6-63da043d74d4">What LiveKit Ships</a> and the <a href="https://claude.ai/code/artifact/280e533f-f812-4e14-b135-cf8bb95adba2">AnyCompany Voice Agent Playbook</a>.</p>
+    <p>Verified against the LiveKit telephony docs, August 2026. The number answers only while the agent is running locally — if it rings out, the laptop is asleep.</p>
+  </footer>
+</section>
+
+</div>
+</main>
