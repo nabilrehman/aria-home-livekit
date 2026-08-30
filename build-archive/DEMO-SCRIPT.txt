@@ -1,0 +1,188 @@
+ARIA HOME x EMBER — PANEL DEMO SCRIPT
+=====================================================================
+Assignment coverage check, demo flow, and word-for-word script.
+Store:  https://aug24-web-549403515075.us-central1.run.app
+Desk:   https://aug24-web-549403515075.us-central1.run.app/desk  (PIN 8616)
+Agent:  anycompany-agent on LiveKit Cloud project "panel" (Running)
+
+---------------------------------------------------------------------
+PART 0 · ARE WE DONE? — requirement by requirement
+---------------------------------------------------------------------
+1. "Greet the caller by name and look up their account by phone or
+   account number; ask for the account number if not using phone"
+   DONE, both paths.
+   - Signed in: Firebase login puts the account on the LiveKit token;
+     Ember opens with "Hi Nabil" and asks nothing.
+   - Guest/phone: she asks for phone or account number, looks it up in
+     Cloud SQL through Google's MCP Toolbox, greets by first name.
+   Verified live on the panel project (beat test + full Sarah call).
+
+2. "Respond to 2-3 questions about their smart home setup"
+   DONE. Recent order (REST API), thermostat active + temperature
+   (Cloud SQL registry + Firestore live telemetry), plus product
+   manuals (14 PDFs) and the returns policy via Vertex RAG.
+   Verified live: 4/4 beat tests, 17/17 retrieval checks.
+
+3. "Transfer the caller to another number; the human agent gets a
+   summary of the discussion"
+   DONE with one honest caveat. The transfer hands the caller to a
+   human who receives an LLM-written brief (summary, next steps,
+   mood, urgency) before picking up. In the demo the human answers on
+   the Specialist Desk (joins the same room); the literal dial-out to
+   a phone number is implemented with LiveKit's WarmTransferTask and
+   activates the moment a SIP trunk exists — our Twilio trial cannot
+   verify a caller ID, so the desk is the carrier-free equivalent.
+   Say this out loud before beat 3; it lands as a strength.
+
+4. "Answer questions from the customer"
+   DONE. Policy + 14 product manuals (RAG), live device data, order
+   history, previous calls, and long-term memory (Vertex AI Memory
+   Bank) — plus honest "I don't have that" with a ticket offer.
+
+   Architecture slide: build-archive/presentation (architecture.html).
+   NOTE: the deck still has 13 slides; the brief asks for 3-5. Trim
+   to: intro, customer context, architecture (+optional demo map).
+
+---------------------------------------------------------------------
+PART 1 · PRE-FLIGHT (15 minutes before)
+---------------------------------------------------------------------
+[ ] Mac clock correct (a skewed clock breaks token signing).
+[ ] Warm the services (one browser hit each): store URL, /desk.
+[ ] Refresh telemetry so readings are "just now":
+      cd build-archive/deploy/aug24-mcp-server && uv run python seed.py --telemetry
+[ ] Tab 1: store, signed in with nabilrehman8@gmail.com, on Support.
+[ ] Tab 2: desk, PIN 8616, name "Ahmad", shows Online.
+[ ] Optional sanity: ONE guest call — say "A H four eight two one",
+    hear "Hi Sarah", hang up. Do not run test suites (they burn the
+    LLM credit meter; that is what emptied the last project).
+
+---------------------------------------------------------------------
+PART 2 · THE DEMO — two calls, ~7 minutes, every requirement once
+---------------------------------------------------------------------
+
+CALL 1 — SARAH, GUEST (requirement 1b + isolation)          ~75 sec
+  Click "Call as a guest" on the store.
+
+  YOU: "Hi, I need help with my account."
+  EMBER: asks for phone number or account number.
+      say-to-panel: "No caller ID on the web — so she asks, exactly
+      as the brief requires when the phone isn't used. She has two
+      tools right now; the rest don't exist until she knows who's
+      calling. On a real SIP call the trunk hands us the number and
+      this whole exchange disappears."
+
+  YOU: "My phone number is five one two, five five five, one one
+       eight eight."
+  EMBER: reads it back, then: "Hi Sarah... I can see your account."
+      say-to-panel: "Lookup by phone — the assignment's primary path.
+      The account-number path is identical: last-ten-digits match on
+      Cloud SQL through Google's MCP Toolbox, so 'AH 4821', '4821',
+      any spacing all resolve. Try it later if you like."
+
+  YOU: "What's the status of order five eight one two one?"
+  EMBER: Indoor Camera two pack, processing, delivers September third.
+
+  YOU: "And order five eight one three one?"
+  EMBER: "No order with that number on this account."
+      say-to-panel (Mike): "Same tool, same second — that one is
+      Nabil's. The database won't return it: parameterized secure
+      views, a role with no base-table access, and the account never
+      comes from the model."
+
+  YOU: "Okay, bye."  → she says goodbye, call ends.
+
+CALL 2 — NABIL, SIGNED IN (requirements 1a, 2, 3, 4)        ~5.5 min
+  Switch to Tab 1, click "Start call with Ember".
+
+  Act 1 · Greeting + preload (60s)
+  EMBER (unprompted): "Hi Nabil, I can see your account..."
+      say-to-panel (Ahmad): "Firebase verified him; the account rides
+      on the LiveKit token. Nobody recites an account number to a
+      machine."
+  YOU: "What do you know about my hallway sensor?"
+  EMBER: it's not reporting — needs a battery... and a note that your
+      dog Biscuit sets it off.
+      say-to-panel (Mike): "Two stores in one answer: live telemetry
+      from Firestore and a fact from Vertex AI Memory Bank — both
+      preloaded in parallel with the call setup. Zero tool calls."
+
+  Act 2 · The smart-home questions (90s)  — requirement 2
+  YOU: "What's the status of my most recent order?"
+  EMBER: order five eight one three one, processing, early September.
+      say-to-panel (Varun): "That's a plain REST call into an order
+      API — the kind you already run. Not everything needs MCP."
+  YOU: "Is my living room thermostat on, and what's it set to?"
+  EMBER: on, ~sixty-nine degrees, cooling.
+      say-to-panel: "Registry in Postgres, live state in Firestore,
+      joined on device id."
+  YOU: "How long do I have to return a doorbell camera?"
+  EMBER: fourteen days — security devices have a shorter window.
+      say-to-panel: "That nuance — 30 days normally, 14 for security
+      devices — lives only in the policy PDF. Right answer means
+      retrieval, not model memory. Product manuals are in the same
+      corpus: ask her what error E four means on a thermostat."
+
+  Act 3 · Memory (45s)  — the differentiator
+  YOU: "Remember that my back door lock sticks when it's cold."
+  EMBER: confirms — after actually storing it.
+      say-to-panel (Ahmad): "Stored in Vertex AI Memory Bank, scoped
+      to his account. Contradict it next month and the fact is
+      UPDATED, not duplicated. And she's not allowed to say 'noted'
+      until the write happened."
+
+  Act 4 · Transfer with a summary (2 min)  — requirement 3
+  Bring the desk tab into view FIRST. Give the caveat line now:
+      "The dial-out to a phone number is built on LiveKit's warm
+      transfer and turns on with a SIP trunk; today the human answers
+      on our support desk instead — same room, same brief."
+  YOU: "My order five eight one three zero arrived damaged. I want a
+       refund — please put me through to someone."
+  EMBER: takes the details (which order, what's wrong), then: "One
+      moment — I'm bringing in a specialist and passing along a
+      summary so you won't have to repeat yourself."
+  DESK: rings — Nabil · refunds · summary · mood · urgency · next
+      steps, before anyone accepts.
+      say-to-panel (Ahmad): "Read the screen before you click. This
+      is where CSAT usually dies — here the human starts briefed.
+      And the refund decision was made by code from the policy dates,
+      not by the model."
+  Click ACCEPT (as Ahmad). Ember introduces the specialist and goes
+      silent. YOU (as Ahmad): "Hi Nabil, I've got the damaged order
+      here — I can process that refund now."
+  Click END CALL. The case summary stays under Recent on the desk.
+      say-to-panel (Varun): "Every transferred call becomes a masked
+      record in Firestore — brief, outcome, transcript. A QA dataset
+      for free."
+
+  Epilogue (20s, optional)  — memory across calls
+  Start a new call: "Anything I told you about my back door?"
+  EMBER: "Your back door lock sticks when it's cold."
+      say-to-panel: "Same customer, new session. That's the
+      difference between a bot and a support line."
+
+---------------------------------------------------------------------
+PART 3 · IF THE PANEL TAKES THE WHEEL (invite it after Act 2)
+---------------------------------------------------------------------
+"Is my garage camera recording?"     → no such device; she says so.
+"What does error E four mean?"       → no C-wire (thermostat manual).
+"Will the sensor ignore my dog?"     → under 40 lb at 7 ft — and she
+                                       knows about Biscuit.
+"My account number is A H four
+ eight two one" (fresh guest call)   → account-number path, same greet.
+"What's the serial on my lock?"      → doesn't know; offers a ticket.
+Talk over her                        → she stops.
+Cough mid-answer                     → she resumes the sentence.
+Go silent 15 seconds                 → she checks in.
+
+---------------------------------------------------------------------
+PART 4 · TIMING + RECOVERY
+---------------------------------------------------------------------
+Call 1 1:15 · Act 1 1:00 · Act 2 1:30 · Act 3 0:45 · Act 4 2:00 ·
+Epilogue 0:20  =  ~7 min. Running long: drop the Epilogue. NEVER drop
+Act 4 — it is a graded requirement.
+
+If the desk misses the ring (40 s): Ember says a specialist isn't
+free and offers a ticket — accept that gracefully and show the desk's
+Recent entry instead. If a tool times out: she says so and offers a
+ticket; that honesty IS the demo. If a call drops: refresh, redial —
+state is server-side, nothing is lost.
