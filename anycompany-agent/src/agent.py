@@ -233,6 +233,65 @@ class Assistant(Agent):
     # agent — because they touch the live room (transfer) or demonstrate the
     # async progress patterns (refund, warranty, sync, tracking).
 
+    # ------------------------------------------------ handoff brief (LLM)
+    #
+    # Before a human takes the call we ask the model for a structured brief —
+    # not just a summary but what to do next and how the caller is feeling.
+    # It is spoken to the specialist by the transfer agent and shown on screen.
+
+    BRIEF_PROMPT = textwrap.dedent(
+        """\
+        You are preparing a handoff brief for a human Aria Home support
+        specialist who is about to take over this call. Read the conversation
+        and answer ONLY with compact JSON, no prose, with these keys:
+          "summary":    2-3 sentences — who the caller is, what they asked, what
+                        was resolved so far, and why they need a person.
+          "next_steps": a list of 1-3 short imperative actions for the specialist.
+          "mood":       one of "calm", "frustrated", "worried", "upset", "happy".
+          "urgency":    one of "low", "normal", "high".
+        Never invent facts that are not in the conversation.
+        """
+    )
+
+    async def _handoff_brief(self, fallback_summary: str) -> dict:
+        """Ask the LLM for a structured brief from the live chat context."""
+        brief = {
+            "summary": fallback_summary,
+            "next_steps": [],
+            "mood": "calm",
+            "urgency": "normal",
+        }
+        try:
+            ctx = self.chat_ctx.copy()
+            ctx.add_message(role="system", content=self.BRIEF_PROMPT)
+            ctx.add_message(role="user", content="Produce the handoff brief JSON now.")
+            text = ""
+            async with self.llm.chat(chat_ctx=ctx) as stream:
+                async for chunk in stream:
+                    delta = getattr(chunk, "delta", None)
+                    if delta and getattr(delta, "content", None):
+                        text += delta.content
+            start, end = text.find("{"), text.rfind("}")
+            if start >= 0 and end > start:
+                parsed = json.loads(text[start : end + 1])
+                if isinstance(parsed, dict):
+                    brief.update({k: parsed[k] for k in brief if k in parsed})
+        except Exception as err:
+            logger.warning(
+                f"handoff brief generation failed ({err}); using tool summary"
+            )
+        if not isinstance(brief.get("next_steps"), list):
+            brief["next_steps"] = [str(brief["next_steps"])]
+        return brief
+
+    @staticmethod
+    def _brief_for_speech(brief: dict) -> str:
+        steps = "; ".join(str(x) for x in brief.get("next_steps") or []) or "none"
+        return (
+            f"{brief['summary']} Caller mood: {brief['mood']}. "
+            f"Urgency: {brief['urgency']}. Suggested next steps: {steps}."
+        )
+
     @function_tool
     async def transfer_to_human(
         self, context: RunContext, summary: str, department: str = "the support team"
@@ -250,14 +309,22 @@ class Assistant(Agent):
             department: which team to route to, e.g. "the subscription team".
         """
         ctx = self._ctx
-        logger.info("TRANSFER -> %s\n  SUMMARY: %s", department, summary)
+        brief = await self._handoff_brief(summary)
+        logger.info("TRANSFER -> %s\n  BRIEF: %s", department, json.dumps(brief))
 
         # 1. Hand the summary to the web frontend — it renders in the summary
         #    panel, so a human watching the screen is briefed instantly.
         if ctx is not None:
             try:
                 payload = json.dumps(
-                    {"type": "handoff", "department": department, "summary": summary}
+                    {
+                        "type": "handoff",
+                        "department": department,
+                        "summary": brief["summary"],
+                        "next_steps": brief["next_steps"],
+                        "mood": brief["mood"],
+                        "urgency": brief["urgency"],
+                    }
                 ).encode()
                 await ctx.room.local_participant.publish_data(
                     payload, reliable=True, topic="summary"
@@ -282,7 +349,9 @@ class Assistant(Agent):
                     ringing_timeout=30.0,
                     extra_instructions=(
                         "You are briefing a human Aria Home specialist before "
-                        f"connecting the caller. Lead with this summary: {summary}"
+                        "connecting the caller. Open with this brief, then ask if "
+                        "they are ready to take the call: "
+                        + self._brief_for_speech(brief)
                     ),
                 )
                 logger.info(f"warm transfer result: {result}")

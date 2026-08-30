@@ -644,6 +644,9 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--br
 }
 .call-art{display:block;margin:28px auto 0;width:300px;max-width:72%;height:auto}
 @media(max-width:600px){.call-art{width:220px}}
+.ho-meta{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.ho-pill{font:500 11px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;padding:6px 9px;border-radius:999px;background:#EEF3FF;color:#0B47C1}
+.ho-steps{flex-basis:100%;margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -1032,6 +1035,10 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--br
         <div class="ho-main">
           <span class="lbl ho-label">Case summary</span>
           <p class="body" id="ho-body"></p>
+          <div class="ho-meta" id="ho-meta" hidden>
+            <span class="ho-pill" id="ho-mood"></span><span class="ho-pill" id="ho-urg"></span>
+            <ul class="ho-steps" id="ho-steps"></ul>
+          </div>
         </div>
       </div>
     </div>
@@ -1655,6 +1662,11 @@ $('start').onclick = async () => {
         if (m && m.type === 'handoff') {
           $('ho-dept').textContent = m.department || '';
           $('ho-body').textContent = m.summary || '';
+          const steps = Array.isArray(m.next_steps) ? m.next_steps : [];
+          $('ho-mood').textContent = m.mood ? 'Caller mood: ' + m.mood : '';
+          $('ho-urg').textContent = m.urgency ? 'Urgency: ' + m.urgency : '';
+          $('ho-steps').innerHTML = steps.map(x => `<li>${esc(x)}</li>`).join('');
+          $('ho-meta').hidden = !(m.mood || m.urgency || steps.length);
           $('handoff').classList.add('on');
         }
       } catch (_) {}
