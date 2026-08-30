@@ -31,6 +31,8 @@ FIRESTORE_DB = os.environ.get("FIRESTORE_DB", "aug24")
 TELEMETRY_COLLECTION = "device_telemetry"
 PRODUCTS_COLLECTION = "products"
 CALLS_COLLECTION = "call_history"
+# Vertex AI Agent Engine Memory Bank — distilled, consolidated facts per account.
+MEMORY_BANK = os.environ.get("MEMORY_BANK", "")
 
 
 def digits(s) -> str:
@@ -357,6 +359,66 @@ class Repo:
             return out
         except Exception as err:
             raise DataUnavailable(f"call history read failed: {err}") from err
+
+    # ── long-term memory (Vertex AI Memory Bank) ────────────────────────────
+    #
+    # Memory Bank keeps *facts* about a customer, consolidated by an LLM across
+    # calls: a new fact that contradicts an old one updates it rather than piling
+    # up. Firestore call_history remains the full transcript record. Scope is the
+    # account number, so one customer can never read another's memories.
+
+    _mb = None
+
+    def _memory_client(self):
+        if not MEMORY_BANK:
+            raise DataUnavailable("MEMORY_BANK is not set")
+        if self._mb is None:
+            import vertexai
+
+            project, location = MEMORY_BANK.split("/")[1], MEMORY_BANK.split("/")[3]
+            self._mb = vertexai.Client(project=project, location=location)
+        return self._mb
+
+    def memories(self, account_number: str, query: str = "", top_k: int = 5) -> list[dict]:
+        """All facts for an account, or the top_k most relevant to a question."""
+        try:
+            kw = {"name": MEMORY_BANK, "scope": {"user_id": account_number}}
+            if query:
+                kw["similarity_search_params"] = {"search_query": query, "top_k": top_k}
+            page = self._memory_client().agent_engines.memories.retrieve(**kw).page
+            return [{"fact": m.memory.fact,
+                     "updated": str(getattr(m.memory, "update_time", "") or "")[:10]}
+                    for m in page]
+        except Exception as err:
+            raise DataUnavailable(f"memory retrieve failed: {err}") from err
+
+    def remember(self, account_number: str, fact: str) -> None:
+        """Store one explicit fact now (sub-second)."""
+        try:
+            self._memory_client().agent_engines.memories.create(
+                name=MEMORY_BANK, fact=fact, scope={"user_id": account_number}
+            )
+        except Exception as err:
+            raise DataUnavailable(f"memory create failed: {err}") from err
+
+    def generate_memories(self, account_number: str, transcript: list[dict]) -> None:
+        """Extract + consolidate facts from a whole call. Takes ~20 s — never wait."""
+        events = [
+            {"content": {"role": "model" if t.get("role") == "assistant" else "user",
+                         "parts": [{"text": str(t.get("text", ""))}]}}
+            for t in transcript if t.get("text")
+        ]
+        if not events:
+            return
+        try:
+            self._memory_client().agent_engines.memories.generate(
+                name=MEMORY_BANK,
+                direct_contents_source={"events": events},
+                scope={"user_id": account_number},
+                config={"wait_for_completion": False},
+            )
+        except Exception as err:
+            raise DataUnavailable(f"memory generate failed: {err}") from err
 
     # ── tickets ─────────────────────────────────────────────────────────────
 

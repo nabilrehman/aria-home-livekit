@@ -6,3 +6,4 @@ cloud-sql-python-connector[pg8000]==1.12.1
 SQLAlchemy==2.0.36
 google-cloud-firestore==2.19.0
 google-cloud-storage==2.18.2
+google-cloud-aiplatform[agent_engines]==2.0.1

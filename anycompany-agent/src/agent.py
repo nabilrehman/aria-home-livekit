@@ -93,6 +93,7 @@ class Assistant(Agent):
         known_account: str = "",
         known_name: str = "",
         last_call: dict | None = None,
+        preload: dict | None = None,
     ) -> None:
         self.room_name = room_name
         # Set when the caller signed in on the web: the token carried their account.
@@ -155,6 +156,8 @@ class Assistant(Agent):
         # What this customer called about last time (Firestore call memory), for
         # signed-in callers. Guests get it through the get_previous_calls tool.
         memory = ""
+        if preload:
+            memory += self._preload_text(preload)
         if last_call and last_call.get("summary"):
             memory = textwrap.dedent(
                 f"""
@@ -240,6 +243,9 @@ class Assistant(Agent):
                   their own tools; confirm the order number first.
                 - When they ask for a person, are frustrated, or you cannot resolve it:
                   transfer_to_human. Compose a short summary first so the human is briefed.
+                - If they ask you to remember something for next time — a preference,
+                  a detail about their home — call remember with one plain sentence.
+                  To check what they told us before, use recall.
                 - When they say goodbye or the call is clearly finished: end_call.
                   Never end the call after a transfer — once a specialist has taken
                   over, stay silent unless the customer addresses you.
@@ -294,6 +300,39 @@ class Assistant(Agent):
     # automatically. The tools below are the ones that need to run *inside* the
     # agent — because they touch the live room (transfer) or demonstrate the
     # async progress patterns (refund, warranty, sync, tracking).
+
+    @staticmethod
+    def _preload_text(pre: dict) -> str:
+        """Render the preloaded home into instructions: devices with live state,
+        the latest order, and long-term memories. Fetched in parallel with
+        session start, so the first answer needs no tool call."""
+        lines = ["", "", "# What you already know about this caller", ""]
+        devs = pre.get("devices") or []
+        if devs:
+            lines.append("Devices (live state, read just now):")
+            for d in devs:
+                state = "on" if d.get("on") else "NOT reporting"
+                lines.append(
+                    f"- {d['name']} in the {d['room']} (device_id {d['device_id']}): "
+                    f"{state}, {d.get('reading')}"
+                )
+        order = pre.get("recent_order")
+        if order:
+            lines.append(
+                f"Most recent order: {order['order_id']} — {order['item']}, {order['status']}"
+                + (f", due {order['delivers_on']}" if order.get("delivers_on") else "")
+                + f". {order.get('detail') or ''}"
+            )
+        mems = pre.get("memories") or []
+        if mems:
+            lines.append("Things they have told us before (long-term memory):")
+            lines += [f"- {m['fact']}" for m in mems[:8]]
+        lines.append(
+            "Answer from this directly when it covers the question; only call a tool "
+            "for something not listed or to re-check a live reading if they doubt it. "
+            "If they ask you to remember something, use the remember tool."
+        )
+        return "\n".join(lines) + "\n"
 
     # ------------------------------------------------ handoff brief (LLM)
     #
@@ -968,44 +1007,61 @@ async def my_agent(ctx: JobContext):
     except Exception as err:
         logger.warning(f"could not read caller attributes: {err}")
 
-    # Call memory: what a signed-in caller talked about last time.
-    last_call = None
-    if known_account and ORDERS_API_KEY:
+    async def _preload(account: str) -> dict | None:
+        """Profile + devices + latest order + last call + memories in one call.
+        Runs concurrently with session start so it costs the greeting nothing."""
+        if not (account and ORDERS_API_KEY):
+            return None
         try:
-            async with _DeskClient(base_url=ORDERS_API_URL, timeout=5.0) as c:
+            async with _DeskClient(base_url=ORDERS_API_URL, timeout=6.0) as c:
                 r = await c.get(
-                    "/api/calls",
-                    params={"account": known_account},
+                    "/api/preload",
+                    params={"account": account},
                     headers={"X-Api-Key": ORDERS_API_KEY},
                 )
-                calls = r.json().get("calls") if r.status_code == 200 else None
-                last_call = calls[0] if calls else None
-                if last_call:
-                    logger.info(f"call memory: last call {last_call.get('ended_at')}")
+                if r.status_code == 200:
+                    data = r.json()
+                    logger.info(
+                        f"preload: {len(data.get('devices', []))} devices, "
+                        f"{len(data.get('memories', []))} memories, "
+                        f"last call {'yes' if data.get('last_call') else 'no'}"
+                    )
+                    return data
         except Exception as err:
-            logger.warning(f"call memory unavailable: {err}")
+            logger.warning(f"preload unavailable: {err}")
+        return None
 
     # Create the agent first so we can hand it the JobContext — the transfer
     # tool needs the live room (to publish the summary) and the SIP API.
     assistant = Assistant(
-        room_name=ctx.room.name,
-        known_account=known_account,
-        known_name=known_name,
-        last_call=last_call,
+        room_name=ctx.room.name, known_account=known_account, known_name=known_name
     )
     assistant._ctx = ctx
 
-    await session.start(
-        agent=assistant,
-        room=ctx.room,
-        room_options=room_io.RoomOptions(
-            audio_input=room_io.AudioInputOptions(
-                noise_cancellation=ai_coustics.audio_enhancement(
-                    model=ai_coustics.EnhancerModel.QUAIL_VF_S
+    _, pre = await asyncio.gather(
+        session.start(
+            agent=assistant,
+            room=ctx.room,
+            room_options=room_io.RoomOptions(
+                audio_input=room_io.AudioInputOptions(
+                    noise_cancellation=ai_coustics.audio_enhancement(
+                        model=ai_coustics.EnhancerModel.QUAIL_VF_S
+                    ),
                 ),
             ),
         ),
+        _preload(known_account),
     )
+    if pre:
+        extra = Assistant._preload_text(pre)
+        last = pre.get("last_call")
+        if last and last.get("summary"):
+            extra += (
+                f"\n# Their previous call\nOn {str(last.get('ended_at', ''))[:10]} "
+                f"they called about: {last['summary']} If relevant now, acknowledge it "
+                "in one sentence; otherwise say nothing.\n"
+            )
+        await assistant.update_instructions(assistant.instructions + extra)
 
     TurnLatency().attach(session, ctx)
 

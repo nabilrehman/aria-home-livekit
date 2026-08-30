@@ -162,6 +162,50 @@ def get_previous_calls(account_number: str) -> dict:
 
 
 @mcp.tool()
+def remember(account_number: str, fact: str) -> dict:
+    """Store something the customer asked you to remember, for future calls.
+
+    Use when they say "remember that…", state a preference ("text me, don't
+    call"), or tell you something lasting about their home ("the back door lock
+    sticks"). Write the fact as one plain sentence in the third person.
+
+    Args:
+        account_number: their Aria Home account number.
+        fact: one sentence, e.g. "Prefers to be contacted by text message."
+    """
+    try:
+        repo.remember(account_number.strip().upper(), fact.strip())
+    except DataUnavailable as err:
+        log.error(f"TOOL remember -> STORE DOWN: {err}")
+        return {"ok": False, "say": "Tell them you could not save that just now."}
+    log.info(f"TOOL remember({account_number}) -> {fact[:60]}")
+    return {"ok": True, "say": "Confirm in a few words that you will remember it."}
+
+
+@mcp.tool()
+def recall(account_number: str, question: str) -> dict:
+    """Look up what you know about this customer from previous calls.
+
+    Facts from earlier calls are usually already in your context; use this when
+    they ask something like "what did I tell you last time?" or "do you have my
+    preferences?" and the answer is not in front of you.
+
+    Args:
+        account_number: their Aria Home account number.
+        question: what you are trying to find out, in plain words.
+    """
+    try:
+        facts = repo.memories(account_number.strip().upper(), query=question, top_k=5)
+    except DataUnavailable as err:
+        log.error(f"TOOL recall -> STORE DOWN: {err}")
+        return {"found": False, "say": "Say you do not have that on file."}
+    log.info(f"TOOL recall({account_number}) -> {len(facts)} facts")
+    if not facts:
+        return {"found": False, "say": "Nothing on file about that."}
+    return {"found": True, "facts": facts, "source": "Vertex AI Memory Bank"}
+
+
+@mcp.tool()
 def search_knowledge(question: str) -> dict:
     """Search Aria Home's policy knowledge base to answer a customer question.
 

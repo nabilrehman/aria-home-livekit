@@ -415,6 +415,13 @@ def call_save():
         app.logger.error(f"call save failed: {err}")
         return jsonify({"error": "history_unavailable"}), 503
     app.logger.info(f"call saved for {account}: {cid}")
+    # Long-term memory: extraction takes ~20 s, so fire it and return.
+    try:
+        threading.Thread(
+            target=repo.generate_memories, args=(account, record["transcript"]), daemon=True
+        ).start()
+    except Exception as err:  # memory is best-effort; the record is already saved
+        app.logger.warning(f"memory generation not started: {err}")
     return jsonify({"call_id": cid}), 201
 
 
@@ -428,6 +435,41 @@ def call_list():
     except DataUnavailable as err:
         app.logger.error(f"call list failed: {err}")
         return jsonify({"error": "history_unavailable"}), 503
+
+
+@app.get("/api/preload")
+def preload():
+    """Everything Ember should know before she speaks, in one round-trip:
+    profile, devices with live state, latest order, last call, and memories."""
+    if not _api_key_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    account = (request.args.get("account") or "").strip().upper()
+    out = {"account": account, "memories": [], "last_call": None, "devices": [], "recent_order": None}
+    try:
+        cust = repo.find_customer(account_number=account)
+        if cust is None:
+            return jsonify({"error": "no_such_account"}), 404
+        out["name"] = cust["name"]; out["first_name"] = cust["first_name"]
+        out["plan"] = cust["subscription"]["tier"]
+        cid = cust["customer_id"]
+        for d in repo.devices_for(cid):
+            st = repo.device_state(d["device_id"])
+            out["devices"].append({"device_id": d["device_id"], "name": d["name"], "room": d["room"],
+                                   "on": bool(st.get("active")), "reading": st.get("reading", "no signal")})
+        out["recent_order"] = repo.most_recent_order(cid)
+    except DataUnavailable as err:
+        app.logger.error(f"preload core failed: {err}")
+        return jsonify({"error": "unavailable"}), 503
+    # memory and history are best-effort: never block a greeting on them
+    try:
+        out["last_call"] = (repo.recent_calls(account, limit=1) or [None])[0]
+    except DataUnavailable as err:
+        app.logger.warning(f"preload history: {err}")
+    try:
+        out["memories"] = repo.memories(account)
+    except DataUnavailable as err:
+        app.logger.warning(f"preload memories: {err}")
+    return jsonify(out)
 
 
 @app.get("/desk")

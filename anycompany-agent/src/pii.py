@@ -35,7 +35,9 @@ def mask(text: str) -> str:
         return text
     out = _CARD.sub("[card]", text)
     out = _SSN.sub("[ssn]", out)
-    out = _LONG_DIGITS.sub("[number]", out)  # before phones: an 11-digit run isn't a phone
+    out = _LONG_DIGITS.sub(
+        "[number]", out
+    )  # before phones: an 11-digit run isn't a phone
     out = _PHONE.sub("[phone]", out)
     out = _EMAIL.sub("[email]", out)
     out = _ACCOUNT.sub(lambda m: f"{m.group(1).upper()}-••{m.group(3)}", out)
