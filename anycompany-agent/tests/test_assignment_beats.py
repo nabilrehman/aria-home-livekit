@@ -128,7 +128,7 @@ async def test_beat2_status_of_my_most_recent_order():
         await session.run(user_input=f"Hi, I'm calling from {SARAH_PHONE}.")
 
         r = await session.run(user_input="What is the status of my most recent order?")
-        assert called(r, "get_recent_order", "list_orders", "lookup_order"), (
+        assert called(r, "my_recent_order", "my_order", "get_recent_order", "lookup_order"), (
             f"no order lookup fired; tools: {tools_in(r)}"
         )
         await r.expect.contains_message(role="assistant").judge(
