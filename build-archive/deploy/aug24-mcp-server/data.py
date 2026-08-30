@@ -27,6 +27,9 @@ import re
 log = logging.getLogger("aria.data")
 
 CLOUD_SQL_INSTANCE = os.environ.get("CLOUD_SQL_INSTANCE", "")
+# The view-only role for per-customer reads (parameterized secure views).
+DB_APP_USER = os.environ.get("DB_APP_USER", "aria_app")
+DB_APP_PASS = os.environ.get("DB_APP_PASS", "")
 FIRESTORE_DB = os.environ.get("FIRESTORE_DB", "aug24")
 TELEMETRY_COLLECTION = "device_telemetry"
 PRODUCTS_COLLECTION = "products"
@@ -95,6 +98,68 @@ class Repo:
 
             self._fs = firestore.Client(database=FIRESTORE_DB)
         return self._fs
+
+    # ── per-customer reads through parameterized secure views ─────────────
+    #
+    # These run as `aria_app`, a role that cannot see the base tables at all.
+    # The only way it can read a device or an order is through a view that is
+    # filtered by $@account — and the caller of these methods supplies the
+    # account from verified identity, never from the model.
+
+    _app_pool = None
+
+    def _app_engine(self):
+        if self._app_pool is None:
+            import sqlalchemy
+            from google.cloud.sql.connector import Connector
+
+            if not (CLOUD_SQL_INSTANCE and DB_APP_PASS):
+                raise DataUnavailable("secure-view role not configured")
+            connector = Connector()
+            self._app_pool = sqlalchemy.create_engine(
+                "postgresql+pg8000://",
+                creator=lambda: connector.connect(
+                    CLOUD_SQL_INSTANCE, "pg8000", user=DB_APP_USER,
+                    password=DB_APP_PASS, db=os.environ.get("DB_NAME", "aria"),
+                ),
+                pool_size=2, max_overflow=2, pool_pre_ping=True, pool_recycle=1800,
+            )
+        return self._app_pool
+
+    def _secure_rows(self, view_sql: str, account: str) -> list[dict]:
+        """Run a SELECT over a secure view with $@account bound server-side."""
+        import sqlalchemy
+
+        try:
+            with self._app_engine().connect() as conn:
+                result = conn.execute(
+                    sqlalchemy.text(
+                        "SELECT * FROM parameterized_views.execute_parameterized_query("
+                        "query => :q, param_names => ARRAY['account'], "
+                        "param_values => ARRAY[:account])"
+                    ),
+                    {"q": view_sql, "account": account},
+                )
+                # rows come back as a single json_results column per row
+                return [dict(r["json_results"]) for r in result.mappings()]
+        except DataUnavailable:
+            raise
+        except Exception as err:
+            raise DataUnavailable(f"secure view read failed: {err}") from err
+
+    def my_devices(self, account: str) -> list[dict]:
+        return self._secure_rows(
+            "SELECT device_id, name, device_type, room, sku FROM secure.my_devices ORDER BY device_id",
+            account,
+        )
+
+    def my_orders(self, account: str) -> list[dict]:
+        rows = self._secure_rows(
+            "SELECT order_id, item, sku, status, detail, placed_on, delivers_on "
+            "FROM secure.my_orders ORDER BY placed_on DESC LIMIT 10",
+            account,
+        )
+        return [self._shape_order(r) for r in rows]
 
     # ── customers ───────────────────────────────────────────────────────────
 

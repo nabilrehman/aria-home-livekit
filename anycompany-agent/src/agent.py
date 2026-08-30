@@ -58,8 +58,15 @@ DESK_RING_SECONDS = int(os.getenv("DESK_RING_SECONDS", "40"))
 _DeskClient = httpx.AsyncClient
 
 
+_identity_sink = None  # set per job: callable(account_number) on successful lookup
+
+
 def _mcp_result(ctx) -> str:
     """Resolve an MCP tool result for the model.
+
+    Also the one place identity is captured for guest callers: when an
+    identification tool returns a row, the account number is recorded in agent
+    state from the *verified result* — the model never gets to assert it later.
 
     An empty result (a SQL query that matched nothing) is a legitimate answer —
     "no such device" — not a failure. The SDK default raises a ToolError there,
@@ -67,6 +74,13 @@ def _mcp_result(ctx) -> str:
     """
     content = ctx.result.content or []
     if len(content) == 1:
+        if ctx.tool_name in ("lookup_account_by_phone", "lookup_account_by_number"):
+            m = re.search(
+                r'"account_number"\s*:\s*"(AH-\d{4})"',
+                getattr(content[0], "text", "") or "",
+            )
+            if m and _identity_sink:
+                _identity_sink(m.group(1))
         return str(content[0].model_dump_json())
     if len(content) > 1:
         return json.dumps([item.model_dump() for item in content])
@@ -138,11 +152,12 @@ class Assistant(Agent):
                     tool_result_resolver=_mcp_result,
                     # Orders are deliberately NOT taken from here — a one-line status
                     # lookup is an HTTP function tool, not an MCP round trip.
+                    # Identification and ticketing only. Device and order reads are
+                    # agent-side tools that inject the verified account themselves,
+                    # and the database enforces the filter (secure views).
                     allowed_tools=[
                         "lookup_account_by_phone",
                         "lookup_account_by_number",
-                        "list_devices",
-                        "find_device",
                         "file_ticket",
                     ],
                 ),
@@ -215,8 +230,8 @@ class Assistant(Agent):
                 and look them up. Greet them by their first name as soon as you find
                 them, and briefly confirm you can see their account. Use
                 lookup_account_by_phone when you have a number, otherwise
-                lookup_account_by_number. Keep the customer_id it returns — every
-                other lookup needs it. Then call get_previous_calls once with their
+                lookup_account_by_number. Once found, every other tool is scoped to
+                them automatically. Then call get_previous_calls once with their
                 account number; if their last call is relevant, acknowledge it in one
                 sentence, otherwise say nothing about it.
 
@@ -225,15 +240,15 @@ class Assistant(Agent):
                 Use your tools for anything factual. Never guess an order status, a
                 temperature, a date, or whether a device is on.
 
-                - Right after you identify the caller, call list_devices once with
-                  their customer_id and remember every device_id. Devices are a
-                  two-step read: find the device_id (from that list, or find_device
-                  for "the living room one"), then read its state. Then get_device_state with that device_id for
+                - Devices: find_my_device with the caller's own words ("living room
+                  thermostat", "back door") returns the device and its live state
+                  in one call. my_devices lists everything they own. Then get_device_state with that device_id for
                   whether it is on and what it is reading right now — temperature,
                   locked, recording. For "has it been like this all day", use
                   get_device_history.
-                - "My most recent order" or "where is my order": get_recent_order
-                  with their account number. A specific order number: lookup_order.
+                - "My most recent order" or "where is my order": my_recent_order.
+                  A specific order number: my_order. Both are scoped to the caller
+                  automatically — you never pass an account number.
                 - Policy questions — returns, refunds, warranty, subscription terms:
                   search_knowledge — call it once per question and answer from what
                   comes back. Never guess policy; always search. The policy
@@ -557,64 +572,136 @@ class Assistant(Agent):
         r.raise_for_status()
         return r.json()
 
-    @function_tool
-    async def get_recent_order(self, context: RunContext, account_number: str):
-        """The customer's most recent order and its status.
+    # ------------------------------------------------ scoped reads (RLS)
+    #
+    # The account comes from self.known_account — set from the LiveKit token for
+    # signed-in callers, or captured from the verified identification result for
+    # guests. It is sent as a header; the model never supplies it, and the
+    # database only ever answers through views filtered by that account.
 
-        Use for "where is my order?" or "what's the status of my most recent order?"
-        when they do not give an order number.
-
-        Args:
-            account_number: their Aria Home account number, e.g. "AH-4821".
-        """
-        try:
-            data = await self._orders_api("/api/orders", account=account_number)
-        except Exception as err:
-            logger.error(f"orders API failed: {err}")
+    async def _my(self, path: str, **params) -> dict:
+        if not self.known_account:
             return {
                 "found": False,
-                "say": "Tell them the order system is not "
-                "reachable right now and offer to file a ticket.",
+                "say": "Identify the caller first with "
+                "lookup_account_by_phone or lookup_account_by_number.",
             }
+        r = await self._client().get(
+            path,
+            params=params,
+            headers={"X-Api-Key": ORDERS_API_KEY, "X-Account": self.known_account},
+        )
+        r.raise_for_status()
+        return r.json()
+
+    @function_tool
+    async def my_devices(self, context: RunContext):
+        """List the caller's devices with what each is doing right now.
+
+        No arguments — it is scoped to the identified caller automatically.
+        """
+        try:
+            data = await self._my("/api/my/devices")
+        except Exception as err:
+            logger.error(f"my_devices failed: {err}")
+            return {
+                "found": False,
+                "say": "Tell them the device system is not reachable.",
+            }
+        if not data.get("found", True) or not data.get("devices"):
+            return (
+                {**data, "found": False}
+                if "say" in data
+                else {"found": False, "say": "No devices on this account."}
+            )
+        logger.info(f"my_devices({self.known_account}) -> {len(data['devices'])}")
+        return {"found": True, "devices": data["devices"]}
+
+    @function_tool
+    async def find_my_device(self, context: RunContext, description: str):
+        """Find one of the caller's devices and read its live state.
+
+        Use for "is my thermostat on?", "what's the living room temperature?",
+        "is the back door locked?". Every word you pass must match the device, so
+        use the caller's own words: "living room thermostat", "hallway sensor".
+
+        Args:
+            description: the room, device type or name, as the caller said it.
+        """
+        try:
+            data = await self._my("/api/my/devices", search=description)
+        except Exception as err:
+            logger.error(f"find_my_device failed: {err}")
+            return {
+                "found": False,
+                "say": "Tell them the device system is not reachable.",
+            }
+        if "say" in data and not data.get("devices"):
+            return data
+        devs = data.get("devices") or []
+        if not devs:
+            return {
+                "found": False,
+                "say": f"There is no {description} on this account. "
+                "Say so plainly and list what they do have if helpful.",
+            }
+        d = devs[0]
+        logger.info(
+            f"find_my_device({self.known_account}, {description!r}) -> {d['device_id']} {d['reading']}"
+        )
+        return {"found": True, **d, "as_of": "just now"}
+
+    @function_tool
+    async def my_recent_order(self, context: RunContext):
+        """The caller's most recent order and its status. No arguments."""
+        try:
+            data = await self._my("/api/my/orders")
+        except Exception as err:
+            logger.error(f"my_recent_order failed: {err}")
+            return {
+                "found": False,
+                "say": "Tell them the order system is not reachable.",
+            }
+        if "say" in data and not data.get("orders"):
+            return data
         orders = data.get("orders") or []
         if not orders:
             return {"found": False, "say": "There are no orders on this account."}
-        recent = orders[0]
-        logger.info(f"orders API: recent for {account_number} -> {recent['order_id']}")
+        logger.info(f"my_recent_order({self.known_account}) -> {orders[0]['order_id']}")
         return {
             "found": True,
-            **recent,
+            **orders[0],
             "older_orders": len(orders) - 1,
-            "say": "Say the item and the status plainly, and the delivery date as "
-            "words. Read the order number digit by digit only if asked.",
+            "say": "Say the item and the status plainly, and the date as words.",
         }
 
     @function_tool
-    async def lookup_order(self, context: RunContext, order_number: str):
-        """Look up one order by the number the customer reads out.
+    async def my_order(self, context: RunContext, order_number: str):
+        """One of the caller's orders by the number they read out.
 
-        Use exactly the digits they say; never pad them to a fixed length.
+        Use exactly the digits they say; never pad them. Only this caller's
+        orders are visible.
 
         Args:
-            order_number: the order number as spoken, digits only, e.g. "58120".
+            order_number: digits only, e.g. "58130".
         """
         digits = "".join(c for c in order_number if c.isdigit())
         try:
-            data = await self._orders_api(f"/api/orders/{digits}")
+            data = await self._my("/api/my/orders")
         except Exception as err:
-            logger.error(f"orders API failed: {err}")
+            logger.error(f"my_order failed: {err}")
             return {
                 "found": False,
-                "say": "Tell them the order system is not reachable right now.",
+                "say": "Tell them the order system is not reachable.",
             }
-        if not data.get("found"):
-            return {
-                "found": False,
-                "say": "No order with that number. Ask them to "
-                "check it; never pad the digits.",
-            }
-        logger.info(f"orders API: {digits} -> {data.get('status')}")
-        return data
+        for o in data.get("orders") or []:
+            if o["order_id"] == digits:
+                return {"found": True, **o}
+        return {
+            "found": False,
+            "say": "No order with that number on this account. "
+            "Ask them to check it; never pad the digits.",
+        }
 
     # ------------------------------------------------ call memory
     #
@@ -1037,6 +1124,14 @@ async def my_agent(ctx: JobContext):
         room_name=ctx.room.name, known_account=known_account, known_name=known_name
     )
     assistant._ctx = ctx
+
+    def _identified(account: str) -> None:
+        if not assistant.known_account:
+            assistant.known_account = account
+            logger.info(f"identity captured from verified lookup: {account}")
+
+    global _identity_sink
+    _identity_sink = _identified
 
     _, pre = await asyncio.gather(
         session.start(

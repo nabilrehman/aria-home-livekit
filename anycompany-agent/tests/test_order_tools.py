@@ -1,4 +1,4 @@
-"""The order tools are plain HTTP function tools, not MCP.
+"""The order/device tools are plain HTTP function tools, scoped by the agent, not MCP.
 
 They call the orders REST API on the web service. These tests stub the HTTP
 layer and check the tool contract the model sees: found / not found / API down,
@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from agent import Assistant  # noqa: E402
 
 NABIL_ORDERS = {
-    "found": True,
     "account": "AH-7104",
     "orders": [
         {
@@ -50,7 +49,7 @@ def stub(monkeypatch, handler):
     async def _fake(self, path, **params):
         return handler(path, params)
 
-    monkeypatch.setattr(Assistant, "_orders_api", _fake)
+    monkeypatch.setattr(Assistant, "_my", _fake)
 
 
 @pytest.mark.asyncio
@@ -58,9 +57,10 @@ async def test_recent_order_returns_the_newest_with_context(monkeypatch):
     calls = []
     stub(monkeypatch, lambda p, q: (calls.append((p, q)), NABIL_ORDERS)[1])
 
-    out = await Assistant().get_recent_order(None, "AH-7104")
+    a = Assistant(known_account="AH-7104")
+    out = await a.my_recent_order(None)
 
-    assert calls == [("/api/orders", {"account": "AH-7104"})]
+    assert calls == [("/api/my/orders", {})]
     assert out["found"] is True
     assert out["order_id"] == "58131" and out["status"] == "processing"
     assert out["older_orders"] == 2
@@ -69,30 +69,24 @@ async def test_recent_order_returns_the_newest_with_context(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_recent_order_with_no_orders_says_so(monkeypatch):
-    stub(monkeypatch, lambda p, q: {"found": True, "orders": []})
-    out = await Assistant().get_recent_order(None, "AH-0000")
+    stub(monkeypatch, lambda p, q: {"orders": []})
+    out = await Assistant(known_account="AH-0000").my_recent_order(None)
     assert out["found"] is False and "no orders" in out["say"].lower()
 
 
 @pytest.mark.asyncio
 async def test_lookup_order_normalises_spoken_digits(monkeypatch):
     seen = []
-    stub(
-        monkeypatch,
-        lambda p, q: (
-            seen.append(p),
-            {"found": True, "order_id": "58130", "status": "shipped"},
-        )[1],
-    )
-    out = await Assistant().lookup_order(None, "5 8 1 3 0")
-    assert seen == ["/api/orders/58130"]
-    assert out["status"] == "shipped"
+    stub(monkeypatch, lambda p, q: (seen.append(p), NABIL_ORDERS)[1])
+    out = await Assistant(known_account="AH-7104").my_order(None, "5 8 1 3 0")
+    assert seen == ["/api/my/orders"]
+    assert out["status"] == "shipped" and out["order_id"] == "58130"
 
 
 @pytest.mark.asyncio
 async def test_lookup_order_not_found_forbids_padding(monkeypatch):
-    stub(monkeypatch, lambda p, q: {"found": False})
-    out = await Assistant().lookup_order(None, "4472")
+    stub(monkeypatch, lambda p, q: NABIL_ORDERS)
+    out = await Assistant(known_account="AH-7104").my_order(None, "4472")
     assert out["found"] is False
     assert "pad" in out["say"].lower()
 
@@ -103,7 +97,8 @@ async def test_orders_api_outage_degrades_honestly(monkeypatch):
         raise RuntimeError("connection refused")
 
     monkeypatch.setattr(Assistant, "_orders_api", _boom)
-    out = await Assistant().get_recent_order(None, "AH-7104")
+    a = Assistant(known_account="AH-7104")
+    out = await a.my_recent_order(None)
     assert out["found"] is False
     assert "not reachable" in out["say"]
 
@@ -114,5 +109,34 @@ def test_toolbox_does_not_also_serve_orders():
     block = src[
         src.index("allowed_tools=[") : src.index("]", src.index("allowed_tools=["))
     ]
-    assert "get_recent_order" not in block and "lookup_order" not in block
-    assert "lookup_account_by_phone" in block and "find_device" in block
+    assert "find_device" not in block and "list_devices" not in block
+    assert "lookup_account_by_phone" in block and "file_ticket" in block
+
+
+@pytest.mark.asyncio
+async def test_unidentified_caller_cannot_read_anything():
+    """No account in state → no request is even made."""
+    out = await Assistant().my_recent_order(None)
+    assert out["found"] is False and "Identify the caller" in out["say"]
+
+
+def test_identity_is_captured_from_the_verified_lookup_result():
+    import agent as agent_mod
+    from types import SimpleNamespace
+
+    seen = []
+    agent_mod._identity_sink = seen.append
+    ctx = SimpleNamespace(
+        tool_name="lookup_account_by_phone",
+        result=SimpleNamespace(
+            content=[
+                SimpleNamespace(
+                    text='{"customer_id":5,"account_number":"AH-7104","first_name":"Nabil"}',
+                    model_dump_json=lambda: "{}",
+                )
+            ]
+        ),
+    )
+    agent_mod._mcp_result(ctx)
+    assert seen == ["AH-7104"]
+    agent_mod._identity_sink = None

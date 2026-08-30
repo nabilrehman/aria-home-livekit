@@ -24,8 +24,10 @@ REAL_TOOLS = {
     "find_device",
     "file_ticket",
     # plain HTTP function tools in the agent (orders are a REST call, not MCP)
-    "get_recent_order",
-    "lookup_order",
+    "my_devices",
+    "find_my_device",
+    "my_recent_order",
+    "my_order",
     # custom MCP (Firestore + RAG)
     "get_device_state",
     "get_device_history",
@@ -49,8 +51,7 @@ def test_prompt_names_only_tools_that_exist():
 def test_prompt_teaches_the_two_step_device_lookup():
     """Device state needs a device_id from the registry first. The prompt must say so."""
     text = Assistant().instructions
-    assert "find_device" in text and "get_device_state" in text
-    assert "device_id" in text
+    assert "find_my_device" in text and "my_devices" in text
 
 
 def test_signed_in_prompt_uses_the_real_lookup_tool():
@@ -130,7 +131,7 @@ async def test_end_call_is_refused_once_a_specialist_has_the_call():
 
 def test_prompt_fetches_devices_once_and_rags_once():
     text = Assistant().instructions
-    assert "list_devices once" in text
+    assert "scoped to" in text and "them automatically" in text
     assert "call it once per question" in text
     assert "Never end the call after a transfer" in text
 

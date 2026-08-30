@@ -437,6 +437,67 @@ def call_list():
         return jsonify({"error": "history_unavailable"}), 503
 
 
+# ── Per-customer reads: identity from the agent's verified state, never the model
+#
+# The agent sends X-Account (the account it captured from the LiveKit token or
+# the identification tool's verified result). The database then enforces the
+# filter through parameterized secure views under a role that cannot read the
+# base tables. A wrong or missing account yields nothing — by construction.
+
+
+def _account_header(request) -> str:
+    return (request.headers.get("X-Account") or "").strip().upper()
+
+
+@app.get("/api/my/devices")
+def my_devices():
+    if not _api_key_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    account = _account_header(request)
+    if not account:
+        return jsonify({"error": "no_account"}), 400
+    search = (request.args.get("search") or "").strip().lower()
+    try:
+        rows = repo.my_devices(account)
+        devices = []
+        for d in rows:
+            st = repo.device_state(d["device_id"])
+            devices.append(repo.with_product({
+                "device_id": d["device_id"], "name": d["name"], "type": d["device_type"],
+                "room": d["room"], "sku": d.get("sku"),
+                "on": bool(st.get("active")), "reading": st.get("reading", "no signal"),
+                "battery_pct": st.get("battery_pct"), "temperature_f": st.get("temp_f"),
+            }))
+    except DataUnavailable as err:
+        app.logger.error(f"/api/my/devices failed: {err}")
+        return jsonify({"error": "unavailable"}), 503
+    if search:
+        words = [w for w in search.split() if len(w) > 2 and w not in
+                 ("the", "one", "ones", "that", "this", "its", "please", "check", "and", "for")]
+        def hit(d):
+            hay = f"{d['room']} {d['type']} {d['name']}".lower()
+            return all(w in hay or (w in ("cam", "cameras") and d["type"] == "camera")
+                       or (w in ("thermostats", "heating", "temperature") and d["type"] == "thermostat")
+                       for w in words)
+        devices = [d for d in devices if hit(d)] if words else devices
+    return jsonify({"account": account, "devices": devices})
+
+
+@app.get("/api/my/orders")
+def my_orders():
+    if not _api_key_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    account = _account_header(request)
+    if not account:
+        return jsonify({"error": "no_account"}), 400
+    try:
+        orders = [repo.with_product(o) for o in repo.my_orders(account)]
+    except DataUnavailable as err:
+        app.logger.error(f"/api/my/orders failed: {err}")
+        return jsonify({"error": "unavailable"}), 503
+    return jsonify({"account": account, "orders": orders})
+
+
 @app.get("/api/preload")
 def preload():
     """Everything Ember should know before she speaks, in one round-trip:
