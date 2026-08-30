@@ -69,14 +69,15 @@ Also before the room: **laptop on power, wired headphones or a quiet mic, Chrome
 
 Two browser tabs before you start: the **store** (signed in with your Gmail, on the Support page) and the **Specialist Desk** (`/desk`, PIN 8616, name "Ahmad"). Warm-up from §1 done. Say each "watch for" line *before* the beat.
 
-### Prologue · Sarah, by phone (60 s) — requirement 1b, the guest path
+### Prologue · Sarah, by phone (75 s) — requirement 1b, the guest path
 Click **Call as a guest → Start call**.
 
 | You say | Must happen | To the panel |
 |---|---|---|
 | "Hi, I need help with my account." | She **asks** for phone or account number. | "No caller ID on this path — same as an unknown phone." |
 | "A H four eight two one." | "Hi Sarah… I can see your account." | "Digits-only match on Cloud SQL, through Google's MCP Toolbox. 'AH 4821', '4821', 'ah-4821' all resolve." |
-| "Actually, what's the status of order five eight one three one?" | "**No order with that number on this account.**" | **Mike:** "That's Nabil's order. She can't see it — the database won't return it. Parameterized secure views, a role with no base-table access, and the account never comes from the model." |
+| "What's the status of order five eight one two one?" | "Your Aria Thermostat is **processing**, delivers September third." | "Order by number — one scoped call, account pinned by the identification step." |
+| "And order five eight one three one?" | "**No order with that number on this account.**" | **Mike:** "Same tool, same second. That one is Nabil's. She can't see it — the database won't return it. Parameterized secure views, a role with no base-table access, and the account never comes from the model." |
 | "Okay, bye." | goodbye, call closes | — |
 
 ### Act 1 · You, signed in (90 s) — requirement 1a
@@ -115,7 +116,7 @@ Move the **desk** tab into view.
 > "Same customer, fresh session, no login screen twice. That's the difference between a bot and a support line."
 
 ### Timing guard
-Prologue 1:00 · Act 1 1:30 · Act 2 1:30 · Act 3 0:45 · Act 4 2:00 · Epilogue 0:20 = **7 min**. If running long, drop the Epilogue; never drop Act 4.
+Prologue 1:15 · Act 1 1:30 · Act 2 1:30 · Act 3 0:45 · Act 4 2:00 · Epilogue 0:20 = **7¼ min**. If running long, drop the Epilogue; never drop Act 4.
 
 ### If the panel takes the wheel
 Invite it after Act 2. Good probes: "Is my garage camera recording?" (no such device — she says so); "What's the serial on my lock?" (doesn't know, offers a ticket); talk over her (stops); cough (resumes); silence 15 s (checks in).
