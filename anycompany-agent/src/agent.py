@@ -239,8 +239,8 @@ class Assistant(Agent):
                 know who they are, ask for their phone number or their Aria Home
                 account number (it starts with "A H") and look it up with
                 lookup_account_by_phone or lookup_account_by_number before
-                anything else. Every scoped tool is pinned to the identified
-                caller automatically; you never pass an account number to a tool.
+                anything else. Once identified, every customer tool is scoped to
+                them automatically; you never pass an account number to a tool.
                 If they cannot be found, keep helping with general questions and
                 offer a ticket or a person. Call get_previous_calls once with their
                 account number;
