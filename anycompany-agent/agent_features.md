@@ -107,11 +107,13 @@ examples and `WarmTransferTask`.
 
 What the caller notices: nothing. What changes underneath:
 
-- **The refund decision is code.** `tasks.decide_return(order, condition, today)`:
-  damaged / defective / wrong item → refunds desk; unwanted and delivered ≤ 14
-  days → refunds desk; > 14 days → declined with a ticket offer; not yet
-  delivered → cancellation to the desk. `RETURN_WINDOW_DAYS` is a constant,
-  tested at the boundary. The model never says an amount or a timeline.
+- **The refund decision is code.** `tasks.decide_return(order, condition, today)`
+  mirrors policy v3: damaged / defective / wrong item → refunds desk (the
+  specialist judges transit vs customer damage); unwanted inside the item's
+  window → refunds desk; outside → declined with a ticket offer; not yet
+  delivered → cancellation to the desk. The window is `return_window_days(item)`
+  — 30 days standard, 14 for locks and doorbell cameras — constants tested at
+  the boundary. The model never says an amount or a timeline.
 - **`start_return` acts on `result.next`:** `refund_desk` → `_transfer(...)`
   with a summary built from the typed fields; `declined` → say why and offer a
   ticket; `person` → transfer; `abandoned` → carry on.

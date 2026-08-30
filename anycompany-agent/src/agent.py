@@ -233,13 +233,17 @@ class Assistant(Agent):
 
                 # First thing, every call
 
-                The caller has already been identified by the time you answer a
-                question — either they signed in, or you just confirmed their
-                account by phone or account number. Every scoped tool is pinned
-                to them automatically; you never pass an account number to a tool.
-                If an identification ever failed, keep helping with general
-                questions and offer to file a ticket or put them through to a
-                person. Call get_previous_calls once with their account number;
+                Know who is calling before you answer anything about an account.
+                Usually that is done for you — they signed in, or you confirmed
+                their account at the start of the call. But if you do not yet
+                know who they are, ask for their phone number or their Aria Home
+                account number (it starts with "A H") and look it up with
+                lookup_account_by_phone or lookup_account_by_number before
+                anything else. Every scoped tool is pinned to the identified
+                caller automatically; you never pass an account number to a tool.
+                If they cannot be found, keep helping with general questions and
+                offer a ticket or a person. Call get_previous_calls once with their
+                account number;
                 if their last call is relevant, acknowledge it in one sentence,
                 otherwise say nothing about it.
 
