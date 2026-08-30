@@ -122,7 +122,7 @@ CALL 2 — NABIL, SIGNED IN (requirements 1a, 2, 3, 4)        ~5.5 min
       retrieval, not model memory. Product manuals are in the same
       corpus: ask her what error E four means on a thermostat."
 
-  Act 2b · OPTIONAL, if time allows (~45s): troubleshooting task
+  Act 2b · Troubleshooting task (~45s)
   YOU: "My hallway sensor isn't working. Can you help me fix it?"
   EMBER: enters a troubleshooting flow — checks the live state and
       history, pulls the manual's fix (CR123A battery, ~2 years),
@@ -182,8 +182,6 @@ PART 3 · IF THE PANEL TAKES THE WHEEL (invite it after Act 2)
 "My account number is A H four
  eight two one" (fresh guest call)   → account-number path, same greet.
 "What's the serial on my lock?"      → doesn't know; offers a ticket.
-"My sensor isn't working, fix it"    → TroubleshootDeviceTask (if
-                                       not shown in Act 2b).
 Talk over her                        → she stops.
 Cough mid-answer                     → she resumes the sentence.
 Go silent 15 seconds                 → she checks in.
@@ -191,8 +189,9 @@ Go silent 15 seconds                 → she checks in.
 ---------------------------------------------------------------------
 PART 4 · TIMING + RECOVERY
 ---------------------------------------------------------------------
-Call 1 1:15 · Act 1 1:00 · Act 2 1:30 · (Act 2b 0:45 optional) ·
-Act 3 0:45 · Act 4 2:00 · Epilogue 0:20  =  ~7 min (7:45 with 2b). Running long: drop the Epilogue. NEVER drop
+Call 1 1:15 · Act 1 1:00 · Act 2 1:30 · Act 2b 0:45 · Act 3 0:45 ·
+Act 4 2:00 · Epilogue 0:20  =  ~7:45. Timing is yours to manage;
+if something must go, drop the Epilogue — never Act 4. Running long: drop the Epilogue. NEVER drop
 Act 4 — it is a graded requirement.
 
 If the desk misses the ring (40 s): Ember says a specialist isn't
