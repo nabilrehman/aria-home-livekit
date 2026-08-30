@@ -58,10 +58,7 @@ DESK_RING_SECONDS = int(os.getenv("DESK_RING_SECONDS", "40"))
 _DeskClient = httpx.AsyncClient
 
 
-_identity_sink = None  # set per job: callable(account_number) on successful lookup
-
-
-def _mcp_result(ctx) -> str:
+def _mcp_result(ctx, on_identified=None) -> str:
     """Resolve an MCP tool result for the model.
 
     Also the one place identity is captured for guest callers: when an
@@ -79,8 +76,8 @@ def _mcp_result(ctx) -> str:
                 r'"account_number"\s*:\s*"(AH-\d{4})"',
                 getattr(content[0], "text", "") or "",
             )
-            if m and _identity_sink:
-                _identity_sink(m.group(1))
+            if m and on_identified:
+                on_identified(m.group(1))
         return str(content[0].model_dump_json())
     if len(content) > 1:
         return json.dumps([item.model_dump() for item in content])
@@ -138,7 +135,7 @@ class Assistant(Agent):
                 transport_type="streamable_http",
                 timeout=20,
                 client_session_timeout_seconds=20,
-                tool_result_resolver=_mcp_result,
+                tool_result_resolver=self._resolve_mcp,
             )
         ]
         if TOOLBOX_MCP_URL:
@@ -149,7 +146,7 @@ class Assistant(Agent):
                     transport_type="streamable_http",
                     timeout=20,
                     client_session_timeout_seconds=20,
-                    tool_result_resolver=_mcp_result,
+                    tool_result_resolver=self._resolve_mcp,
                     # Orders are deliberately NOT taken from here — a one-line status
                     # lookup is an HTTP function tool, not an MCP round trip.
                     # Identification and ticketing only. Device and order reads are
@@ -315,6 +312,15 @@ class Assistant(Agent):
     # automatically. The tools below are the ones that need to run *inside* the
     # agent — because they touch the live room (transfer) or demonstrate the
     # async progress patterns (refund, warranty, sync, tracking).
+
+    def _resolve_mcp(self, ctx) -> str:
+        """MCP results for this agent; captures identity from a verified lookup."""
+        return _mcp_result(ctx, on_identified=self._identified)
+
+    def _identified(self, account: str) -> None:
+        if not self.known_account:
+            self.known_account = account
+            logger.info(f"identity captured from verified lookup: {account}")
 
     @staticmethod
     def _preload_text(pre: dict) -> str:
@@ -1124,14 +1130,6 @@ async def my_agent(ctx: JobContext):
         room_name=ctx.room.name, known_account=known_account, known_name=known_name
     )
     assistant._ctx = ctx
-
-    def _identified(account: str) -> None:
-        if not assistant.known_account:
-            assistant.known_account = account
-            logger.info(f"identity captured from verified lookup: {account}")
-
-    global _identity_sink
-    _identity_sink = _identified
 
     _, pre = await asyncio.gather(
         session.start(

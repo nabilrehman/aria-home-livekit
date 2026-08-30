@@ -87,9 +87,11 @@ async def test_full_demo_happy_path() -> None:
 
         # --- BEAT 2: device state ---
         r = await session.run(user_input="Is my thermostat on?")
-        assert _called(r, "get_device_state") or _called(r, "find_device"), (
-            "agent did not check device state"
-        )
+        assert (
+            _called(r, "find_my_device")
+            or _called(r, "my_devices")
+            or _called(r, "get_device_state")
+        ), "agent did not check device state"
         await r.expect.contains_message(role="assistant").judge(
             judge,
             intent="States the thermostat is active/on and reads about 71 degrees. Does not make up a number.",

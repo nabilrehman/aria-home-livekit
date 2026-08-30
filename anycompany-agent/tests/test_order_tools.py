@@ -96,7 +96,7 @@ async def test_orders_api_outage_degrades_honestly(monkeypatch):
     async def _boom(self, path, **params):
         raise RuntimeError("connection refused")
 
-    monkeypatch.setattr(Assistant, "_orders_api", _boom)
+    monkeypatch.setattr(Assistant, "_my", _boom)
     a = Assistant(known_account="AH-7104")
     out = await a.my_recent_order(None)
     assert out["found"] is False
@@ -121,11 +121,9 @@ async def test_unidentified_caller_cannot_read_anything():
 
 
 def test_identity_is_captured_from_the_verified_lookup_result():
-    import agent as agent_mod
     from types import SimpleNamespace
 
-    seen = []
-    agent_mod._identity_sink = seen.append
+    a = Assistant()
     ctx = SimpleNamespace(
         tool_name="lookup_account_by_phone",
         result=SimpleNamespace(
@@ -137,6 +135,8 @@ def test_identity_is_captured_from_the_verified_lookup_result():
             ]
         ),
     )
-    agent_mod._mcp_result(ctx)
-    assert seen == ["AH-7104"]
-    agent_mod._identity_sink = None
+    a._resolve_mcp(ctx)
+    assert a.known_account == "AH-7104"
+    # a second lookup never overwrites the captured identity
+    a._resolve_mcp(ctx)
+    assert a.known_account == "AH-7104"

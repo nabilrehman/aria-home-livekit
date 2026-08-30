@@ -146,9 +146,9 @@ async def test_beat2_is_my_thermostat_active():
         await session.run(user_input=f"Hi, I'm calling from {SARAH_PHONE}.")
 
         r = await session.run(user_input="Is my thermostat active?")
-        assert called(r, "get_device_state", "find_device"), (
-            f"no device tools fired; tools: {tools_in(r)}"
-        )
+        assert called(
+            r, "find_my_device", "my_devices", "get_device_state", "find_device"
+        ), f"no device tools fired; tools: {tools_in(r)}"
         await r.expect.contains_message(role="assistant").judge(
             j, intent="Confirms the thermostat is active / on, based on a real reading."
         )
@@ -161,9 +161,9 @@ async def test_beat2_temperature_in_my_living_room():
         await session.run(user_input=f"Hi, I'm calling from {SARAH_PHONE}.")
 
         r = await session.run(user_input="What is the temperature in my living room?")
-        assert called(r, "get_device_state", "find_device"), (
-            f"no telemetry read; tools: {tools_in(r)}"
-        )
+        assert called(
+            r, "find_my_device", "my_devices", "get_device_state", "find_device"
+        ), f"no telemetry read; tools: {tools_in(r)}"
         await r.expect.contains_message(role="assistant").judge(
             j,
             intent="Gives a specific temperature for the living room — the number 71 "
