@@ -20,6 +20,7 @@ from livekit.agents import (
     cli,
     function_tool,
     inference,
+    llm,
     mcp,
     room_io,
 )
@@ -28,6 +29,7 @@ from livekit.plugins import ai_coustics
 import opaque_backend
 import pii
 import store
+from tasks import IdentifyCallerTask, ReturnIntakeTask, TroubleshootDeviceTask
 from turn_latency import TurnLatency
 
 logger = logging.getLogger("agent")
@@ -116,6 +118,10 @@ class Assistant(Agent):
         self._ctx: JobContext | None = None
         # order_number -> Ticket, so a retry reuses rather than duplicates
         self._timeout_tickets: dict[str, object] = {}
+        # The identification task while it runs (guest path), and the full tool
+        # set kept aside while scoped tools are gated.
+        self._identify_task: IdentifyCallerTask | None = None
+        self._all_tools: list = []
         # Two MCP servers, split by what the data actually is.
         #
         #   Toolbox   -> Cloud SQL : who is calling, what they own, what they bought.
@@ -200,9 +206,7 @@ class Assistant(Agent):
                 exact annoyance we removed.
 
                 Instead, greet them by first name and say you can see their account,
-                then ask what you can help with. Call lookup_account_by_number with
-                account_number "{known_account}" straight away so you have their
-                customer_id before you answer anything factual.
+                then ask what you can help with.
                 """
             )
 
@@ -210,7 +214,15 @@ class Assistant(Agent):
             mcp_servers=self._mcp_servers,
             # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
             # See all available models at https://docs.livekit.io/agents/models/llm/
-            llm=inference.LLM(model="google/gemma-4-31b-it"),
+            # Provider failover: if Gemma stalls or errors mid-call, the same
+            # session continues on Gemini Flash instead of the call dying.
+            llm=llm.FallbackAdapter(
+                [
+                    inference.LLM(model="google/gemma-4-31b-it"),
+                    inference.LLM(model="google/gemini-2.5-flash"),
+                ],
+                attempt_timeout=6.0,
+            ),
             instructions=textwrap.dedent(
                 """\
                 You are Ember, the voice support agent for Aria Home, a smart-home
@@ -221,16 +233,15 @@ class Assistant(Agent):
 
                 # First thing, every call
 
-                Identify the caller before anything else. If you already have their
-                phone number, look their account up with it. Otherwise ask for their
-                phone number, or their Aria Home account number (it starts with "A H"),
-                and look them up. Greet them by their first name as soon as you find
-                them, and briefly confirm you can see their account. Use
-                lookup_account_by_phone when you have a number, otherwise
-                lookup_account_by_number. Once found, every other tool is scoped to
-                them automatically. Then call get_previous_calls once with their
-                account number; if their last call is relevant, acknowledge it in one
-                sentence, otherwise say nothing about it.
+                The caller has already been identified by the time you answer a
+                question — either they signed in, or you just confirmed their
+                account by phone or account number. Every scoped tool is pinned
+                to them automatically; you never pass an account number to a tool.
+                If an identification ever failed, keep helping with general
+                questions and offer to file a ticket or put them through to a
+                person. Call get_previous_calls once with their account number;
+                if their last call is relevant, acknowledge it in one sentence,
+                otherwise say nothing about it.
 
                 # What you can do
 
@@ -251,8 +262,14 @@ class Assistant(Agent):
                   comes back. Never guess policy; always search. The policy
                   documents call the company "AnyCompany" — that is an old name.
                   Never say AnyCompany out loud; always say Aria Home.
-                - Refunds, warranty checks, device sync and package tracking have
-                  their own tools; confirm the order number first.
+                - A return, refund, money back, or "it arrived damaged":
+                  start_return. It takes the details with the caller and tells
+                  you what happens next — you never decide a refund yourself.
+                - A device that is not working, offline, unresponsive, or
+                  misbehaving: troubleshoot_device with the caller's words for it.
+                  ("Is it on?" is a quick find_my_device, not troubleshooting.)
+                - Warranty: check_warranty. Exactly where a package is right now:
+                  track_package. Confirm the order number first.
                 - When they ask for a person, are frustrated, or you cannot resolve it:
                   transfer_to_human. Compose a short summary first so the human is briefed.
                 - If they ask you to remember something for next time — a preference,
@@ -292,11 +309,10 @@ class Assistant(Agent):
                 ("Sure — let me check that"). Vary your phrasing; never repeat the same
                 sentence twice in a call.
 
-                Open with an actual greeting, then introduce yourself by name, warmly
-                and briefly: "Hi there — thanks for calling Aria Home. This is Ember,
-                and I'm glad to help." Then ask for the phone number or account number
-                on the account so you can pull it up. Always say hello or hi first; do
-                not open on the thank-you.
+                When you are asked to greet, say hello first, then introduce yourself
+                by name, warmly and briefly: "Hi there — thanks for calling Aria Home.
+                This is Ember, and I'm glad to help." Do not open on the thank-you,
+                and never re-introduce yourself later in the call.
                 """
             )
             + identified
@@ -321,6 +337,228 @@ class Assistant(Agent):
         if not self.known_account:
             self.known_account = account
             logger.info(f"identity captured from verified lookup: {account}")
+        # Backstop: the verified row completes the identification task even if
+        # the model forgets to call confirm_identity.
+        if self._identify_task is not None:
+            self._identify_task.identified(account)
+        self._ungate_soon()
+
+    # ------------------------------------------------ tool gating
+    #
+    # Parloa's "eligibility layer" in LiveKit terms: tools that read a customer's
+    # data do not exist until the customer is known. Code decides what the model
+    # may call; the model only chooses among what is eligible.
+
+    GATED_TOOLS = frozenset(
+        {
+            "my_devices",
+            "find_my_device",
+            "my_recent_order",
+            "my_order",
+            "start_return",
+            "troubleshoot_device",
+            "check_warranty",
+            "track_package",
+        }
+    )
+
+    @staticmethod
+    def _tool_name(t) -> str:
+        info = getattr(t, "info", None)
+        return getattr(info, "name", None) or getattr(t, "__name__", "") or ""
+
+    def gated_tools(self) -> list:
+        """The tool set for an unidentified caller."""
+        return [t for t in self.tools if self._tool_name(t) not in self.GATED_TOOLS]
+
+    async def gate_tools(self) -> None:
+        self._all_tools = list(self.tools)
+        await self.update_tools(self.gated_tools())
+        logger.info(f"tools gated until identified: {len(self.tools)} visible")
+
+    async def ungate_tools(self) -> None:
+        if self._all_tools and len(self.tools) < len(self._all_tools):
+            await self.update_tools(self._all_tools)
+            logger.info(f"tools ungated: {len(self.tools)} visible")
+
+    def _ungate_soon(self) -> None:
+        if not self._all_tools or self._activity is None:
+            return
+        try:
+            self._ungate_handle = asyncio.get_running_loop().create_task(
+                self.ungate_tools()
+            )
+        except RuntimeError:  # no loop (unit tests); nothing to ungate yet
+            pass
+
+    async def _mcp_tools(self, *names: str) -> list:
+        """Specific MCP tools, by name, from the already-connected servers — so a
+        task can carry e.g. search_knowledge without seeing the other five."""
+        out = []
+        for server in self.mcp_servers or []:
+            try:
+                for t in await server.list_tools():
+                    if self._tool_name(t) in names:
+                        out.append(t)
+            except Exception as err:
+                logger.warning(f"could not list MCP tools from {server}: {err}")
+        return out
+
+    # ------------------------------------------------ lifecycle
+
+    async def on_enter(self) -> None:
+        """Signed-in callers are greeted by the entrypoint. Guests are handed to
+        IdentifyCallerTask first: it owns the greeting and the two lookup tools,
+        and nothing customer-scoped is reachable until it returns an account."""
+        # Only in a live job (the entrypoint sets _ctx). Offline evals drive the
+        # Assistant directly with session.run(), where a blocking on_enter task
+        # has no caller to talk to.
+        if self.known_account or self._ctx is None:
+            return
+        await self.gate_tools()
+        lookups = await self._mcp_tools(
+            "lookup_account_by_phone", "lookup_account_by_number"
+        )
+        if not lookups:
+            logger.warning("no identification tools available — skipping identify task")
+            await self.session.generate_reply(
+                instructions="Greet the caller warmly as Ember from Aria Home and ask how you can help."
+            )
+            return
+        self._identify_task = IdentifyCallerTask(
+            lookups, chat_ctx=self.chat_ctx, model=self.llm
+        )
+        try:
+            who = await self._identify_task
+        finally:
+            self._identify_task = None
+        if who is None:
+            logger.info("caller could not be identified — general help only")
+            await self.session.generate_reply(
+                instructions=(
+                    "Say you could not find the account, that you can still help "
+                    "with general questions, and offer to file a ticket or connect "
+                    "them to a person. One or two sentences."
+                )
+            )
+            return
+        self.known_account = who.account
+        self.known_name = who.first_name or self.known_name
+        await self.ungate_tools()
+        await self.session.generate_reply(
+            instructions="Ask what you can help with today. One sentence."
+        )
+
+    # ------------------------------------------------ tasks
+    #
+    # Bounded sub-workflows (see tasks.py). Each hides its own tools from every
+    # other turn and returns a typed result that code — not the model — acts on.
+
+    async def _lookup_order_for_task(self, order_number: str = "") -> dict:
+        if order_number.strip():
+            return await self.my_order(None, order_number)
+        return await self.my_recent_order(None)
+
+    @function_tool
+    async def start_return(
+        self, context: RunContext, order_number: str = "", reason: str = ""
+    ):
+        """Start a return or refund for one of the caller's orders.
+
+        Use this the moment the caller wants to return something, get money back,
+        or says an item arrived damaged, defective or wrong. It takes the details
+        with them and decides what happens next.
+
+        Args:
+            order_number: the order number if they already said it, else empty.
+            reason: what they said is wrong, if anything, else empty.
+        """
+        policy = await self._mcp_tools("search_knowledge")
+        result = await ReturnIntakeTask(
+            self._lookup_order_for_task,
+            policy_tools=policy,
+            chat_ctx=self.chat_ctx,
+            order_hint=order_number,
+            reason_hint=reason,
+            model=self.llm,
+        )
+        logger.info(f"return intake -> {result}")
+        if result.next == "person":
+            return await self._transfer(
+                context,
+                f"{self.known_name or 'The caller'} asked for a person during a return.",
+                "the refunds team",
+            )
+        if result.next == "abandoned":
+            return {"ok": True, "say": "Say no problem, and ask what else you can do."}
+        if result.next == "refund_desk":
+            summary = (
+                f"{self.known_name or 'The caller'} wants to return order "
+                f"{result.order_id} ({result.item}, {result.status}): {result.condition}. "
+                f"They said: {result.reason} Inside the return window: "
+                f"{'yes' if result.within_window else 'no'}. Needs a refund decision."
+            )
+            return await self._transfer(context, summary, "the refunds team")
+        if result.next == "declined":
+            return {
+                "ok": False,
+                "order": result.order_id,
+                "say": (
+                    f"Tell them order {result.order_id} is outside its return "
+                    f"window (thirty days from delivery; fourteen for locks and "
+                    f"doorbell cameras), and offer "
+                    "to file a ticket so a specialist can review it as an exception."
+                ),
+            }
+        return {
+            "ok": False,
+            "say": "Say you could not confirm the delivery date and offer to file a "
+            "ticket so someone follows up.",
+        }
+
+    @function_tool
+    async def troubleshoot_device(self, context: RunContext, description: str):
+        """Work through a device that is not working, offline, unresponsive, or
+        misbehaving, to a conclusion.
+
+        Args:
+            description: the device in the caller's words, e.g. "hallway sensor".
+        """
+        tools = await self._mcp_tools(
+            "get_device_state", "get_device_history", "search_knowledge"
+        )
+        result = await TroubleshootDeviceTask(
+            lambda d: self.find_my_device(None, d),
+            telemetry_tools=tools,
+            chat_ctx=self.chat_ctx,
+            description=description,
+            model=self.llm,
+        )
+        logger.info(f"troubleshoot -> {result}")
+        if result.next == "person":
+            return await self._transfer(
+                context,
+                f"{self.known_name or 'The caller'} asked for a person while "
+                f"troubleshooting {description}.",
+                "device support",
+            )
+        if result.next == "done":
+            return {
+                "ok": True,
+                "say": "Say you are glad it is sorted, and ask what else you can do.",
+            }
+        if result.next == "ticket":
+            return {
+                "ok": False,
+                "device": result.name,
+                "finding": result.finding,
+                "say": (
+                    "Say it did not resolve, that you will file a ticket so a "
+                    "specialist follows up, and offer to connect them to a person "
+                    "now if they prefer. Use file_ticket with the finding."
+                ),
+            }
+        return {"ok": True, "say": "Ask what else you can help with."}
 
     @staticmethod
     def _preload_text(pre: dict) -> str:
@@ -467,7 +705,21 @@ class Assistant(Agent):
                 about, what was resolved so far, and why they need a human.
             department: which team to route to, e.g. "the subscription team".
         """
+        return await self._transfer(context, summary, department)
+
+    async def _transfer(self, context: RunContext, summary: str, department: str):
         ctx = self._ctx
+        # Bridge the wait with an immediate line, then protect the handoff: a
+        # cough or "hello?" while the desk is ringing must not cancel it.
+        if context is not None:
+            try:
+                await context.session.say(
+                    "One moment — I'm bringing in a specialist and passing along "
+                    "a summary so you won't have to repeat yourself."
+                )
+                context.disallow_interruptions()
+            except Exception as err:
+                logger.info(f"transfer preamble skipped: {err}")
         brief = pii.mask_brief(await self._handoff_brief(summary))
         logger.info("TRANSFER -> %s\n  BRIEF: %s", department, json.dumps(brief))
 
@@ -812,85 +1064,6 @@ class Assistant(Agent):
         }
 
     @function_tool
-    async def request_refund(self, context: RunContext, order_number: str):
-        """Refund an order the customer is unhappy with.
-
-        Use this when the customer asks for a refund, their money back, or to
-        return something. Confirm the order number with them before calling.
-
-        Args:
-            order_number: the order number to refund.
-        """
-        order = store.get_order(order_number)
-        if order is None:
-            return {
-                "ok": False,
-                "say": "No order with that number. Ask them to check it.",
-            }
-
-        eligible, why_not = store.refund_eligibility(order)
-        if not eligible:
-            logger.info(f"refund refused: {order.order_id} is {order.status}")
-            return {"ok": False, "reason": order.status, "say": why_not}
-
-        steps = store.REFUND_STEP_SECONDS
-
-        if REFUND_MODE == "blocking":
-            logger.info(f"refund [blocking] starting for {order.order_id}")
-            await asyncio.sleep(steps["eligibility"])
-            await asyncio.sleep(steps["processor"])
-            await asyncio.sleep(steps["ledger"])
-            reference = store.record_refund(order.order_id)
-            logger.info(f"refund [blocking] done — {reference}")
-            return {
-                "ok": True,
-                "reference": reference,
-                "amount_status": "refunded to the original card",
-            }
-
-        logger.info(f"refund [async] starting for {order.order_id}")
-
-        # First update() hands the conversation back immediately (non-blocking).
-        await context.update(
-            f"Starting the refund for order {order.order_id}, the {order.item}. "
-            "This takes a few seconds."
-        )
-
-        async with context.with_filler(
-            "Just checking that order, one moment.", delay=2
-        ):
-            await asyncio.sleep(steps["eligibility"])
-        await context.update(
-            "The order is eligible. Sending it to the payment processor."
-        )
-
-        waiting_lines = [
-            "Still with the payment processor, hang tight.",
-            "Almost there, just waiting on their confirmation.",
-        ]
-        async with context.with_filler(
-            lambda step: waiting_lines[step],
-            delay=2,
-            interval=4,
-            max_steps=len(waiting_lines),
-        ):
-            await asyncio.sleep(steps["processor"])
-        await context.update("The processor accepted it. Writing the record now.")
-
-        async with context.with_filler("Nearly done.", delay=2):
-            await asyncio.sleep(steps["ledger"])
-
-        reference = store.record_refund(order.order_id)
-        logger.info(f"refund [async] done — {reference}")
-
-        return {
-            "ok": True,
-            "reference": reference,
-            "amount_status": "refunded to the original card",
-            "arrives_in": "three to five business days",
-        }
-
-    @function_tool
     async def check_warranty(self, context: RunContext, order_number: str):
         """Check whether the device on an order is still under warranty.
 
@@ -925,50 +1098,6 @@ class Assistant(Agent):
             "covered": record["covered"],
             "plan": record["plan"],
             "expires": record["expires"],
-        }
-
-    @function_tool
-    async def sync_device(self, context: RunContext, order_number: str):
-        """Push a settings refresh to the customer's device and wait for it to apply.
-
-        Use this when a device is misbehaving, unresponsive, or the customer asks
-        you to reset or refresh it.
-
-        Args:
-            order_number: the order number for the device.
-        """
-        digits = store.normalize_order_id(order_number)
-        order = store.get_order(digits)
-        if order is None:
-            return {"ok": False, "say": "No order with that number."}
-
-        holding = [
-            "Still pushing that update to your device.",
-            "It is taking a moment, the device has to acknowledge it.",
-            "Nearly there, thanks for waiting.",
-        ]
-        took = opaque_backend.warranty_latency()
-        logger.info(f"sync: opaque call will take {took}s")
-
-        try:
-            async with context.with_filler(
-                lambda step: holding[step],
-                delay=2,
-                interval=3,
-                max_steps=len(holding),
-            ):
-                async with asyncio.timeout(12):
-                    await opaque_backend.opaque_call("device.sync", seconds=took)
-        except (asyncio.TimeoutError, opaque_backend.BackendTimeout) as err:
-            raise ToolError(
-                "The device did not respond to the refresh. Tell the customer it "
-                "failed and offer to file a ticket."
-            ) from err
-
-        return {
-            "ok": True,
-            "device": order.item,
-            "say": "Confirm it refreshed successfully.",
         }
 
     @function_tool
@@ -1072,9 +1201,17 @@ async def my_agent(ctx: JobContext):
 
     # Voice pipeline: AssemblyAI STT, Gemma LLM, Fish Audio TTS, LiveKit turn detector.
     session = AgentSession(
-        stt=inference.STT(model="assemblyai/universal-3-5-pro", language="en"),
+        # Provider failover on the speech legs too: an STT or TTS outage falls
+        # through to a second provider inside the same call.
+        stt=inference.STT(
+            model="assemblyai/universal-3-5-pro",
+            language="en",
+            fallback=["deepgram/nova-3"],
+        ),
         tts=inference.TTS(
-            model="fishaudio/s2.1-pro", voice="fa4c9eb3dccc4806b382b40d61c6b10a"
+            model="fishaudio/s2.1-pro",
+            voice="fa4c9eb3dccc4806b382b40d61c6b10a",
+            fallback=["cartesia/sonic-3"],
         ),
         expressive=True,
         # identify → list_devices → find_device → get_device_state is 4 chained
@@ -1211,14 +1348,16 @@ async def my_agent(ctx: JobContext):
 
     await ctx.connect()
 
-    # Speak first — otherwise the caller is met with silence.
-    await session.generate_reply(
-        instructions=(
-            "Greet the caller warmly as Aria Home support, and ask for the phone "
-            "number or account number on the account so you can pull it up. "
-            "One or two sentences."
+    # Speak first — otherwise the caller is met with silence. Guests are greeted
+    # by IdentifyCallerTask (Assistant.on_enter), which owns the whole
+    # who-are-you exchange; only signed-in callers are greeted here.
+    if known_account:
+        await session.generate_reply(
+            instructions=(
+                "Greet the caller by first name, say you can see their account, "
+                "and ask what you can help with. One or two sentences."
+            )
         )
-    )
 
 
 if __name__ == "__main__":

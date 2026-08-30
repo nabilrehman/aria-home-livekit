@@ -7,6 +7,7 @@ grants, and no PII.
 firebase_admin is stubbed, so these run offline with no credentials.
 """
 
+import asyncio
 import base64
 import importlib.util
 import json
@@ -323,7 +324,9 @@ def test_agent_skips_identification_for_an_authenticated_caller():
 
     assert "Do NOT ask for a phone number" in known.instructions
     assert "AH-4821" in known.instructions
-    assert "ask for the phone number" in anon.instructions
+    # Guests are identified by IdentifyCallerTask, which owns the asking.
+    assert "already identified" not in anon.instructions
+    assert "Do NOT ask" not in anon.instructions
     assert "already identified" not in anon.instructions
 
 
@@ -333,8 +336,15 @@ def test_phone_caller_without_attributes_still_gets_identified_normally():
     from agent import Assistant
 
     anon = Assistant(known_account="", known_name="")
-    assert "phone number" in anon.instructions
     assert "Do NOT ask" not in anon.instructions
+    # The asking lives in the identification task's prompt now.
+    from tasks import IdentifyCallerTask
+
+    async def _task_text():
+        return IdentifyCallerTask([]).instructions
+
+    text = asyncio.run(_task_text())
+    assert "phone number" in text and "lookup_account_by_phone" in text
 
 
 # ---------------------------------------------------- guest = the phone caller

@@ -119,7 +119,7 @@ Move the **desk** tab into view.
 Prologue 1:15 · Act 1 1:30 · Act 2 1:30 · Act 3 0:45 · Act 4 2:00 · Epilogue 0:20 = **7¼ min**. If running long, drop the Epilogue; never drop Act 4.
 
 ### If the panel takes the wheel
-Invite it after Act 2. Good probes: "Is my garage camera recording?" (no such device — she says so); "What's the serial on my lock?" (doesn't know, offers a ticket); talk over her (stops); cough (resumes); silence 15 s (checks in).
+Invite it after Act 2. Good probes: "Is my garage camera recording?" (no such device — she says so); "What does error E four mean on my thermostat?" (no C-wire — from that model's manual); "Will the motion sensor ignore my dog?" (under forty pounds, mounted at seven feet — and she knows about Biscuit); "What's the serial on my lock?" (doesn't know, offers a ticket); talk over her (stops); cough (resumes); silence 15 s (checks in).
 
 ---
 

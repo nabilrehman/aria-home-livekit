@@ -56,7 +56,9 @@ def test_prompt_teaches_the_two_step_device_lookup():
 
 def test_signed_in_prompt_uses_the_real_lookup_tool():
     text = Assistant(known_account="AH-7104", known_name="Nabil Rehman").instructions
-    assert "lookup_account_by_number" in text
+    # Identification is a task now (IdentifyCallerTask); a signed-in caller is
+    # told to the model as already identified, with no lookup step at all.
+    assert "already identified" in text
     assert "AH-7104" in text
     for name in RETIRED_TOOLS:
         assert not re.search(rf"\b{name}\b(?!_)", text)

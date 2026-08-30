@@ -20,12 +20,11 @@ Usage, inside your entrypoint after creating the session:
 
 from __future__ import annotations
 
+import logging
 import statistics
 from dataclasses import dataclass
 
-import logging
-
-from livekit.agents import ConversationItemAddedEvent, JobContext
+from livekit.agents import ConversationItemAddedEvent, JobContext, metrics
 
 log = logging.getLogger("turn_latency")
 
@@ -73,6 +72,9 @@ class TurnLatency:
         # EOU and transcription are reported on the *user* message, TTFT/TTFB/e2e on the
         # assistant reply that follows it — so we hold the user half until the pair lands.
         self._pending_user: dict = {}
+        # Token / audio usage across the whole call, summarised at hang-up so a
+        # per-call cost can be read straight from the logs.
+        self._usage = metrics.UsageCollector()
 
     # ---------- wiring ----------
 
@@ -92,8 +94,19 @@ class TurnLatency:
             self.record(report, self._pending_user)
             self._pending_user = {}
 
+        @session.on("metrics_collected")
+        def _on_metrics(ev) -> None:
+            try:
+                self._usage.collect(ev.metrics)
+            except Exception:  # never let accounting break a call
+                pass
+
         async def _summary() -> None:
             self.print_summary()
+            try:
+                log.info("usage summary: %s", self._usage.get_summary())
+            except Exception as err:
+                log.info(f"usage summary unavailable: {err}")
 
         ctx.add_shutdown_callback(_summary)
 

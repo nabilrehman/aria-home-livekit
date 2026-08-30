@@ -207,14 +207,21 @@ def recall(account_number: str, question: str) -> dict:
 
 @mcp.tool()
 def search_knowledge(question: str) -> dict:
-    """Search Aria Home's policy knowledge base to answer a customer question.
+    """Search Aria Home's knowledge base: the returns policy and every product's
+    owner's manual (specs, setup, status lights, error codes, troubleshooting,
+    battery and reset procedures, warranty).
 
-    Use this for ANY policy question: return windows, refund timing, warranty
-    coverage, damaged or defective items, subscription terms, who pays return
-    shipping. Do not guess policy — always search.
+    Use this for ANY policy question — return windows, refund timing, warranty
+    coverage, damaged or defective items, subscription terms — and for ANY
+    product question you cannot answer from live device data: "how do I reset
+    the lock", "what does error E4 mean", "how long does the doorbell battery
+    last", "does the sensor work with pets". Include the product name in the
+    question ("Aria Smart Lock reset"), since several products look similar.
+    Do not guess policy or procedures — always search.
 
     Args:
-        question: the customer's policy question, in their own words.
+        question: the customer's question, in their own words, plus the product
+            name when it is about a device.
     """
     log.info(f"TOOL search_knowledge({question!r}) -> RAG")
     creds, _ = google.auth.default()
