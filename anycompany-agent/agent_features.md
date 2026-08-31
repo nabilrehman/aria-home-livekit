@@ -168,6 +168,29 @@ path. If precision ever slips as the corpus grows: first re-chunk smaller with
 higher overlap, then add the Vertex Ranking API reranker (<100 ms); the LLM
 reranker (1–2 s) does not fit a voice turn.
 
+## Identity is pluggable — everything after it is one path
+
+```
+signed-in ──►  Firebase token ──┐
+                                ├──►  known_account set
+guest ──► lookup + verification ┘          │
+                                           ▼
+                        ONE shared path from here:
+                        · same preload (/api/preload → same renderer into the prompt)
+                        · same 10 tools, scoped by the same X-Account header
+                        · same secure views underneath (RLS doesn't care how you proved yourself)
+                        · same transfer-with-brief, same call record, same Memory Bank write
+```
+
+No code after identification asks HOW the caller was identified. The scoped
+tools read `known_account`; the database enforces the same parameterized
+views either way; the shutdown callback writes the same record. The only
+trace of the fork is *when* the preload runs: in parallel with call setup
+(signed-in — the token already proved them) or immediately after the
+security question passes (guest). Adding a third identity source — SIP
+caller-ID, an SMS one-time code — is a third implementation of the same
+seam, zero changes downstream. Identity is an input, not a branch.
+
 ## Not in the workshop list but on the call path
 
 - **Warm transfer with an LLM brief** — `_handoff_brief` (summary, next steps,
