@@ -73,11 +73,20 @@ CALL 1 — SARAH, GUEST (requirement 1b + isolation)          ~75 sec
 
   YOU: "My phone number is five one two, five five five, one one
        eight eight."
-  EMBER: reads it back, then: "Hi Sarah... I can see your account."
-      say-to-panel: "Lookup by phone — the assignment's primary path.
-      The account-number path is identical: last-ten-digits match on
-      Cloud SQL through Google's MCP Toolbox, so 'AH 4821', '4821',
-      any spacing all resolve. Try it later if you like."
+  EMBER: reads it back, finds the account, then — before confirming
+      anything — "Just to make sure it's you, what's the email
+      address on the account?"
+  YOU: "sarah at example dot com"   (spelling it out also works —
+      she assembles it and reads it back)
+  EMBER: "Thanks — hi Sarah, I can see your account."
+      say-to-panel: "Lookup by phone — the assignment's primary path —
+      then knowledge-based verification, like a real support desk.
+      The check runs server-side: the model only learns pass or fail,
+      so it can't read, leak, or be argued into the right answer. Two
+      misses and she drops to general help only. In production you'd
+      swap the question for an SMS one-time code — same task, stronger
+      challenge; 2026 guidance points that way because of voice
+      cloning." 
 
   YOU: "What's the status of order five eight one two one?"
   EMBER: Indoor Camera two pack, processing, delivers September third.

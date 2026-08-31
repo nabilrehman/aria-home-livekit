@@ -340,8 +340,11 @@ def test_phone_caller_without_attributes_still_gets_identified_normally():
     # The asking lives in the identification task's prompt now.
     from tasks import IdentifyCallerTask
 
+    async def _dummy_verify(account, email="", phone=""):
+        return True
+
     async def _task_text():
-        return IdentifyCallerTask([]).instructions
+        return IdentifyCallerTask([], _dummy_verify).instructions
 
     text = asyncio.run(_task_text())
     assert "phone number" in text and "lookup_account_by_phone" in text
@@ -390,7 +393,7 @@ def test_second_google_account_resolves_to_her_own_home(client, monkeypatch):
 # ---------------------------------------------------- KBA verification endpoint
 
 
-def test_verify_endpoint_compares_in_code_and_never_leaks(main):
+def test_verify_endpoint_compares_in_code_and_never_leaks():
     c = main.app.test_client()
     hdr = {"X-Api-Key": "test-orders-key"}
     # right email -> verified

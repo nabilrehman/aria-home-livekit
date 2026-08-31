@@ -447,7 +447,7 @@ def verify_caller():
         return jsonify({"error": "unauthorized"}), 401
     body = request.get_json(silent=True) or {}
     account = (body.get("account") or "").strip().upper()
-    email = (body.get("email") or "").strip().lower()
+    email = (body.get("email") or "").strip().lower().replace(" ", "")
     phone = "".join(c for c in (body.get("phone") or "") if c.isdigit())
     try:
         cust = repo.find_customer(account_number=account)
@@ -457,7 +457,8 @@ def verify_caller():
     if cust is None:
         return jsonify({"verified": False})
     ok = False
-    if email and (cust.get("email") or "").strip().lower() == email:
+    on_file_email = (cust.get("email") or "").strip().lower().replace(" ", "")
+    if email and on_file_email and on_file_email == email:
         ok = True
     on_file = "".join(c for c in (cust.get("phone_e164") or "") if c.isdigit())
     if phone and len(phone) >= 4 and on_file.endswith(phone[-10:]):
