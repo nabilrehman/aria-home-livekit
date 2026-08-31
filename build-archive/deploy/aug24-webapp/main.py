@@ -106,6 +106,31 @@ def _mint(identity: str, display_name: str, account_number: str = "") -> dict:
     }
 
 
+@app.post("/token/coval")
+def token_coval():
+    """Token endpoint for Coval simulations (their LiveKit connection type).
+
+    Coval POSTs room/participant details and expects {token, serverUrl,
+    room_name}. Mints the same guest-grade token as /token/guest — explicit
+    agent dispatch rides on the token's room_config — but requires the service
+    API key header so the endpoint is not open to the internet.
+    """
+    if not _api_key_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    body = request.get_json(silent=True) or {}
+    identity = (body.get("participant_identity") or f"coval-{uuid.uuid4().hex[:8]}")[
+        :64
+    ]
+    minted = _mint(identity, body.get("participant_name") or "Coval Caller")
+    return jsonify(
+        {
+            "token": minted["token"],
+            "serverUrl": minted["url"],
+            "room_name": minted["room"],
+        }
+    )
+
+
 @app.post("/token/guest")
 def token_guest():
     """Unauthenticated call — the phone caller's experience.

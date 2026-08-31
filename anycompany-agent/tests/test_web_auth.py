@@ -428,3 +428,26 @@ def test_verify_endpoint_compares_in_code_and_never_leaks(monkeypatch):
     # no service key -> unauthorized
     r = c.post("/api/verify", json={"account": "AH-4821", "email": "sarah@example.com"})
     assert r.status_code == 401
+
+
+def test_coval_token_endpoint_shape_and_auth(monkeypatch):
+    monkeypatch.setattr(main, "ORDERS_API_KEY", "test-orders-key")
+    c = main.app.test_client()
+    r = c.post("/token/coval", json={"participant_identity": "coval-sim-1"})
+    assert r.status_code == 401  # never open to the internet
+    r = c.post(
+        "/token/coval",
+        json={"participant_identity": "coval-sim-1"},
+        headers={"X-Api-Key": "test-orders-key"},
+    )
+    body = r.get_json()
+    assert set(body) == {"token", "serverUrl", "room_name"}
+    assert body["serverUrl"].startswith("wss://") and body["room_name"].startswith(
+        "web-"
+    )
+    claims = json.loads(
+        base64.urlsafe_b64decode(body["token"].split(".")[1] + "==").decode()
+    )
+    assert claims["sub"] == "coval-sim-1"
+    assert claims["roomConfig"]["agents"][0]["agentName"] == "anycompany-agent"
+    assert "attributes" not in claims  # a simulation is a guest: no account on board
