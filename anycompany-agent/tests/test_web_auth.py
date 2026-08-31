@@ -395,6 +395,7 @@ def test_second_google_account_resolves_to_her_own_home(client, monkeypatch):
 
 def test_verify_endpoint_compares_in_code_and_never_leaks(monkeypatch):
     monkeypatch.setattr(main, "ORDERS_API_KEY", "test-orders-key")
+    monkeypatch.setattr(main, "repo", FakeRepo())
     c = main.app.test_client()
     hdr = {"X-Api-Key": "test-orders-key"}
     # right email -> verified
