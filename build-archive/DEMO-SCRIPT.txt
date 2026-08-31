@@ -89,15 +89,18 @@ CALL 1 — SARAH, GUEST (requirement 1b + isolation)          ~75 sec
       VERIFY_GUESTS=0 turns the security question off if we want the
       minimal beat." 
 
-  YOU: "What's the status of order five eight one two one?"
-  EMBER: Indoor Camera two pack, processing, delivers September third.
+  YOU: "What's the status of order five eight one three one?"
+  EMBER: "No order with that number on this account. Could you check
+      the number?"
+      say-to-panel (Mike): "That order exists — it's Nabil's. The
+      database won't return it for Sarah: parameterized secure views,
+      a role with no base-table access, and the account never comes
+      from the model. She can't even confirm it exists."
 
-  YOU: "And order five eight one three one?"
-  EMBER: "No order with that number on this account."
-      say-to-panel (Mike): "Same tool, same second — that one is
-      Nabil's. The database won't return it: parameterized secure
-      views, a role with no base-table access, and the account never
-      comes from the model."
+  YOU: "Oh right — it's five eight one two one."
+  EMBER: Indoor Camera two pack, processing, delivers September third.
+      say-to-panel: "Same tool, one second apart. Wrong account:
+      nothing. Her own: instant answer."
 
   YOU: "Okay, bye."  → she says goodbye, call ends.
 
