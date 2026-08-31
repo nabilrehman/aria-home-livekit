@@ -12,13 +12,14 @@ order a call experiences them.
 | 4 | Latency + usage observability | in place, **usage added** | `turn_latency.py` (`TurnLatency.attach`, `metrics.UsageCollector`) |
 | 5a | Non-blocking tools with spoken progress | in place | `Assistant.track_package`, `check_warranty` (`context.update`, `with_filler`) |
 | 5b | `disallow_interruptions` on the transactional step | **added** | `Assistant._transfer` |
+| 5d | Async speech tripwire (OpenAI-style text-buffer guardrail) | **added** | `Assistant._tripwire` in `tts_node` — cuts refund promises, promo codes, and any account number that isn't the caller's, before synthesis |
 | 5c | Dynamic tool scope (progressive disclosure) | **added** | `Assistant.GATED_TOOLS`, `gate_tools`, `ungate_tools`, `_identified` |
 | 6 | Sub-workflows: `AgentTask` | **added** | `tasks.py` — `IdentifyCallerTask`, `ReturnIntakeTask`, `TroubleshootDeviceTask`; launched from `Assistant.on_enter`, `start_return`, `troubleshoot_device` |
 | 7 | Persona handoffs (Triage → Manager) | deliberately **not used** | see `build-archive/reviews/multi-agent-review.html` |
 | — | Warm transfer to a human with a brief | in place | `Assistant._transfer` → desk (`_ring_desk`) → `WarmTransferTask` → in-room |
 | — | Parallel preload before the first word | in place | entrypoint `asyncio.gather(session.start, _preload)` → `update_instructions` |
 | — | Long-term memory (Vertex AI Memory Bank) | in place | `save_call_memory`, MCP `remember` / `recall`, `/api/preload` |
-| — | Product-manual RAG corpus (14 manuals + policy) | **added** | `build-archive/deploy/rag-products/make_manuals.py` → GCS → Vertex RAG corpus; MCP `search_knowledge`; test `tests/test_rag_products.py` |
+| — | Product-manual RAG corpus (14 manuals + policy) | **added** | us-central1 Serverless corpus (394 ms median, 2.5x faster than the original europe-west3, kept as rollback); `make_manuals.py` → GCS → Vertex RAG; test `tests/test_rag_products.py` |
 | — | PII masking before anything leaves the process | in place | `pii.py`, used in `_transfer` and `save_call_memory` |
 
 ## 1 · Semantic turn detection — in place
@@ -69,6 +70,22 @@ call, so cost per call is a grep away.
 `context.update(...)` (immediate spoken status) and `context.with_filler(...)`
 (timed "still waiting" lines), with a hard `asyncio.timeout` and an idempotent
 ticket on failure so a retry never files twice.
+
+## 5b-d · Guardrails on the speech path — added
+
+Three layers between the model and the voice, all in `tts_node`:
+
+1. **Babble guard** (`_speakable_only`): an utterance with no real words —
+   only pauses, "…", markup — is swallowed, because autoregressive TTS
+   hallucinates syllables on wordless input.
+2. **Async tripwire** (`_tripwire`): the text stream exists before the audio
+   is spoken, so it is scanned as it streams (OpenAI's async-guardrail
+   pattern) and CUT mid-utterance on three high-precision classes: claiming a
+   refund was processed (only code/the desk may move money), promo/discount
+   codes, and any account number that is not this caller's — a cross-account
+   leak stopper at the last possible gate. Demo: ask her for a promo code.
+3. **PII masking at rest** (`pii.py`) for everything stored or shown to a
+   human.
 
 ## 5b · `disallow_interruptions` — added
 
