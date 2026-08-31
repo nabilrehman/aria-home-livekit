@@ -171,6 +171,32 @@ code{font:12.5px "IBM Plex Mono",monospace}
 <figcaption>Three ways across the GCP boundary, chosen per system: Cloud SQL through Google's MCP Toolbox (declarative SQL, no data-API code), Firestore telemetry and Vertex RAG through a custom MCP server (not SQL), and orders through a plain key-protected REST call (a one-line lookup doesn't need a protocol). The registry is relational and the state is not; they join on <code>device_id</code>. A handoff is a brief posted to the desk plus a human joining the room — no new subsystem.</figcaption>
 </figure>
 
+<figure>
+<svg viewBox="0 0 1140 250" role="img" aria-label="Two identity sources — a Firebase-verified sign-in and a conversational lookup plus security question — converge on one shared path: the same preload, the same scoped tools, the same secure views, the same transfer and call record.">
+<g>
+<rect class="box" x="30" y="30" width="240" height="56" rx="5"/>
+<text class="t" x="46" y="53">Signed in (web)</text>
+<text class="s" x="46" y="71">Firebase token → account on the LiveKit token</text>
+<rect class="box" x="30" y="130" width="240" height="56" rx="5"/>
+<text class="t" x="46" y="153">Guest (≈ phone)</text>
+<text class="s" x="46" y="171">lookup + security question, checked in code</text>
+<path class="data" d="M270 58 H340 V100 H388" marker-end="url(#a)"/>
+<path class="data" d="M270 158 H340 V116 H388" marker-end="url(#a)"/>
+<rect class="box" x="390" y="82" width="190" height="52" rx="5" style="stroke:var(--accent);stroke-width:1.8"/>
+<text class="h" x="410" y="104">known_account</text>
+<text class="s" x="410" y="122">verified — however it arrived</text>
+<path class="data" d="M580 108 H636" marker-end="url(#a)"/>
+<rect class="zone" x="640" y="24" width="470" height="196" rx="8"/>
+<text class="zl" x="656" y="46" fill="var(--muted)">ONE SHARED PATH FROM HERE</text>
+<text class="t" x="656" y="76">same preload</text><text class="s" x="656" y="93">/api/preload → devices · latest order · last call · memories</text>
+<text class="t" x="656" y="118">same 10 tools</text><text class="s" x="656" y="135">scoped by the same X-Account header — never by the model</text>
+<text class="t" x="656" y="160">same secure views</text><text class="s" x="656" y="177">RLS doesn't care how you proved yourself</text>
+<text class="t" x="656" y="202">same transfer-with-brief · call record · Memory Bank write</text>
+</g>
+</svg>
+<figcaption>Identity is pluggable, everything after it is shared. No code past <code>known_account</code> asks how the caller was identified — a SIP caller-ID or an SMS one-time code would be a third implementation of the same seam, with zero changes downstream.</figcaption>
+</figure>
+
 <div class="kv">
 <div><b>Identity</b><p>Firebase verifies the caller; Cloud Run mints the LiveKit token with the opaque uid as identity and only the account number as an attribute. Phone callers are matched on the last ten digits of caller ID.</p></div>
 <div><b>Handoff</b><p><code>transfer_to_human</code> asks the LLM for a brief (summary, next steps, mood, urgency) → desk rings for 40 s → Accept mints a <code>specialist-*</code> token for the same room and Ember steps back → else phone dial-out if a trunk exists → else in-room fallback.</p></div>
