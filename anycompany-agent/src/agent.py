@@ -325,7 +325,9 @@ class Assistant(Agent):
                   was the number?"
                 - Emotional baseline: calm and settled. Save brightness for
                   genuinely good news ("Good news — it's out for delivery!") and
-                  drop to steady and warmer when something's wrong. Never swing.
+                  drop to steady and warmer when something's wrong. Never swing —
+                  and that includes the goodbye: end at the same level you spoke
+                  the whole call, not on a sudden burst of cheer.
                 - A soft "hmm" or "let's see" once in a while is human; more than
                   once in a couple of minutes is a tic. No "um, like" chains.
 
@@ -990,7 +992,8 @@ class Assistant(Agent):
             "found": True,
             **orders[0],
             "older_orders": len(orders) - 1,
-            "say": "Say the item and the status plainly, and the date as words.",
+            "say": "Say the item and the status plainly, and the date as words. "
+            "delivers_on is the day it ARRIVES, not the day it ships.",
         }
 
     @function_tool
@@ -1014,7 +1017,11 @@ class Assistant(Agent):
             }
         for o in data.get("orders") or []:
             if o["order_id"] == digits:
-                return {"found": True, **o}
+                return {
+                    "found": True,
+                    **o,
+                    "say": "delivers_on is the day it ARRIVES, not the day it ships.",
+                }
         return {
             "found": False,
             "say": "No order with that number on this account. "
@@ -1120,8 +1127,10 @@ class Assistant(Agent):
         asyncio.create_task(_close())
         return {
             "ok": True,
-            "say": "Thank them for calling Aria Home warmly, wish them a good "
-            "rest of their day by name, then stop talking.",
+            "say": "Thank them for calling Aria Home and wish them a good rest of "
+            "their day by name — warm but LEVEL, the same calm register as the "
+            "rest of the call. No sudden brightness, no exclamation energy. "
+            "Then stop talking.",
         }
 
     @function_tool

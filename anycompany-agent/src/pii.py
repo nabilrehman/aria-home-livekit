@@ -18,6 +18,10 @@ from __future__ import annotations
 
 import re
 
+# Fish Audio expressive-mode delivery tags (<expr .../>, (laughing) etc.) are
+# rendering directions, not conversation — strip them from anything we store.
+_EXPR_TAG = re.compile(r"<[^>]{0,80}>|\((?:laughing|sigh|giggle|break)[^)]{0,20}\)")
+
 _PHONE = re.compile(
     r"(?<!\d)(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}(?!\d)"
 )
@@ -41,7 +45,7 @@ def mask(text: str) -> str:
     out = _PHONE.sub("[phone]", out)
     out = _EMAIL.sub("[email]", out)
     out = _ACCOUNT.sub(lambda m: f"{m.group(1).upper()}-••{m.group(3)}", out)
-    return out
+    return _EXPR_TAG.sub("", out).strip()
 
 
 def mask_brief(brief: dict) -> dict:
