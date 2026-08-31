@@ -618,6 +618,31 @@ def my_orders():
     return jsonify({"account": account, "orders": orders})
 
 
+def _warm_pools() -> None:
+    """Open the Cloud SQL connector + both engine pools at instance boot.
+
+    The first secure-view query on a fresh instance was measured at ~950 ms
+    (connector handshake + pool open); every later one is ~90 ms. Warming in a
+    background thread at import time means the instance that answers Ember's
+    first tool call already has hot connections. Best-effort: a failure here
+    only means the first real request pays the old price.
+    """
+    import threading
+
+    def _go():
+        try:
+            repo.find_customer(account_number="AH-4821")   # admin engine + connector
+            repo.my_orders("AH-4821")                      # aria_app secure-view engine
+            app.logger.info("db pools warmed at boot")
+        except Exception as err:
+            app.logger.warning(f"pool warm-up failed (first request will pay): {err}")
+
+    threading.Thread(target=_go, daemon=True).start()
+
+
+_warm_pools()
+
+
 @app.get("/api/preload")
 def preload():
     """Everything Ember should know before she speaks, in one round-trip:
