@@ -301,6 +301,8 @@ class Assistant(Agent):
                 # Output rules
 
                 You are speaking out loud, so:
+                - English only, always — even if a caller's words come through
+                  garbled or in another language, reply in English.
                 - Plain speech only. No markdown, no lists, no symbols, no emoji.
                 - One to three sentences. Ask one question at a time.
                 - Say numbers digit by digit: "four eight two one", not "four thousand".
@@ -1283,6 +1285,8 @@ async def my_agent(ctx: JobContext):
             # "Sarah — an engaged speaker": LiveKit's curated female voice for
             # this model. Staying on Fish Audio keeps expressive mode rendering.
             voice="933563129e564b19a115bedd57b7406a",
+            # Fish s2.1 is multilingual and can drift if the language is unpinned.
+            language="en",
             fallback=["cartesia/sonic-3"],
         ),
         expressive=True,
