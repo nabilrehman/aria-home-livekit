@@ -451,3 +451,12 @@ def test_coval_token_endpoint_shape_and_auth(monkeypatch):
     assert claims["sub"] == "coval-sim-1"
     assert claims["roomConfig"]["agents"][0]["agentName"] == "anycompany-agent"
     assert "attributes" not in claims  # a simulation is a guest: no account on board
+
+
+def test_coval_token_accepts_query_param_key(monkeypatch):
+    monkeypatch.setattr(main, "ORDERS_API_KEY", "test-orders-key")
+    c = main.app.test_client()
+    assert c.get("/token/coval").status_code == 200  # probe, not 405
+    r = c.post("/token/coval?key=test-orders-key", json={})
+    assert set(r.get_json()) == {"token", "serverUrl", "room_name"}
+    assert c.post("/token/coval?key=wrong", json={}).status_code == 401

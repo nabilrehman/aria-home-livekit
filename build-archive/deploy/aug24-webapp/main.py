@@ -106,16 +106,26 @@ def _mint(identity: str, display_name: str, account_number: str = "") -> dict:
     }
 
 
+@app.get("/token/coval")
+def token_coval_probe():
+    """Some clients probe with GET before POSTing; answer instead of 405."""
+    return jsonify({"ok": True, "post": "room/participant details to this URL"})
+
+
 @app.post("/token/coval")
 def token_coval():
     """Token endpoint for Coval simulations (their LiveKit connection type).
 
     Coval POSTs room/participant details and expects {token, serverUrl,
     room_name}. Mints the same guest-grade token as /token/guest — explicit
-    agent dispatch rides on the token's room_config — but requires the service
-    API key header so the endpoint is not open to the internet.
+    agent dispatch rides on the token's room_config. Not open to the internet:
+    the service key must arrive as the X-Api-Key header OR a ?key= query
+    param (some test platforms make custom headers awkward).
     """
-    if not _api_key_ok(request):
+    if not (
+        _api_key_ok(request)
+        or (ORDERS_API_KEY and request.args.get("key", "") == ORDERS_API_KEY)
+    ):
         return jsonify({"error": "unauthorized"}), 401
     body = request.get_json(silent=True) or {}
     identity = (body.get("participant_identity") or f"coval-{uuid.uuid4().hex[:8]}")[
