@@ -275,3 +275,25 @@ def test_start_return_and_troubleshoot_are_registered_and_old_tools_are_gone():
     names = _names(Assistant().tools)
     assert {"start_return", "troubleshoot_device"} <= names
     assert not {"request_refund", "sync_device"} & names
+
+
+@pytest.mark.asyncio
+async def test_wordless_tts_utterances_are_swallowed():
+    from agent import _speakable_only
+
+    async def gen(chunks):
+        for c in chunks:
+            yield c
+
+    async def collect(chunks):
+        return [c async for c in _speakable_only(gen(chunks))]
+
+    # real words pass through untouched, markup and all
+    assert await collect(["Okay, ", "found it."]) == ["Okay, ", "found it."]
+    assert await collect(['<expr type="calm"/>', "One sec."]) == [
+        '<expr type="calm"/>',
+        "One sec.",
+    ]
+    # wordless streams are swallowed instead of becoming babble
+    assert await collect(["…", " ", "..."]) == []
+    assert await collect(['<expr type="sigh"/>', "(break)"]) == []

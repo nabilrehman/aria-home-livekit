@@ -105,6 +105,30 @@ MCP_TELEMETRY_URL = os.getenv(
 )
 
 
+async def _speakable_only(stream):
+    """Pass a TTS text stream through only once it provably contains a word.
+
+    Buffers until the first letter/digit outside markup appears (normally the
+    first chunk, so no added latency); an utterance that never produces one is
+    swallowed whole and logged instead of becoming synthesized babble.
+    """
+    buf: list[str] = []
+    spoken = False
+    async for chunk in stream:
+        if spoken:
+            yield chunk
+            continue
+        buf.append(chunk)
+        joined = re.sub(r"<[^>]*>|\([a-z-]{2,20}\)", "", "".join(buf))
+        if re.search(r"[A-Za-z0-9]", joined):
+            spoken = True
+            for b in buf:
+                yield b
+            buf.clear()
+    if not spoken and buf:
+        logger.warning(f"suppressed wordless TTS utterance: {''.join(buf)[:80]!r}")
+
+
 class Assistant(Agent):
     def __init__(
         self,
@@ -365,6 +389,16 @@ class Assistant(Agent):
             + identified
             + memory,
         )
+
+    # ------------------------------------------------ TTS babble guard
+    #
+    # Autoregressive TTS (Fish s2.1) hallucinates syllables when an utterance
+    # contains no actual words — only pauses, "…", or expressive markup. That
+    # happened once during a tool outage ("phandadhura…"). Never let a
+    # wordless utterance reach the synthesizer.
+
+    async def tts_node(self, text, model_settings):
+        return Agent.default.tts_node(self, _speakable_only(text), model_settings)
 
     # ---------------------------------------------------------------- tools
     # The docstring teaches the model when to call each tool, so treat it as
