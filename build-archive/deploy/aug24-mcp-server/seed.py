@@ -27,6 +27,56 @@ from data import PRODUCTS_COLLECTION, TELEMETRY_COLLECTION, repo
 HERE = pathlib.Path(__file__).parent
 
 
+def _split_sql(sql: str) -> list[str]:
+    """Split on ';' but never inside $tag$ ... $tag$ blocks (DO bodies)."""
+    import re
+    stmts, buf, in_dollar, tag, i = [], [], False, "", 0
+    while i < len(sql):
+        m = re.match(r"\$[A-Za-z_]*\$", sql[i:])
+        if m:
+            t = m.group(0)
+            if not in_dollar:
+                in_dollar, tag = True, t
+            elif t == tag:
+                in_dollar = False
+            buf.append(t)
+            i += len(t)
+            continue
+        ch = sql[i]
+        if ch == ";" and not in_dollar:
+            stmts.append("".join(buf))
+            buf = []
+        else:
+            buf.append(ch)
+        i += 1
+    if "".join(buf).strip():
+        stmts.append("".join(buf))
+    return stmts
+
+
+def apply_secure_views() -> None:
+    """Re-create the parameterized secure views + grants after a reseed.
+
+    schema.sql drops and recreates the base tables, which drops these views —
+    a reseed without this step leaves /api/my/* returning 503 (learned the
+    hard way, 2026-08-31).
+    """
+    from pathlib import Path
+
+    from sqlalchemy import text
+
+    sql = Path(__file__).with_name("secure_views.sql").read_text()
+    engine = repo._engine().execution_options(isolation_level="AUTOCOMMIT")
+    with engine.connect() as c:
+        for st in _split_sql(sql):
+            body = "\n".join(
+                line for line in st.splitlines() if not line.strip().startswith("--")
+            ).strip()
+            if body:
+                c.execute(text(body))
+    print("secure views re-applied")
+
+
 def seed_sql() -> None:
     import sqlalchemy
 
@@ -132,6 +182,7 @@ def main() -> int:
 
     if args.all or args.sql:
         seed_sql()
+        apply_secure_views()
     if args.all or args.telemetry:
         seed_telemetry()
     if args.all or args.products:
