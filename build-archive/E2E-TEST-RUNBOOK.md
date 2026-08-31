@@ -48,7 +48,7 @@ for u in https://aria-toolbox-549403515075.us-central1.run.app/mcp \
 # expect 200/405/406 style codes and <1s on the SECOND run — run it twice
 
 # 3. Data is there — and refresh telemetry so readings say "just now", not "10 hours ago"
-(cd ../build-archive/deploy/aug24-mcp-server && FIRESTORE_DB=aug24 ../../../anycompany-agent/.venv/bin/python seed.py --telemetry)
+(cd ../build-archive/deploy/aug24-mcp-server && FIRESTORE_DB=aug24 ../../../anycompany-agent/.venv/bin/python seed.py --telemetry   # (--sql now re-applies the secure views itself))
 set -a; . ./.env.local; set +a
 .venv/bin/python -m pytest tests/test_assignment_answers.py -q     # 20 passed
 
