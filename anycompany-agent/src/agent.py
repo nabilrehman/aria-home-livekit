@@ -1392,18 +1392,43 @@ async def my_agent(ctx: JobContext):
 
     await ctx.connect()
 
-    # Office ambience behind the voice, and keyboard typing while she is
-    # running a tool — the caller hears her "looking it up" instead of dead
-    # air. Kept quiet: atmosphere, not a call centre in a hailstorm.
-    background_audio = BackgroundAudioPlayer(
-        ambient_sound=AudioConfig(BuiltinAudioClip.OFFICE_AMBIENCE, volume=0.5),
-        thinking_sound=[
-            AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING, volume=0.6),
-            AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING2, volume=0.5),
-        ],
-    )
+    # Sound design, exclusive by state: while Ember is working on a question
+    # ("thinking"), the caller hears keyboard typing; the rest of the call
+    # carries quiet office ambience. The two never overlap.
+    background_audio = BackgroundAudioPlayer()
+    _amb: dict = {"h": None, "typing": None}
+
+    def _play_ambient() -> None:
+        if _amb["typing"] is not None:
+            _amb["typing"].stop()
+            _amb["typing"] = None
+        if _amb["h"] is None or _amb["h"].done():
+            _amb["h"] = background_audio.play(
+                AudioConfig(BuiltinAudioClip.OFFICE_AMBIENCE, volume=0.5), loop=True
+            )
+
+    def _play_typing() -> None:
+        if _amb["h"] is not None:
+            _amb["h"].stop()
+            _amb["h"] = None
+        if _amb["typing"] is None or _amb["typing"].done():
+            _amb["typing"] = background_audio.play(
+                AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING, volume=0.6), loop=True
+            )
+
+    @session.on("agent_state_changed")
+    def _on_state(ev) -> None:
+        try:
+            if ev.new_state == "thinking":
+                _play_typing()
+            else:
+                _play_ambient()
+        except Exception as err:
+            logger.warning(f"background audio switch failed: {err}")
+
     try:
         await background_audio.start(room=ctx.room, agent_session=session)
+        _play_ambient()
     except Exception as err:  # never let ambience block a call
         logger.warning(f"background audio unavailable: {err}")
 
