@@ -629,13 +629,20 @@ def _warm_pools() -> None:
     """
     import threading
 
+    import time as _time
+
     def _go():
-        try:
-            repo.find_customer(account_number="AH-4821")   # admin engine + connector
-            repo.my_orders("AH-4821")                      # aria_app secure-view engine
-            app.logger.info("db pools warmed at boot")
-        except Exception as err:
-            app.logger.warning(f"pool warm-up failed (first request will pay): {err}")
+        first = True
+        while True:
+            try:
+                repo.find_customer(account_number="AH-4821")  # admin engine + connector
+                repo.my_orders("AH-4821")                     # aria_app secure-view engine
+                if first:
+                    app.logger.info("db pools warmed at boot; keepalive every 60s")
+                    first = False
+            except Exception as err:
+                app.logger.warning(f"pool keepalive failed (will retry): {err}")
+            _time.sleep(60)
 
     threading.Thread(target=_go, daemon=True).start()
 
