@@ -250,7 +250,7 @@ async def test_without_kba_lookup_still_identifies(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_verify_pass_completes_and_fail_twice_ends_identification(monkeypatch):
-    answers = iter([False, False])
+    answers = iter([False, False, False])
 
     async def verify(account, email="", phone=""):
         return next(answers)
@@ -260,10 +260,15 @@ async def test_verify_pass_completes_and_fail_twice_ends_identification(monkeypa
     got = {}
     monkeypatch.setattr(t, "complete", lambda r: got.setdefault("r", r))
     monkeypatch.setattr(t, "done", lambda: False)
+    # 1st miss: probably OUR mishear -> ask them to spell it
     out = await t.verify_identity(None, "John", email="wrong@example.com")
-    assert out["verified"] is False and "r" not in got
-    await t.verify_identity(None, "John", email="still-wrong@example.com")
-    assert got["r"] is None  # two strikes -> unverified
+    assert out["verified"] is False and "spell" in out["say"] and "r" not in got
+    # 2nd miss: offer the phone-number route
+    out = await t.verify_identity(None, "John", email="still-wrong@example.com")
+    assert out["verified"] is False and "phone" in out["say"] and "r" not in got
+    # 3rd miss: lockout
+    await t.verify_identity(None, "John", email="nope@example.com")
+    assert got["r"] is None
 
     t2 = IdentifyCallerTask([], _always_pass)
     t2._account = "AH-4821"

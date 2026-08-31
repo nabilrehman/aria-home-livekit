@@ -86,25 +86,27 @@ class IdentifyCallerTask(AgentTask[Identity | None]):
     weakened knowledge questions. Same task shape, stronger challenge.
     """
 
-    MAX_ATTEMPTS = 2
+    MAX_ATTEMPTS = 3
 
     _VERIFY_STEP = (
         "Step two, when a lookup returns a customer: do NOT confirm any "
         "account details yet. Say something like 'Found it — and just to make "
         "sure it's you, what's the email address on the account?' (if they "
-        "identified by account number, the phone number on file is also "
-        "acceptable). People often say emails as words "
-        "('john doe at gmail dot com') or spell them letter by letter — "
-        "assemble what they said into a normal address (johndoe@gmail.com), "
-        "read it back once to confirm you heard it right, and offer 'you can "
-        "spell it out if that's easier'. Then call verify_identity with the "
-        "assembled answer. Never read out or hint at the email or phone on "
-        "file, and never treat a partial or similar answer as correct — the "
-        "check is done for you. If verification fails, say it does not match "
-        "and let them try once more. After a second failure, or if they "
-        "cannot give a number at all, call cannot_identify and do not reveal "
-        "anything about the account. Only after verify_identity succeeds, "
-        "greet them by first name and say you can see their account. "
+        "identified by account number, the phone number on file also works). "
+        "People say emails as words ('john doe at gmail dot com') or spell "
+        "them letter by letter. Assemble what they said into a normal address, "
+        "READ IT BACK, and wait for them to confirm you heard it right — only "
+        "then call verify_identity. Never guess at a garbled address. "
+        "If the check fails, the most likely cause is that YOU misheard: "
+        "apologise for the trouble and ask them to spell it out letter by "
+        "letter, assemble it, read it back, confirm, and check again. If it "
+        "fails a second time, offer the other route: 'we can try the phone "
+        "number on the account instead'. Only after the third failed check "
+        "call cannot_identify, and do not reveal anything about the account. "
+        "Never read out or hint at the email or phone on file, and never "
+        "treat a partial or similar answer as correct — the check is done "
+        "for you. Only after verify_identity succeeds, greet them by first "
+        "name and say you can see their account. "
     )
     _NO_VERIFY_STEP = (
         "Step two, when a lookup returns a customer: greet them by first name, "
@@ -225,10 +227,18 @@ class IdentifyCallerTask(AgentTask[Identity | None]):
         if self._attempts >= self.MAX_ATTEMPTS and not self.done():
             self.complete(None)
             return None
+        say = (
+            "Say it does not match — you may have misheard — apologise and ask "
+            "them to spell the email letter by letter, then read it back and "
+            "confirm before checking again."
+            if self._attempts == 1
+            else "Say it still does not match and offer to try the phone number "
+            "on the account instead."
+        )
         return {
             "verified": False,
-            "say": "Say that does not match what is on file and ask them to "
-            "try once more.",
+            "attempts_left": self.MAX_ATTEMPTS - self._attempts,
+            "say": say,
         }
 
     @function_tool()
