@@ -1,65 +1,40 @@
-# Designer brief — Aria Home end-to-end architecture (one slide)
+# Designer brief — Aria Home architecture, EXECUTIVE version (one slide)
 
-One horizontal diagram, three zones left → right. Clean enterprise style,
-generous whitespace, every arrow labeled. LiveKit purple for the realtime
-zone, Google Cloud green/blue for the right zone, neutral for callers.
+Audience: Head of AI, Head of CX, CFO. One glance, one story:
+"customers talk to one agent, it knows them, humans join seamlessly,
+and it runs on what we already own." No model names, no protocol
+names, no security jargon. Max ~25 words of labels total.
 
-## Zone 1 — LEFT: "Callers" (three entry points, stacked)
+Three zones, left → right, lots of air.
 
-1. **Web app — signed in** (person icon + phone/laptop): "Firebase login →
-   account rides the call token". Arrow into the LiveKit room labeled
-   *"joins room (token carries account)"*.
-2. **Web app — guest** (person icon, dashed outline): "no login — identified
-   in conversation (account/phone + security question)". Arrow labeled
-   *"joins room (anonymous token)"*.
-3. **Phone caller** (telephone icon, slightly faded + note "via SIP trunk —
-   ready, pending carrier"): arrow into the same room.
+## LEFT — "Your customers"
+Three simple icons, one word each:
+- App (signed in)
+- Web (guest)
+- Phone
+All three arrows converge into the conversation. One caption under the
+group: "every channel, one front door".
 
-Below the three, one more actor:
-4. **Support specialist** (headset icon): arrow into the SAME room labeled
-   *"warm transfer — joins with full context (summary, mood, next steps)"*.
-   Draw this arrow visually distinct (e.g. red/human color) and entering the
-   same room box the callers use — the point is ONE room, humans and agent
-   together.
+## MIDDLE — "The conversation" (LiveKit, purple)
+One rounded box: Ember's friendly avatar + the word "Ember".
+Under it, three plain words: "listens · thinks · speaks".
+A small shield: "guarded".
+And THE motif: a human specialist icon with a warm red arrow joining the
+SAME box, labeled "a person can step in — fully briefed".
 
-## Zone 2 — MIDDLE: "LiveKit Cloud" (purple zone)
+## RIGHT — "What she knows" (Google Cloud, green)
+Four cards, plain language, no product names on the cards themselves
+(tiny grey product names underneath if wanted):
+- "Your orders & account"        (Cloud SQL)
+- "Your devices, live"           (Firestore)
+- "Product & policy answers"     (Vertex AI)
+- "Remembers you — preferences,  (Memory Bank)
+   pets, past issues"
+One caption: "each customer sees only their own data — enforced in the
+database".
 
-One large **Room** box containing:
-- the caller's audio in/out (WebRTC)
-- **Ember — the agent** (small flame/portrait mark)
-- the voice pipeline as three chips INSIDE the room flow, in order:
-  **STT → LLM → TTS**
-  (labels: "AssemblyAI · streaming", "Gemma 4 · with failover", "Fish Audio ·
-  guarded"). One thin loop arrow: audio in → STT → LLM → TTS → audio out.
-- a small shield mark on the TTS edge labeled "speech guardrails"
-- note under the room: "turn detection · interruption handling · preemptive
-  generation — all inside LiveKit's infrastructure (co-located, lowest
-  latency loop)"
+## Footer (the CFO line)
+"Runs on the systems you already have. A transfer is a person joining
+the call — not a new platform."
 
-## Zone 3 — RIGHT: "Google Cloud" (one bounded zone; ONLY these five)
-
-Stack five boxes; each gets ONE arrow from Ember, labeled with what crosses:
-
-1. **Cloud Run — identity & tokens**: "verifies login, mints call tokens,
-   checks the security answer, preloads the customer briefing".
-2. **Cloud SQL** — "orders + customer accounts" · sublabel: "per-customer
-   isolation enforced IN the database (parameterized secure views)".
-3. **Firestore** — "live device state + usage history".
-4. **RAG (Vertex AI)** — "product manuals + returns policy — she retrieves,
-   never memorizes".
-5. **Agent Memory (Vertex AI Memory Bank)** — "long-term facts per customer:
-   pet's name, preferences, past issues — consolidated across calls".
-
-NOTHING else in this zone. No GKE, no buckets, no extra services.
-
-## The one motif to make memorable
-
-The specialist's red arrow and the caller's arrow ending in the SAME room —
-with a small caption: "a handoff is a person joining the conversation, not a
-new system." If only one thing survives simplification, keep that.
-
-## Text hygiene
-- Arrow labels ≤ 5 words.
-- Zone titles: CALLERS · LIVEKIT CLOUD · GOOGLE CLOUD.
-- Footer line: "Identity is pluggable — signed-in, conversational, or SIP —
-  everything after it is one shared path."
+Delete everything else. If a label needs explaining, it's cut.
