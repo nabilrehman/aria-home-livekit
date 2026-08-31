@@ -151,6 +151,8 @@ class Assistant(Agent):
         # The identification task while it runs (guest path), and the full tool
         # set kept aside while scoped tools are gated.
         self._identify_task: IdentifyCallerTask | None = None
+        # Set by the entrypoint: fetches /api/preload for a just-verified guest.
+        self._guest_preload = None
         self._all_tools: list = []
         # Two MCP servers, split by what the data actually is.
         #
@@ -538,6 +540,27 @@ class Assistant(Agent):
         self.known_account = who.account
         self.known_name = who.first_name or self.known_name
         await self.ungate_tools()
+        # Same context a signed-in caller gets, now that identity is proven:
+        # devices, latest order, last call, and long-term memories. Without
+        # this, a guest's memories only surface if the model thinks to call
+        # recall — which it sometimes does not.
+        if self._guest_preload is not None:
+            try:
+                pre = await self._guest_preload(who.account)
+                if pre:
+                    extra = self._preload_text(pre)
+                    last = pre.get("last_call")
+                    if last and last.get("summary"):
+                        extra += (
+                            f"\n# Their previous call\nOn "
+                            f"{str(last.get('ended_at', ''))[:10]} they called "
+                            f"about: {last['summary']} Acknowledge it in one "
+                            "sentence only if relevant.\n"
+                        )
+                    await self.update_instructions(self.instructions + extra)
+                    logger.info("guest preload injected after verification")
+            except Exception as err:
+                logger.warning(f"guest preload failed: {err}")
         await self.session.generate_reply(
             instructions="Ask what you can help with today. One sentence."
         )
@@ -1331,7 +1354,10 @@ async def my_agent(ctx: JobContext):
             language="en",
             fallback=["cartesia/sonic-3"],
         ),
-        expressive=True,
+        # Expressive mode is OFF: Fish s2.1 renders its inline markup, but in
+        # practice it hallucinated foreign-sounding babble during pauses and
+        # after goodbyes. Reliability wins; the prompt carries the warmth.
+        expressive=False,
         # identify → list_devices → find_device → get_device_state is 4 chained
         # steps; 3 forced retries and guessed ids. 6 leaves headroom, still bounded.
         max_tool_steps=6,
@@ -1385,6 +1411,7 @@ async def my_agent(ctx: JobContext):
         room_name=ctx.room.name, known_account=known_account, known_name=known_name
     )
     assistant._ctx = ctx
+    assistant._guest_preload = _preload
 
     _, pre = await asyncio.gather(
         session.start(
