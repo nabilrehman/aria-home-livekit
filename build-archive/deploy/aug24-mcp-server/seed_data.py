@@ -47,9 +47,9 @@ CUSTOMERS = [
     {
         "customer_id": 1,
         "account_number": "AH-4821",
-        "first_name": "Sarah",
-        "last_name": "Chen",
-        "email": "sarah@example.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "johndoe@gmail.com",
         "phone_e164": "+15125551188",
         "subscription": {
             "tier": "Video Plus",
@@ -123,7 +123,7 @@ DEVICES = [
     {
         "device_id": "AH4821-D1",
         "customer_id": 1,
-        "name": "Living Room Thermostat",
+        "name": "Aria Thermostat",
         "device_type": "thermostat",
         "room": "living room",
         "sku": "ARIA-THERM",
@@ -131,15 +131,15 @@ DEVICES = [
     {
         "device_id": "AH4821-D2",
         "customer_id": 1,
-        "name": "Front Door Camera",
+        "name": "Aria Doorbell Cam",
         "device_type": "camera",
         "room": "front door",
-        "sku": "ARIA-FLOOD",
+        "sku": "ARIA-DBELL",
     },
     {
         "device_id": "AH4821-D3",
         "customer_id": 1,
-        "name": "Backyard Camera",
+        "name": "Aria Floodlight Cam",
         "device_type": "camera",
         "room": "backyard",
         "sku": "ARIA-FLOOD",
@@ -147,10 +147,18 @@ DEVICES = [
     {
         "device_id": "AH4821-D4",
         "customer_id": 1,
-        "name": "Front Door Lock",
+        "name": "Aria Smart Lock",
         "device_type": "lock",
         "room": "front door",
         "sku": "ARIA-LOCK",
+    },
+    {
+        "device_id": "AH4821-D5",
+        "customer_id": 1,
+        "name": "Aria Motion Sensor",
+        "device_type": "sensor",
+        "room": "hallway",
+        "sku": "ARIA-SENSE",
     },
     {
         "device_id": "AH3390-D1",
@@ -351,6 +359,7 @@ TELEMETRY = {
         "bolt": "extended",
         "battery_pct": 82,
     },
+    "AH4821-D5": {"active": True, "reading": "motion clear", "battery_pct": 88},
     "AH3390-D1": {
         "active": True,
         "reading": "68 degrees",

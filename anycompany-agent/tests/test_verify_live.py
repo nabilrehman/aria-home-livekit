@@ -27,14 +27,14 @@ async def test_kba_against_the_live_endpoint(monkeypatch):
     monkeypatch.setattr(t, "complete", lambda r: done.setdefault("r", r))
     monkeypatch.setattr(t, "done", lambda: "r" in done)
 
-    # lookup located Sarah's account — not verified yet
+    # lookup located John's account — not verified yet
     t.identified("AH-4821")
     assert "r" not in done
 
     # wrong email -> rejected, one attempt used
-    out = await t.verify_identity(None, "Sarah", email="wrong@example.com")
+    out = await t.verify_identity(None, "John", email="wrong@example.com")
     assert out["verified"] is False and "r" not in done
 
     # right email (as the model would assemble it from speech) -> verified
-    await t.verify_identity(None, "Sarah", email="sarah@example.com")
-    assert done["r"].account == "AH-4821" and done["r"].first_name == "Sarah"
+    await t.verify_identity(None, "John", email="johndoe@gmail.com")
+    assert done["r"].account == "AH-4821" and done["r"].first_name == "John"

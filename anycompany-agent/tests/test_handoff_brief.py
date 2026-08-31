@@ -46,12 +46,12 @@ async def test_brief_is_parsed_into_structured_fields(monkeypatch):
     a = Assistant()
     _stub_llm(
         monkeypatch,
-        'Sure: {"summary": "Sarah wants the address on order 58121 changed.",'
+        'Sure: {"summary": "John wants the address on order 58121 changed.",'
         ' "next_steps": ["Update the delivery address", "Confirm by text"],'
         ' "mood": "frustrated", "urgency": "high"} thanks',
     )
     b = await a._handoff_brief("fallback")
-    assert b["summary"].startswith("Sarah wants")
+    assert b["summary"].startswith("John wants")
     assert b["next_steps"] == ["Update the delivery address", "Confirm by text"]
     assert b["mood"] == "frustrated" and b["urgency"] == "high"
 
@@ -65,8 +65,8 @@ async def test_brief_falls_back_to_the_tool_summary_when_llm_fails(monkeypatch):
             raise RuntimeError("inference down")
 
     monkeypatch.setattr(Assistant, "llm", property(lambda self: Broken()))
-    b = await a._handoff_brief("Sarah asked about order 58121.")
-    assert b["summary"] == "Sarah asked about order 58121."
+    b = await a._handoff_brief("John asked about order 58121.")
+    assert b["summary"] == "John asked about order 58121."
     assert b["mood"] == "calm" and b["next_steps"] == []
 
 

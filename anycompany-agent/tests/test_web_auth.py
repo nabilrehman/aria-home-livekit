@@ -145,15 +145,15 @@ def test_get_is_not_allowed(client):
 
 
 def test_known_user_gets_their_own_account(client, monkeypatch):
-    signed_in_as(monkeypatch, uid="firebase-uid-sarah", email="sarah@example.com")
+    signed_in_as(monkeypatch, uid="firebase-uid-john", email="johndoe@gmail.com")
     r = client.post("/token", headers={"Authorization": "Bearer good"})
 
     assert r.status_code == 200
     body = r.get_json()
-    assert body["name"] == "Sarah Chen"
+    assert body["name"] == "John Doe"
 
     c = claims_of(body["token"])
-    assert c["sub"] == "firebase-uid-sarah"
+    assert c["sub"] == "firebase-uid-john"
     assert c["attributes"]["aria_account"] == "AH-4821"
 
 
@@ -232,11 +232,11 @@ def test_me_needs_a_signed_in_user(client):
 
 def test_identity_and_room_are_opaque(client, monkeypatch):
     """LiveKit writes identity and room name to logs that are not PII-redacted."""
-    signed_in_as(monkeypatch, uid="uid-sarah", email="sarah@example.com")
+    signed_in_as(monkeypatch, uid="uid-john", email="johndoe@gmail.com")
     body = client.post("/token", headers={"Authorization": "Bearer good"}).get_json()
     c = claims_of(body["token"])
 
-    leaks = ("sarah@example.com", "example.com", "Sarah", "+1512")
+    leaks = ("johndoe@gmail.com", "example.com", "John", "+1512")
     for field in (c["sub"], c["video"]["room"], body["room"]):
         for leak in leaks:
             assert leak not in field, f"{leak!r} leaked into {field!r}"
@@ -244,7 +244,7 @@ def test_identity_and_room_are_opaque(client, monkeypatch):
 
 def test_attributes_carry_the_account_number_and_nothing_personal(client, monkeypatch):
     """A JWT is base64, not encrypted, and this one is handed to the browser."""
-    signed_in_as(monkeypatch, uid="uid-sarah", email="sarah@example.com")
+    signed_in_as(monkeypatch, uid="uid-john", email="johndoe@gmail.com")
     c = claims_of(
         client.post("/token", headers={"Authorization": "Bearer good"}).get_json()[
             "token"
@@ -253,12 +253,12 @@ def test_attributes_carry_the_account_number_and_nothing_personal(client, monkey
 
     assert c["attributes"] == {"aria_account": "AH-4821"}
     blob = json.dumps(c["attributes"])
-    for leak in ("Sarah", "sarah@example.com", "+1512", "Video Plus", "thermostat"):
+    for leak in ("John", "johndoe@gmail.com", "+1512", "Video Plus", "thermostat"):
         assert leak not in blob
 
 
 def test_no_api_secret_anywhere_in_the_response(client, monkeypatch):
-    signed_in_as(monkeypatch, uid="uid-sarah", email="sarah@example.com")
+    signed_in_as(monkeypatch, uid="uid-john", email="johndoe@gmail.com")
     raw = client.post("/token", headers={"Authorization": "Bearer good"}).get_data(
         as_text=True
     )
@@ -269,7 +269,7 @@ def test_no_api_secret_anywhere_in_the_response(client, monkeypatch):
 
 
 def test_grants_allow_a_call_but_not_administration(client, monkeypatch):
-    signed_in_as(monkeypatch, uid="uid-sarah", email="sarah@example.com")
+    signed_in_as(monkeypatch, uid="uid-john", email="johndoe@gmail.com")
     v = claims_of(
         client.post("/token", headers={"Authorization": "Bearer good"}).get_json()[
             "token"
@@ -284,7 +284,7 @@ def test_grants_allow_a_call_but_not_administration(client, monkeypatch):
 
 
 def test_issuer_and_ttl_are_within_policy(client, monkeypatch):
-    signed_in_as(monkeypatch, uid="uid-sarah", email="sarah@example.com")
+    signed_in_as(monkeypatch, uid="uid-john", email="johndoe@gmail.com")
     c = claims_of(
         client.post("/token", headers={"Authorization": "Bearer good"}).get_json()[
             "token"
@@ -297,7 +297,7 @@ def test_issuer_and_ttl_are_within_policy(client, monkeypatch):
 
 
 def test_room_config_dispatches_the_agent_and_bounds_the_room(client, monkeypatch):
-    signed_in_as(monkeypatch, uid="uid-sarah", email="sarah@example.com")
+    signed_in_as(monkeypatch, uid="uid-john", email="johndoe@gmail.com")
     c = claims_of(
         client.post("/token", headers={"Authorization": "Bearer good"}).get_json()[
             "token"
@@ -319,7 +319,7 @@ def test_agent_skips_identification_for_an_authenticated_caller():
     from agent import Assistant
 
     attrs = {"aria_account": "AH-4821"}  # what the web token delivers
-    known = Assistant(known_account=attrs["aria_account"], known_name="Sarah Chen")
+    known = Assistant(known_account=attrs["aria_account"], known_name="John Doe")
     anon = Assistant()
 
     assert "Do NOT ask for a phone number" in known.instructions
@@ -401,7 +401,7 @@ def test_verify_endpoint_compares_in_code_and_never_leaks(monkeypatch):
     # right email -> verified
     r = c.post(
         "/api/verify",
-        json={"account": "AH-4821", "email": " Sarah@Example.com "},
+        json={"account": "AH-4821", "email": " JohnDoe@Gmail.com "},
         headers=hdr,
     )
     assert r.get_json() == {"verified": True}
@@ -416,7 +416,7 @@ def test_verify_endpoint_compares_in_code_and_never_leaks(monkeypatch):
     )
     body = r.get_data(as_text=True)
     assert r.get_json() == {"verified": False}
-    assert "sarah@example.com" not in body and "1188" not in body
+    assert "johndoe@gmail.com" not in body and "1188" not in body
     # unknown account -> false, same shape (no user enumeration)
     r = c.post(
         "/api/verify", json={"account": "AH-0000", "email": "a@b.com"}, headers=hdr
@@ -426,7 +426,7 @@ def test_verify_endpoint_compares_in_code_and_never_leaks(monkeypatch):
     r = c.post("/api/verify", json={"account": "AH-4821", "phone": "88"}, headers=hdr)
     assert r.get_json() == {"verified": False}
     # no service key -> unauthorized
-    r = c.post("/api/verify", json={"account": "AH-4821", "email": "sarah@example.com"})
+    r = c.post("/api/verify", json={"account": "AH-4821", "email": "johndoe@gmail.com"})
     assert r.status_code == 401
 
 

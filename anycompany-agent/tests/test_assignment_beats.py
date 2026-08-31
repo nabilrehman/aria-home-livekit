@@ -77,7 +77,7 @@ async def test_beat1_identifies_the_caller_from_their_phone_number():
         )
         await r.expect.contains_message(role="assistant").judge(
             j,
-            intent="Greets the caller by the first name Sarah and indicates it can "
+            intent="Greets the caller by the first name John and indicates it can "
             "see her account. Must not ask her to repeat an account number.",
         )
 
@@ -101,7 +101,7 @@ async def test_beat1_asks_for_the_account_number_when_there_is_no_phone():
         )
         await r.expect.contains_message(role="assistant").judge(
             j,
-            intent="Greets the caller by the first name Sarah, having found her account.",
+            intent="Greets the caller by the first name John, having found her account.",
         )
 
 
@@ -249,7 +249,7 @@ async def test_beat3_the_summary_actually_contains_the_conversation():
     assert len(summary.split()) >= 12, f"summary too thin to brief anyone: {summary!r}"
 
     low = summary.lower()
-    assert "sarah" in low, f"summary does not name the caller: {summary!r}"
+    assert "john" in low, f"summary does not name the caller: {summary!r}"
     assert any(w in low for w in ("order", "camera", "address", "delivery")), (
         f"summary does not carry what the call was about: {summary!r}"
     )

@@ -247,9 +247,9 @@ async def test_verify_pass_completes_and_fail_twice_ends_identification(monkeypa
     got = {}
     monkeypatch.setattr(t, "complete", lambda r: got.setdefault("r", r))
     monkeypatch.setattr(t, "done", lambda: False)
-    out = await t.verify_identity(None, "Sarah", email="wrong@example.com")
+    out = await t.verify_identity(None, "John", email="wrong@example.com")
     assert out["verified"] is False and "r" not in got
-    await t.verify_identity(None, "Sarah", email="still-wrong@example.com")
+    await t.verify_identity(None, "John", email="still-wrong@example.com")
     assert got["r"] is None  # two strikes -> unverified
 
     t2 = IdentifyCallerTask([], _always_pass)
@@ -257,8 +257,8 @@ async def test_verify_pass_completes_and_fail_twice_ends_identification(monkeypa
     got2 = {}
     monkeypatch.setattr(t2, "complete", lambda r: got2.setdefault("r", r))
     monkeypatch.setattr(t2, "done", lambda: False)
-    await t2.verify_identity(None, "Sarah", email="sarah@example.com")
-    assert got2["r"].account == "AH-4821" and got2["r"].first_name == "Sarah"
+    await t2.verify_identity(None, "John", email="johndoe@gmail.com")
+    assert got2["r"].account == "AH-4821" and got2["r"].first_name == "John"
 
 
 # ── gating: scoped tools do not exist until the caller is known ──────────────

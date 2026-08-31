@@ -15,7 +15,7 @@ PART 0 · ARE WE DONE? — requirement by requirement
      Ember opens with "Hi Nabil" and asks nothing.
    - Guest/phone: she asks for phone or account number, looks it up in
      Cloud SQL through Google's MCP Toolbox, greets by first name.
-   Verified live on the panel project (beat test + full Sarah call).
+   Verified live on the panel project (beat test + full John call).
 
 2. "Respond to 2-3 questions about their smart home setup"
    DONE. Recent order (REST API), thermostat active + temperature
@@ -53,7 +53,7 @@ PART 1 · PRE-FLIGHT (15 minutes before)
 [ ] Tab 1: store, signed in with nabilrehman8@gmail.com, on Support.
 [ ] Tab 2: desk, PIN 8616, name "Ahmad", shows Online.
 [ ] Optional sanity: ONE guest call — say "A H four eight two one",
-    hear "Hi Sarah", hang up. Do not run test suites (they burn the
+    hear "Hi John", hang up. Do not run test suites (they burn the
     LLM credit meter; that is what emptied the last project).
 
 ---------------------------------------------------------------------
@@ -75,9 +75,9 @@ CALL 1 — SARAH, GUEST (requirement 1b + isolation)          ~75 sec
   EMBER: reads it back, finds the account, then — before confirming
       anything — "Just to make sure it's you, what's the email
       address on the account?"  (phone on file also accepted)
-  YOU: "sarah at example dot com"   (spelling it out also works —
+  YOU: "john doe at gmail dot com"   (spelling it out also works —
       she assembles it and reads it back)
-  EMBER: "Thanks — hi Sarah, I can see your account."
+  EMBER: "Thanks — hi John, I can see your account."
       say-to-panel: "The brief's exact sub-requirement — no phone, so
       she asks and looks up by ACCOUNT NUMBER; any spacing of the
       digits resolves. Then knowledge-based verification, like a real
@@ -85,7 +85,7 @@ CALL 1 — SARAH, GUEST (requirement 1b + isolation)          ~75 sec
       pass or fail, so it can't read, leak, or be argued into the
       right answer. Two misses and she drops to general help only. In
       production you'd swap the question for an SMS one-time code.
-      (Phone-number lookup works the same — 512 555 1188 is Sarah's.)
+      (Phone-number lookup works the same — 512 555 1188 is John's.)
       VERIFY_GUESTS=0 turns the security question off if we want the
       minimal beat." 
 
@@ -93,7 +93,7 @@ CALL 1 — SARAH, GUEST (requirement 1b + isolation)          ~75 sec
   EMBER: "No order with that number on this account. Could you check
       the number?"
       say-to-panel (Mike): "That order exists — it's Nabil's. The
-      database won't return it for Sarah: parameterized secure views,
+      database won't return it for John: parameterized secure views,
       a role with no base-table access, and the account never comes
       from the model. She can't even confirm it exists."
 

@@ -1,7 +1,7 @@
 """The signed-in half of the panel demo: Nabil's call, exactly as the runbook
 plays it.
 
-Sarah's guest call is test_demo_beats.py::test_full_demo_happy_path. This is
+John's guest call is test_demo_beats.py::test_full_demo_happy_path. This is
 the other call: the caller arrived authenticated (account on the LiveKit
 token), the preload already ran, so the agent starts knowing the devices, the
 latest order, and the Memory Bank facts — and the interesting assertions are

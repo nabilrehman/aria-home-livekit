@@ -39,7 +39,7 @@ def test_mask_keeps_what_the_business_needs():
 def test_mask_brief_only_touches_free_text():
     b = pii.mask_brief(
         {
-            "summary": "Sarah on 512 555 1188 wants a refund",
+            "summary": "John on 512 555 1188 wants a refund",
             "mood": "calm",
             "next_steps": ["Call back on 512-555-1188"],
         }
@@ -64,8 +64,8 @@ def _history():
             msg("assistant", "Hi, this is Ember."),
             msg("user", "My number is 512 555 1188."),
             fc("lookup_account_by_phone", '{"phone": "512 555 1188"}'),
-            out('{"customer_id":1,"account_number":"AH-4821","first_name":"Sarah"}'),
-            msg("assistant", "Hi Sarah, I can see your account."),
+            out('{"customer_id":1,"account_number":"AH-4821","first_name":"John"}'),
+            msg("assistant", "Hi John, I can see your account."),
             msg("user", "Where's order 58121?"),
         ]
     )

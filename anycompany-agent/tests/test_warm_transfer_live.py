@@ -93,7 +93,7 @@ async def test_refund_request_triggers_a_real_warm_transfer():
         )
 
     assert fired, "the agent never called transfer_to_human"
-    assert "sarah" in fired["summary"].lower()
+    assert "john" in fired["summary"].lower()
 
     calls = twilio_calls_to(os.environ["TRANSFER_TO_NUMBER"], started)
     assert calls, "Twilio shows no outbound call to the transfer target"

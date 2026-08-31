@@ -98,7 +98,7 @@ CREATE UNIQUE INDEX tickets_no_duplicates_idx
 -- ═══════════════════════════ seed ═══════════════════════════
 
 INSERT INTO customers (account_number, first_name, last_name, email, phone_e164) VALUES
-    ('AH-4821','Sarah','Chen',   'sarah@example.com',  '+15125551188'),
+    ('AH-4821','John','Doe',     'johndoe@gmail.com',  '+15125551188'),
     ('AH-3390','Marcus','Webb',  'marcus@example.com', '+14695552210'),
     ('AH-5567','Priya','Raman',  'priya@example.com',  '+17375553301'),
     ('AH-6012','Daniel','Okafor','daniel@example.com', '+15125554412'),
@@ -121,10 +121,11 @@ INSERT INTO devices (device_id, customer_id, name, device_type, room, installed_
 SELECT d.device_id, c.customer_id, d.name, d.device_type, d.room, d.installed_on
 FROM customers c
 JOIN (VALUES
-    ('AH4821-D1','AH-4821','Living Room Thermostat','thermostat','living room', DATE '2025-11-03'),
-    ('AH4821-D2','AH-4821','Front Door Camera',     'camera',    'front door',  DATE '2025-11-03'),
-    ('AH4821-D3','AH-4821','Backyard Camera',       'camera',    'backyard',    DATE '2026-02-19'),
-    ('AH4821-D4','AH-4821','Front Door Lock',       'lock',      'front door',  DATE '2026-02-19'),
+    ('AH4821-D1','AH-4821','Aria Thermostat',      'thermostat','living room', DATE '2025-11-03'),
+    ('AH4821-D2','AH-4821','Aria Doorbell Cam',     'camera',    'front door',  DATE '2025-11-03'),
+    ('AH4821-D3','AH-4821','Aria Floodlight Cam',   'camera',    'backyard',    DATE '2026-02-19'),
+    ('AH4821-D4','AH-4821','Aria Smart Lock',       'lock',      'front door',  DATE '2026-02-19'),
+    ('AH4821-D5','AH-4821','Aria Motion Sensor',    'sensor',    'hallway',     DATE '2026-02-19'),
     ('AH3390-D1','AH-3390','Hallway Thermostat',    'thermostat','hallway',     DATE '2025-06-12'),
     ('AH3390-D2','AH-3390','Garage Camera',         'camera',    'garage',      DATE '2025-06-12'),
     ('AH5567-D1','AH-5567','Nursery Sensor',        'sensor',    'nursery',     DATE '2026-01-08'),

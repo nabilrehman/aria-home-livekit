@@ -32,12 +32,12 @@ BRIEF = {
     "room": "web-abc123",
     "department": "the refunds team",
     "brief": {
-        "summary": "Sarah wants a refund on 58120.",
+        "summary": "John wants a refund on 58120.",
         "next_steps": ["Check damage photos"],
         "mood": "frustrated",
         "urgency": "high",
     },
-    "caller": {"name": "Sarah Chen", "account": "AH-4821"},
+    "caller": {"name": "John Doe", "account": "AH-4821"},
 }
 
 
@@ -66,7 +66,7 @@ def test_handoff_rings_and_is_visible_to_the_desk(client):
     desk = client.get("/api/handoffs", headers=DESK).get_json()["handoffs"]
     assert desk[0]["id"] == hid and desk[0]["status"] == "ringing"
     assert desk[0]["brief"]["mood"] == "frustrated"
-    assert desk[0]["caller"]["name"] == "Sarah Chen"
+    assert desk[0]["caller"]["name"] == "John Doe"
 
 
 def test_accept_mints_a_specialist_token_for_the_callers_room(client):
@@ -142,7 +142,7 @@ async def test_agent_rings_the_desk_and_returns_the_answer(monkeypatch):
     monkeypatch.setattr(agent_mod, "_DeskClient", Client)
     monkeypatch.setattr(agent_mod.asyncio, "sleep", lambda s: _noop())
 
-    a = Assistant(known_account="AH-4821", known_name="Sarah Chen")
+    a = Assistant(known_account="AH-4821", known_name="John Doe")
     out = await a._ring_desk(
         "the refunds team",
         {"summary": "x", "next_steps": [], "mood": "calm", "urgency": "normal"},

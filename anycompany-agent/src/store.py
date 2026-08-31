@@ -53,9 +53,9 @@ class Ticket:
 CUSTOMERS: dict[str, Customer] = {
     "C-2001": Customer(
         customer_id="C-2001",
-        name="Sarah Chen",
+        name="John Doe",
         phone="+15125551188",
-        email="sarah@example.com",
+        email="johndoe@gmail.com",
         devices=["Living Room Thermostat", "Front Door Camera", "Front Door Lock"],
     ),
     "C-1001": Customer(

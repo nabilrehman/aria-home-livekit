@@ -1,7 +1,7 @@
 """Heavy end-to-end behavior tests for the Aria Home panel demo.
 
 Runs the REAL agent (gemma via LiveKit Inference) with the LIVE MCP tools,
-driving Sarah Chen's whole call, and judges each of the four demo beats:
+driving John Doe's whole call, and judges each of the four demo beats:
 identify -> device state -> order status -> policy (RAG) -> warm transfer.
 
 These are integration tests: they hit LiveKit Inference + the deployed MCP.
@@ -82,7 +82,7 @@ async def test_full_demo_happy_path() -> None:
         await _judge_any(
             [r, r2],
             judge,
-            intent="Greets the customer by the name Sarah (Sarah Chen), or clearly confirms it can see Sarah's account.",
+            intent="Greets the customer by the name John (John Doe), or clearly confirms it can see John's account.",
         )
 
         # --- BEAT 2: device state ---
@@ -109,7 +109,7 @@ async def test_full_demo_happy_path() -> None:
         await r.expect.contains_message(role="assistant").judge(
             judge,
             intent=(
-                "Gives the status of one of Sarah's real orders — the Smart Thermostat V2 has "
+                "Gives the status of one of John's real orders — the Smart Thermostat V2 has "
                 "shipped, or the Indoor Camera two pack is still processing. Does not invent an order."
             ),
         )

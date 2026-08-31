@@ -16,11 +16,11 @@ in front of them. Every step has a pass condition. Do not skip the pre-flight.
 | Live telemetry + policy RAG | custom MCP → https://aug24-mcp-549403515075.us-central1.run.app/mcp | tool list has `get_device_state`, `search_knowledge` |
 | Orders | REST on the web service `/api/orders` (key-protected) | 401 without key |
 | Data | Cloud SQL `aria-home` · Firestore `aug24` | `seed.py --check` prints 5 customers |
-| Login | Firebase Auth (email/password + Google) | `sarah@example.com` exists; your Gmail signs in with Google |
+| Login | Firebase Auth (email/password + Google) | `johndoe@gmail.com` exists; your Gmail signs in with Google |
 
 **Two demo callers, on purpose.** The panel sees two unrelated customers come out of one system:
 
-| | Sarah Chen | You (Nabil Rehman) |
+| | John Doe | You (Nabil Rehman) |
 |---|---|---|
 | Account | AH-4821 · Video Plus | AH-7104 · Video Plus |
 | Phone | +1 512 555 1188 | **+1 737 205 9240** |
@@ -69,13 +69,13 @@ Also before the room: **laptop on power, wired headphones or a quiet mic, Chrome
 
 Two browser tabs before you start: the **store** (signed in with your Gmail, on the Support page) and the **Specialist Desk** (`/desk`, PIN 8616, name "Ahmad"). Warm-up from §1 done. Say each "watch for" line *before* the beat.
 
-### Prologue · Sarah, by phone (75 s) — requirement 1b, the guest path
+### Prologue · John, by phone (75 s) — requirement 1b, the guest path
 Click **Call as a guest → Start call**.
 
 | You say | Must happen | To the panel |
 |---|---|---|
 | "Hi, I need help with my account." | She **asks** for phone or account number. | "No caller ID on this path — same as an unknown phone." |
-| "A H four eight two one." | "Hi Sarah… I can see your account." | "Digits-only match on Cloud SQL, through Google's MCP Toolbox. 'AH 4821', '4821', 'ah-4821' all resolve." |
+| "A H four eight two one." | "Hi John… I can see your account." | "Digits-only match on Cloud SQL, through Google's MCP Toolbox. 'AH 4821', '4821', 'ah-4821' all resolve." |
 | "What's the status of order five eight one two one?" | "Your Indoor Camera two pack is **processing** — still in the warehouse, delivers September third." | "Order by number — one scoped call, account pinned by the identification step." |
 | "And order five eight one three one?" | "**No order with that number on this account.**" | **Mike:** "Same tool, same second. That one is Nabil's. She can't see it — the database won't return it. Parameterized secure views, a role with no base-table access, and the account never comes from the model." |
 | "Okay, bye." | goodbye, call closes | — |

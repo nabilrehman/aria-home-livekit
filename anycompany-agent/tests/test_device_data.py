@@ -198,7 +198,7 @@ SARAH = 1  # AH-4821
 def test_account_number_is_matched_however_it_is_spoken(repo, spoken):
     """People read account numbers back in every format there is."""
     c = repo.find_customer(account_number=spoken)
-    assert c is not None and c["name"] == "Sarah Chen"
+    assert c is not None and c["name"] == "John Doe"
 
 
 @pytest.mark.parametrize(
@@ -237,7 +237,7 @@ def test_lookup_returns_the_subscription(repo):
 def test_registry_lists_devices_without_any_state(repo):
     """The relational side knows what you own, not what it's doing."""
     devices = repo.devices_for(SARAH)
-    assert len(devices) == 4
+    assert len(devices) == 5
     for d in devices:
         assert set(d) == {"device_id", "name", "device_type", "room", "sku"}
         assert "reading" not in d and "active" not in d
@@ -270,7 +270,7 @@ def test_telemetry_shape_differs_by_device_type(repo):
     [
         ("thermostat", "AH4821-D1"),
         ("living room", "AH4821-D1"),
-        ("front door camera", "AH4821-D2"),
+        ("doorbell", "AH4821-D2"),
         ("backyard", "AH4821-D3"),
         ("lock", "AH4821-D4"),
     ],
@@ -369,7 +369,7 @@ def test_telemetry_outage_raises_so_the_agent_never_guesses(repo):
 def test_registry_still_works_when_telemetry_is_down():
     """Two stores, two blast radii — she can still say what you own."""
     down = FakeRepo(telemetry_down=True)
-    assert len(down.devices_for(SARAH)) == 4
+    assert len(down.devices_for(SARAH)) == 5
 
 
 # ── seed integrity ──────────────────────────────────────────────────────────
