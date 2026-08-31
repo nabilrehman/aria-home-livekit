@@ -59,6 +59,9 @@ ORDERS_API_URL = os.getenv(
 ORDERS_API_KEY = os.getenv("ORDERS_API_KEY", "")
 # How long the specialist desk rings before we try the phone / in-room fallback.
 DESK_RING_SECONDS = int(os.getenv("DESK_RING_SECONDS", "40"))
+# Guest KBA: ask a security question after the lookup (default on). Set
+# VERIFY_GUESTS=0 to fall back to the assignment's minimal beat: lookup = greet.
+VERIFY_GUESTS = os.getenv("VERIFY_GUESTS", "1") != "0"
 # Swappable in tests without touching httpx for the inference client.
 _DeskClient = httpx.AsyncClient
 
@@ -466,7 +469,10 @@ class Assistant(Agent):
             )
             return
         self._identify_task = IdentifyCallerTask(
-            lookups, self._verify_caller, chat_ctx=self.chat_ctx, model=self.llm
+            lookups,
+            self._verify_caller if VERIFY_GUESTS else None,
+            chat_ctx=self.chat_ctx,
+            model=self.llm,
         )
         try:
             who = await self._identify_task

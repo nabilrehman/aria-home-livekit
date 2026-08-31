@@ -71,22 +71,23 @@ CALL 1 — SARAH, GUEST (requirement 1b + isolation)          ~75 sec
       calling. On a real SIP call the trunk hands us the number and
       this whole exchange disappears."
 
-  YOU: "My phone number is five one two, five five five, one one
-       eight eight."
+  YOU: "My account number is A H four eight two one."
   EMBER: reads it back, finds the account, then — before confirming
       anything — "Just to make sure it's you, what's the email
-      address on the account?"
+      address on the account?"  (phone on file also accepted)
   YOU: "sarah at example dot com"   (spelling it out also works —
       she assembles it and reads it back)
   EMBER: "Thanks — hi Sarah, I can see your account."
-      say-to-panel: "Lookup by phone — the assignment's primary path —
-      then knowledge-based verification, like a real support desk.
-      The check runs server-side: the model only learns pass or fail,
-      so it can't read, leak, or be argued into the right answer. Two
-      misses and she drops to general help only. In production you'd
-      swap the question for an SMS one-time code — same task, stronger
-      challenge; 2026 guidance points that way because of voice
-      cloning." 
+      say-to-panel: "The brief's exact sub-requirement — no phone, so
+      she asks and looks up by ACCOUNT NUMBER; any spacing of the
+      digits resolves. Then knowledge-based verification, like a real
+      support desk: the check runs server-side, the model only learns
+      pass or fail, so it can't read, leak, or be argued into the
+      right answer. Two misses and she drops to general help only. In
+      production you'd swap the question for an SMS one-time code.
+      (Phone-number lookup works the same — 512 555 1188 is Sarah's.)
+      VERIFY_GUESTS=0 turns the security question off if we want the
+      minimal beat." 
 
   YOU: "What's the status of order five eight one two one?"
   EMBER: Indoor Camera two pack, processing, delivers September third.
