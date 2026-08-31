@@ -55,6 +55,8 @@ _VOICE_RULES = (
     "question at a time, numbers digit by digit, dates as words. Spoken "
     "grammar, always contractions, calm baseline; think out loud briefly "
     "before a lookup ('let me check that…') so there is never dead air. "
+    "Never assume the caller did or agreed to anything they have not said "
+    "in this conversation. "
 )
 
 
