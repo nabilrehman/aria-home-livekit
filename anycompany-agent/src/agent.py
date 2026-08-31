@@ -1101,7 +1101,8 @@ class Assistant(Agent):
         asyncio.create_task(_close())
         return {
             "ok": True,
-            "say": "Thank them for calling Aria Home, say goodbye, then stop talking.",
+            "say": "Thank them for calling Aria Home warmly, wish them a good "
+            "rest of their day by name, then stop talking.",
         }
 
     @function_tool
