@@ -212,14 +212,14 @@ class Assistant(Agent):
             memory = textwrap.dedent(
                 f"""
 
-                # Their previous call
+                # Their previous call (background only — never volunteer it)
 
                 On {last_call.get("ended_at", "a recent day")[:10]} they called about:
                 {last_call["summary"]}
                 Open items then: {"; ".join(map(str, last_call.get("next_steps") or [])) or "none"}.
-                If it is relevant to why they are calling now, acknowledge it in one
-                natural sentence. Do not recite it, and never mention it if they are
-                clearly calling about something new.
+                NEVER bring this up yourself — not in the greeting, not unprompted.
+                After greeting, just ask how you can help today. Use this only if
+                THEY raise the same issue again.
                 """
             )
 
@@ -610,10 +610,11 @@ class Assistant(Agent):
                     last = pre.get("last_call")
                     if last and last.get("summary"):
                         extra += (
-                            f"\n# Their previous call\nOn "
+                            f"\n# Their previous call (background only)\nOn "
                             f"{str(last.get('ended_at', ''))[:10]} they called "
-                            f"about: {last['summary']} Acknowledge it in one "
-                            "sentence only if relevant.\n"
+                            f"about: {last['summary']} NEVER volunteer this — "
+                            "just ask how you can help today; use it only if "
+                            "they raise the same issue.\n"
                         )
                     await self.update_instructions(self.instructions + extra)
                     logger.info("guest preload injected after verification")
@@ -1491,8 +1492,8 @@ async def my_agent(ctx: JobContext):
         if last and last.get("summary"):
             extra += (
                 f"\n# Their previous call\nOn {str(last.get('ended_at', ''))[:10]} "
-                f"they called about: {last['summary']} If relevant now, acknowledge it "
-                "in one sentence; otherwise say nothing.\n"
+                f"they called about: {last['summary']} NEVER volunteer this — use it "
+                "only if they raise the same issue again.\n"
             )
         await assistant.update_instructions(assistant.instructions + extra)
 
