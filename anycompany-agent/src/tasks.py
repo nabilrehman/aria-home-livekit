@@ -68,38 +68,59 @@ class Identity:
 
 
 class IdentifyCallerTask(AgentTask[Identity | None]):
-    """Find out who a guest caller is, by phone or account number.
+    """Find out who a guest caller is — and verify it is really them.
 
-    The lookup tools come from the Cloud SQL Toolbox (MCP). The task completes
-    either when the model confirms a found account, or — as a backstop — when
-    the Assistant's MCP result resolver sees a verified row and calls
-    `identified()`. Either way the account comes from the database row, never
-    from what the caller asserted.
+    Two stages, the way production support desks do it:
+      1. Locate the account (phone or account number, via the Cloud SQL
+         Toolbox lookups). The verified DB row records the candidate account.
+      2. Knowledge-based verification: ask for the email (or phone) on file
+         and check the answer server-side. The model only ever learns
+         pass/fail — it cannot read the stored value, so it cannot leak it or
+         be talked into "close enough". Two failed attempts end identification.
+
+    Real-world upgrade path (say it if asked): SMS one-time codes beat KBA,
+    and 2025-26 guidance (FFIEC/FINRA) pushes liveness checks because voice
+    cloning has weakened knowledge questions. The structure here is the same;
+    only the challenge changes.
     """
+
+    MAX_ATTEMPTS = 2
 
     def __init__(
         self,
         lookup_tools: list[llm.Tool],
+        verify,
         chat_ctx: llm.ChatContext | None = None,
         model: llm.LLM | None = None,
     ) -> None:
+        self._verify = verify
+        self._account = ""
+        self._attempts = 0
         super().__init__(
             llm=model if model is not None else NOT_GIVEN,
             instructions=_VOICE_RULES
             + "You are Ember, the voice support agent for Aria Home. Your only job "
-            "right now is to find out who is calling. Open with a warm hello, "
-            "introduce yourself by name, and ask for the phone number or the Aria "
-            "Home account number on the account (it starts with 'A H'). Use "
-            "lookup_account_by_phone for a phone number and "
-            "lookup_account_by_number for an account number, with exactly the "
-            "digits they said. People read numbers slowly, in pieces — wait until "
-            "they have clearly finished, and read the number back before looking "
-            "it up. When a lookup returns a customer, greet them by first name, "
-            "say you can see their account, and call confirm_identity. If it "
-            "returns nothing, say so plainly and ask them to check the number, "
-            "once; if it fails again or they cannot give one, call "
-            "cannot_identify. Do not answer any other question yet — say you will "
-            "get to it as soon as you have their account.",
+            "right now is to find out who is calling and verify it is really them. "
+            "Step one: open with a warm hello, introduce yourself by name, and ask "
+            "for the phone number or the Aria Home account number on the account "
+            "(it starts with 'A H'). Use lookup_account_by_phone for a phone "
+            "number and lookup_account_by_number for an account number, with "
+            "exactly the digits they said — read the number back first; people "
+            "say numbers slowly, in pieces. "
+            "Step two, when a lookup returns a customer: do NOT confirm any "
+            "account details yet. Say something like 'Found it — and just to make "
+            "sure it's you, what's the email address on the account?' (if they "
+            "identified by account number, the phone number on file is also "
+            "acceptable). Then call verify_identity with exactly what they said. "
+            "Never read out or hint at the email or phone on file, and never "
+            "treat a partial or similar answer as correct — the check is done "
+            "for you. If verification fails, say it does not match and let them "
+            "try once more. After a second failure, or if they cannot give a "
+            "number at all, call cannot_identify and do not reveal anything "
+            "about the account. Only after verify_identity succeeds, greet them "
+            "by first name and say you can see their account. Do not answer any "
+            "other question before that — say you will get to it as soon as "
+            "you have verified the account.",
             tools=list(lookup_tools),
             chat_ctx=chat_ctx,
         )
@@ -114,29 +135,64 @@ class IdentifyCallerTask(AgentTask[Identity | None]):
         )
 
     def identified(self, account: str, first_name: str = "") -> None:
-        """Backstop completion from the verified MCP result (see Assistant)."""
-        if not self.done():
-            self.complete(Identity(account=account, first_name=first_name))
+        """Record the candidate account from the verified MCP lookup row.
+
+        Deliberately does NOT complete the task any more — a located account is
+        not a verified caller. verify_identity() is the only success path.
+        """
+        if not self._account:
+            self._account = account
+            logger.info(f"identify: candidate account {account}, awaiting verification")
 
     @function_tool()
-    async def confirm_identity(
-        self, context: RunContext, account_number: str, first_name: str
-    ) -> None:
-        """Call once a lookup has returned the caller's account.
+    async def verify_identity(
+        self,
+        context: RunContext,
+        first_name: str,
+        email: str = "",
+        phone_number: str = "",
+    ) -> dict | None:
+        """Check the caller's verification answer against the account on file.
+
+        Call after a lookup found the account AND the caller answered the
+        security question. Pass exactly what they said.
 
         Args:
-            account_number: the account_number from the lookup result, e.g. "AH-4821".
             first_name: the first_name from the lookup result.
+            email: the email address the caller said, if that was the question.
+            phone_number: the phone number the caller said, if that was the question.
         """
-        if not self.done():
-            self.complete(
-                Identity(account=account_number.strip().upper(), first_name=first_name)
-            )
+        if not self._account:
+            raise llm.ToolError("Look the account up first, then verify.")
+        ok = False
+        try:
+            ok = await self._verify(self._account, email=email, phone=phone_number)
+        except Exception as err:
+            logger.error(f"verify call failed: {err}")
+            raise llm.ToolError(
+                "Verification is unavailable right now. Apologise and offer to "
+                "connect them to a person instead."
+            ) from err
+        if ok:
+            logger.info(f"identify: {self._account} verified")
+            if not self.done():
+                self.complete(Identity(account=self._account, first_name=first_name))
+            return None
+        self._attempts += 1
+        logger.info(f"identify: {self._account} verification failed ({self._attempts})")
+        if self._attempts >= self.MAX_ATTEMPTS and not self.done():
+            self.complete(None)
+            return None
+        return {
+            "verified": False,
+            "say": "Say that does not match what is on file and ask them to "
+            "try once more.",
+        }
 
     @function_tool()
     async def cannot_identify(self, context: RunContext) -> None:
-        """Call when the caller cannot be found after a second try, or has no
-        phone or account number to give."""
+        """Call when the caller cannot be found, fails verification twice, or
+        has no phone or account number to give."""
         if not self.done():
             self.complete(None)
 

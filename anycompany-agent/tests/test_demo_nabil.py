@@ -72,9 +72,7 @@ async def test_nabil_signed_in_demo_flow() -> None:
         )
 
         # --- Act 1: hallway sensor — answered from preloaded live state ---
-        r = await session.run(
-            user_input="What do you know about my hallway sensor?"
-        )
+        r = await session.run(user_input="What do you know about my hallway sensor?")
         await r.expect.contains_message(role="assistant").judge(
             judge,
             intent="Says the hallway motion sensor is not reporting / offline or "

@@ -385,3 +385,41 @@ def test_second_google_account_resolves_to_her_own_home(client, monkeypatch):
         "Aria Smart Lock",
     }
     assert [o["order_id"] for o in body["orders"]] == ["58140", "58139"]
+
+
+# ---------------------------------------------------- KBA verification endpoint
+
+
+def test_verify_endpoint_compares_in_code_and_never_leaks(main):
+    c = main.app.test_client()
+    hdr = {"X-Api-Key": "test-orders-key"}
+    # right email -> verified
+    r = c.post(
+        "/api/verify",
+        json={"account": "AH-4821", "email": " Sarah@Example.com "},
+        headers=hdr,
+    )
+    assert r.get_json() == {"verified": True}
+    # right phone tail -> verified
+    r = c.post(
+        "/api/verify", json={"account": "AH-4821", "phone": "512 555 1188"}, headers=hdr
+    )
+    assert r.get_json() == {"verified": True}
+    # wrong answer -> false, and the response must not contain the real values
+    r = c.post(
+        "/api/verify", json={"account": "AH-4821", "email": "nope@x.com"}, headers=hdr
+    )
+    body = r.get_data(as_text=True)
+    assert r.get_json() == {"verified": False}
+    assert "sarah@example.com" not in body and "1188" not in body
+    # unknown account -> false, same shape (no user enumeration)
+    r = c.post(
+        "/api/verify", json={"account": "AH-0000", "email": "a@b.com"}, headers=hdr
+    )
+    assert r.get_json() == {"verified": False}
+    # short/empty answers never pass
+    r = c.post("/api/verify", json={"account": "AH-4821", "phone": "88"}, headers=hdr)
+    assert r.get_json() == {"verified": False}
+    # no service key -> unauthorized
+    r = c.post("/api/verify", json={"account": "AH-4821", "email": "sarah@example.com"})
+    assert r.status_code == 401

@@ -360,10 +360,15 @@ def handoff_accept(hid):
         item["status"] = "accepted"
         item["specialist"] = name
         item["resolved_at"] = time.time()
-    identity = f"specialist-{uuid.uuid4().hex[:6]}"  # the agent steps back on "specialist"
+    identity = (
+        f"specialist-{uuid.uuid4().hex[:6]}"  # the agent steps back on "specialist"
+    )
     grant = api.VideoGrants(
-        room_join=True, room=item["room"], can_publish=True,
-        can_subscribe=True, can_publish_data=True,
+        room_join=True,
+        room=item["room"],
+        can_publish=True,
+        can_subscribe=True,
+        can_publish_data=True,
     )
     jwt = (
         api.AccessToken(KEY, SECRET)
@@ -373,7 +378,9 @@ def handoff_accept(hid):
         .with_ttl(datetime.timedelta(minutes=30))
         .to_jwt()
     )
-    return jsonify({"token": jwt, "url": URL, "room": item["room"], "identity": identity})
+    return jsonify(
+        {"token": jwt, "url": URL, "room": item["room"], "identity": identity}
+    )
 
 
 @app.post("/api/handoffs/<hid>/decline")
@@ -418,11 +425,45 @@ def call_save():
     # Long-term memory: extraction takes ~20 s, so fire it and return.
     try:
         threading.Thread(
-            target=repo.generate_memories, args=(account, record["transcript"]), daemon=True
+            target=repo.generate_memories,
+            args=(account, record["transcript"]),
+            daemon=True,
         ).start()
     except Exception as err:  # memory is best-effort; the record is already saved
         app.logger.warning(f"memory generation not started: {err}")
     return jsonify({"call_id": cid}), 201
+
+
+@app.post("/api/verify")
+def verify_caller():
+    """Knowledge-based verification for guest callers, decided in CODE.
+
+    The agent asks the caller for the email (or phone) on the account and posts
+    what they SAID here. We compare against the database and return only a
+    boolean — the stored values never leave this process, so the model can
+    neither read nor leak the right answer.
+    """
+    if not _api_key_ok(request):
+        return jsonify({"error": "unauthorized"}), 401
+    body = request.get_json(silent=True) or {}
+    account = (body.get("account") or "").strip().upper()
+    email = (body.get("email") or "").strip().lower()
+    phone = "".join(c for c in (body.get("phone") or "") if c.isdigit())
+    try:
+        cust = repo.find_customer(account_number=account)
+    except DataUnavailable as err:
+        app.logger.error(f"verify failed: {err}")
+        return jsonify({"error": "unavailable"}), 503
+    if cust is None:
+        return jsonify({"verified": False})
+    ok = False
+    if email and (cust.get("email") or "").strip().lower() == email:
+        ok = True
+    on_file = "".join(c for c in (cust.get("phone_e164") or "") if c.isdigit())
+    if phone and len(phone) >= 4 and on_file.endswith(phone[-10:]):
+        ok = True
+    app.logger.info(f"verify {account}: {'pass' if ok else 'fail'}")
+    return jsonify({"verified": ok})
 
 
 @app.get("/api/calls")
@@ -462,23 +503,56 @@ def my_devices():
         devices = []
         for d in rows:
             st = repo.device_state(d["device_id"])
-            devices.append(repo.with_product({
-                "device_id": d["device_id"], "name": d["name"], "type": d["device_type"],
-                "room": d["room"], "sku": d.get("sku"),
-                "on": bool(st.get("active")), "reading": st.get("reading", "no signal"),
-                "battery_pct": st.get("battery_pct"), "temperature_f": st.get("temp_f"),
-            }))
+            devices.append(
+                repo.with_product(
+                    {
+                        "device_id": d["device_id"],
+                        "name": d["name"],
+                        "type": d["device_type"],
+                        "room": d["room"],
+                        "sku": d.get("sku"),
+                        "on": bool(st.get("active")),
+                        "reading": st.get("reading", "no signal"),
+                        "battery_pct": st.get("battery_pct"),
+                        "temperature_f": st.get("temp_f"),
+                    }
+                )
+            )
     except DataUnavailable as err:
         app.logger.error(f"/api/my/devices failed: {err}")
         return jsonify({"error": "unavailable"}), 503
     if search:
-        words = [w for w in search.split() if len(w) > 2 and w not in
-                 ("the", "one", "ones", "that", "this", "its", "please", "check", "and", "for")]
+        words = [
+            w
+            for w in search.split()
+            if len(w) > 2
+            and w
+            not in (
+                "the",
+                "one",
+                "ones",
+                "that",
+                "this",
+                "its",
+                "please",
+                "check",
+                "and",
+                "for",
+            )
+        ]
+
         def hit(d):
             hay = f"{d['room']} {d['type']} {d['name']}".lower()
-            return all(w in hay or (w in ("cam", "cameras") and d["type"] == "camera")
-                       or (w in ("thermostats", "heating", "temperature") and d["type"] == "thermostat")
-                       for w in words)
+            return all(
+                w in hay
+                or (w in ("cam", "cameras") and d["type"] == "camera")
+                or (
+                    w in ("thermostats", "heating", "temperature")
+                    and d["type"] == "thermostat"
+                )
+                for w in words
+            )
+
         devices = [d for d in devices if hit(d)] if words else devices
     return jsonify({"account": account, "devices": devices})
 
@@ -505,18 +579,32 @@ def preload():
     if not _api_key_ok(request):
         return jsonify({"error": "unauthorized"}), 401
     account = (request.args.get("account") or "").strip().upper()
-    out = {"account": account, "memories": [], "last_call": None, "devices": [], "recent_order": None}
+    out = {
+        "account": account,
+        "memories": [],
+        "last_call": None,
+        "devices": [],
+        "recent_order": None,
+    }
     try:
         cust = repo.find_customer(account_number=account)
         if cust is None:
             return jsonify({"error": "no_such_account"}), 404
-        out["name"] = cust["name"]; out["first_name"] = cust["first_name"]
+        out["name"] = cust["name"]
+        out["first_name"] = cust["first_name"]
         out["plan"] = cust["subscription"]["tier"]
         cid = cust["customer_id"]
         for d in repo.devices_for(cid):
             st = repo.device_state(d["device_id"])
-            out["devices"].append({"device_id": d["device_id"], "name": d["name"], "room": d["room"],
-                                   "on": bool(st.get("active")), "reading": st.get("reading", "no signal")})
+            out["devices"].append(
+                {
+                    "device_id": d["device_id"],
+                    "name": d["name"],
+                    "room": d["room"],
+                    "on": bool(st.get("active")),
+                    "reading": st.get("reading", "no signal"),
+                }
+            )
         out["recent_order"] = repo.most_recent_order(cid)
     except DataUnavailable as err:
         app.logger.error(f"preload core failed: {err}")

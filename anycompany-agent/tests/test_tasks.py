@@ -142,16 +142,16 @@ async def test_troubleshoot_task_tools_are_find_conclude_stop_plus_telemetry():
 
 
 @pytest.mark.asyncio
-async def test_identify_task_tools_are_the_two_lookups_plus_confirm_and_give_up():
+async def test_identify_task_tools_are_the_two_lookups_plus_verify_and_give_up():
     lookups = [
         SimpleNamespace(info=SimpleNamespace(name=n))
         for n in ("lookup_account_by_phone", "lookup_account_by_number")
     ]
-    t = IdentifyCallerTask(lookups)
+    t = IdentifyCallerTask(lookups, _always_pass)
     assert _names(t.tools) == {
         "lookup_account_by_phone",
         "lookup_account_by_number",
-        "confirm_identity",
+        "verify_identity",
         "cannot_identify",
     }
 
@@ -215,17 +215,49 @@ async def test_stop_return_and_conclude_map_to_next_steps(monkeypatch):
     assert got2["r"].next == "ticket" and got2["r"].resolved is False
 
 
+async def _always_pass(account, email="", phone=""):
+    return True
+
+
 @pytest.mark.asyncio
-async def test_identify_backstop_completes_from_verified_row(monkeypatch):
-    t = IdentifyCallerTask([])
+async def test_lookup_alone_no_longer_completes_identification(monkeypatch):
+    """A located account is not a verified caller."""
+    t = IdentifyCallerTask([], _always_pass)
     got = {}
     monkeypatch.setattr(t, "complete", lambda r: got.setdefault("r", r))
     monkeypatch.setattr(t, "done", lambda: False)
     a = Assistant()
     a._identify_task = t
     a._identified("AH-4821")
-    assert a.known_account == "AH-4821"
-    assert got["r"].account == "AH-4821"
+    assert a.known_account == "AH-4821"  # agent state still captures it
+    assert "r" not in got  # but the task is NOT complete
+    assert t._account == "AH-4821"
+
+
+@pytest.mark.asyncio
+async def test_verify_pass_completes_and_fail_twice_ends_identification(monkeypatch):
+    answers = iter([False, False])
+
+    async def verify(account, email="", phone=""):
+        return next(answers)
+
+    t = IdentifyCallerTask([], verify)
+    t._account = "AH-4821"
+    got = {}
+    monkeypatch.setattr(t, "complete", lambda r: got.setdefault("r", r))
+    monkeypatch.setattr(t, "done", lambda: False)
+    out = await t.verify_identity(None, "Sarah", email="wrong@example.com")
+    assert out["verified"] is False and "r" not in got
+    await t.verify_identity(None, "Sarah", email="still-wrong@example.com")
+    assert got["r"] is None  # two strikes -> unverified
+
+    t2 = IdentifyCallerTask([], _always_pass)
+    t2._account = "AH-4821"
+    got2 = {}
+    monkeypatch.setattr(t2, "complete", lambda r: got2.setdefault("r", r))
+    monkeypatch.setattr(t2, "done", lambda: False)
+    await t2.verify_identity(None, "Sarah", email="sarah@example.com")
+    assert got2["r"].account == "AH-4821" and got2["r"].first_name == "Sarah"
 
 
 # ── gating: scoped tools do not exist until the caller is known ──────────────

@@ -466,19 +466,20 @@ class Assistant(Agent):
             )
             return
         self._identify_task = IdentifyCallerTask(
-            lookups, chat_ctx=self.chat_ctx, model=self.llm
+            lookups, self._verify_caller, chat_ctx=self.chat_ctx, model=self.llm
         )
         try:
             who = await self._identify_task
         finally:
             self._identify_task = None
         if who is None:
-            logger.info("caller could not be identified — general help only")
+            logger.info("caller not identified/verified — general help only")
             await self.session.generate_reply(
                 instructions=(
-                    "Say you could not find the account, that you can still help "
-                    "with general questions, and offer to file a ticket or connect "
-                    "them to a person. One or two sentences."
+                    "Say you were not able to verify the account, that you can "
+                    "still help with general questions, and offer to file a ticket "
+                    "or connect them to a person. Do not share any account "
+                    "details. One or two sentences."
                 )
             )
             return
@@ -877,6 +878,18 @@ class Assistant(Agent):
     # signed-in callers, or captured from the verified identification result for
     # guests. It is sent as a header; the model never supplies it, and the
     # database only ever answers through views filtered by that account.
+
+    async def _verify_caller(
+        self, account: str, email: str = "", phone: str = ""
+    ) -> bool:
+        """Server-side KBA check: code compares, the model only learns pass/fail."""
+        r = await self._client().post(
+            "/api/verify",
+            json={"account": account, "email": email, "phone": phone},
+            headers={"X-Api-Key": ORDERS_API_KEY},
+        )
+        r.raise_for_status()
+        return bool(r.json().get("verified"))
 
     async def _my(self, path: str, **params) -> dict:
         if not self.known_account:
