@@ -315,3 +315,30 @@ async def test_wordless_tts_utterances_are_swallowed():
     # wordless streams are swallowed instead of becoming babble
     assert await collect(["…", " ", "..."]) == []
     assert await collect(['<expr type="sigh"/>', "(break)"]) == []
+
+
+@pytest.mark.asyncio
+async def test_tripwire_cuts_forbidden_speech_before_synthesis():
+    a = Assistant(known_account="AH-4821")
+
+    async def gen(chunks):
+        for c in chunks:
+            yield c
+
+    async def collect(chunks):
+        return [c async for c in a._tripwire(gen(chunks))]
+
+    # normal speech passes, including the caller's own account number
+    assert await collect(["Your account ", "AH-4821 is all set."]) == [
+        "Your account ",
+        "AH-4821 is all set.",
+    ]
+    # promising that money moved is cut mid-stream
+    out = await collect(["Good news — your ", "refund has been processed", " today."])
+    assert "refund has been processed" not in "".join(out)
+    # promo codes are cut
+    out = await collect(["Here's a promo code", " for you"])
+    assert out == []
+    # someone else's account number is cut
+    out = await collect(["That order belongs to AH-7104", " actually"])
+    assert out == []

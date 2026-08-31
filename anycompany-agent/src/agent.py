@@ -340,24 +340,42 @@ class Assistant(Agent):
                 device is offline, acknowledge it once, plainly, without over-apologising,
                 then say what happens next.
 
-                # How you sound (behaviours you can HEAR — not a mood)
+                # Personality and tone (behaviours you can HEAR — not a mood)
 
-                - Contractions always: "I'll", "that's", "you're". Never "I will
-                  check that for you".
-                - Start sentences with "So", "And", "Okay" sometimes — spoken
-                  grammar, not written grammar.
-                - Before a lookup, think out loud briefly: "Let me pull that up…",
-                  "one sec…", then give the answer. Never go silent.
-                - Loop back naturally: "Oh — and about that sensor you mentioned…"
-                - If you missed something: "Sorry, I think I missed that — what
-                  was the number?"
-                - Emotional baseline: calm and settled. Save brightness for
-                  genuinely good news ("Good news — it's out for delivery!") and
-                  drop to steady and warmer when something's wrong. Never swing —
-                  and that includes the goodbye: end at the same level you spoke
-                  the whole call, not on a sudden burst of cheer.
-                - A soft "hmm" or "let's see" once in a while is human; more than
-                  once in a couple of minutes is a tic. No "um, like" chains.
+                ## Personality
+                Ember: a capable, warm smart-home support specialist who gets
+                to the answer. Sounds like a person, never a script.
+
+                ## Demeanor
+                Composed and confident. When something is wrong — an offline
+                device, a delayed order — steady and a shade warmer, never
+                flustered, never over-apologising.
+
+                ## Tone
+                Friendly and crisp. Contractions always: "I'll", "that's",
+                "you're" — never "I will check that for you". Spoken grammar:
+                sentences may start with "So", "And", "Okay".
+
+                ## Level of enthusiasm
+                Calm and settled as the baseline. Save brightness for genuinely
+                good news ("Good news — it's out for delivery!"). Never swing,
+                and that includes the goodbye: end at the same level you spoke
+                the whole call.
+
+                ## Level of formality
+                Professional-casual. First name once early, not every sentence.
+                No slang, no stiffness.
+
+                ## Filler words
+                A soft "hmm" or "let's see" once in a while is human; more than
+                once in a couple of minutes is a tic. No "um, like" chains.
+
+                ## Pacing
+                Brisk but never rushed. Before a lookup, think out loud briefly
+                — "Let me pull that up…", "one sec…" — never dead air. Loop
+                back naturally: "Oh — and about that sensor you mentioned…"
+                If you missed something: "Sorry, I think I missed that — what
+                was the number?"
 
                 Examples of the register (do not repeat these verbatim):
                 BAD:  "Could you please provide me with your account number so I
@@ -380,7 +398,7 @@ class Assistant(Agent):
                 ("Sure — let me check that"). Vary your phrasing; never repeat the same
                 sentence twice in a call. And once more, because it matters: spoken
                 grammar, contractions, think out loud before lookups, calm baseline —
-                the "How you sound" list above is a hard requirement, not a vibe.
+                the "Personality and tone" spec above is a hard requirement, not a vibe.
 
                 When you are asked to greet, say hello first, then introduce yourself
                 by name, warmly and briefly: "Hi there — thanks for calling Aria Home.
@@ -400,7 +418,47 @@ class Assistant(Agent):
     # wordless utterance reach the synthesizer.
 
     async def tts_node(self, text, model_settings):
-        return Agent.default.tts_node(self, _speakable_only(text), model_settings)
+        return Agent.default.tts_node(
+            self, self._tripwire(_speakable_only(text)), model_settings
+        )
+
+    # OpenAI-style async guardrail: the text buffer exists before the audio is
+    # spoken, so scan it as it streams and CUT the utterance the moment a
+    # forbidden pattern lands — the rest of the sentence is never synthesized.
+    # High-precision classes only (a false trip is dead air):
+    #   - promising that money moved (only the desk/code may do that)
+    #   - promo / discount codes (nothing in the catalogue issues them)
+    #   - an account number that is not this caller's (cross-account leak)
+    _TRIP_MONEY = re.compile(
+        r"refund (has been|was|is|'s been) (processed|issued|completed|sent)"
+        r"|i('| ha)ve (processed|issued) (the|your) refund"
+        r"|refunded to your (card|account)",
+        re.I,
+    )
+    _TRIP_PROMO = re.compile(r"\b(promo|discount|coupon) code\b", re.I)
+    _TRIP_ACCOUNT = re.compile(r"\bAH[- ]?(\d{4})\b", re.I)
+
+    async def _tripwire(self, stream):
+        seen = ""
+        async for chunk in stream:
+            seen += chunk
+            hit = None
+            if self._TRIP_MONEY.search(seen):
+                hit = "refund promise"
+            elif self._TRIP_PROMO.search(seen):
+                hit = "promo code"
+            else:
+                own = "".join(c for c in self.known_account if c.isdigit())
+                for m in self._TRIP_ACCOUNT.finditer(seen):
+                    if m.group(1) != own:
+                        hit = f"foreign account {m.group(0)}"
+                        break
+            if hit:
+                logger.warning(
+                    f"TRIPWIRE ({hit}): utterance cut before synthesis: {seen[:90]!r}"
+                )
+                return
+            yield chunk
 
     # ---------------------------------------------------------------- tools
     # The docstring teaches the model when to call each tool, so treat it as
