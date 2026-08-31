@@ -17,8 +17,8 @@ import urllib.request
 import pytest
 
 PROJECT = "bq-demos-469816"
-REGION = "europe-west3"
-CORPUS = f"projects/{PROJECT}/locations/{REGION}/ragCorpora/2305843009213693952"
+REGION = "us-central1"
+CORPUS = f"projects/{PROJECT}/locations/{REGION}/ragCorpora/718579227263238144"
 
 try:
     import google.auth
