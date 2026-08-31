@@ -482,7 +482,17 @@ def verify_caller():
         return jsonify({"error": "unauthorized"}), 401
     body = request.get_json(silent=True) or {}
     account = (body.get("account") or "").strip().upper()
-    email = (body.get("email") or "").strip().lower().replace(" ", "")
+
+    def _norm_email(e: str) -> str:
+        e = (e or "").strip().lower().replace(" ", "")
+        # Gmail ignores dots in the local part; so do we, for any provider —
+        # "john.doe@gmail.com" and "johndoe@gmail.com" are the same person.
+        if "@" in e:
+            local, _, domain = e.partition("@")
+            e = local.replace(".", "") + "@" + domain
+        return e
+
+    email = _norm_email(body.get("email"))
     phone = "".join(c for c in (body.get("phone") or "") if c.isdigit())
     try:
         cust = repo.find_customer(account_number=account)
@@ -492,7 +502,7 @@ def verify_caller():
     if cust is None:
         return jsonify({"verified": False})
     ok = False
-    on_file_email = (cust.get("email") or "").strip().lower().replace(" ", "")
+    on_file_email = _norm_email(cust.get("email"))
     if email and on_file_email and on_file_email == email:
         ok = True
     on_file = "".join(c for c in (cust.get("phone_e164") or "") if c.isdigit())

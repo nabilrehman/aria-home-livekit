@@ -405,6 +405,13 @@ def test_verify_endpoint_compares_in_code_and_never_leaks(monkeypatch):
         headers=hdr,
     )
     assert r.get_json() == {"verified": True}
+    # gmail-style dots in the local part are ignored
+    r = c.post(
+        "/api/verify",
+        json={"account": "AH-4821", "email": "john.doe@gmail.com"},
+        headers=hdr,
+    )
+    assert r.get_json() == {"verified": True}
     # right phone tail -> verified
     r = c.post(
         "/api/verify", json={"account": "AH-4821", "phone": "512 555 1188"}, headers=hdr
