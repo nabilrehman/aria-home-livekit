@@ -152,6 +152,7 @@ async def test_identify_task_tools_are_the_two_lookups_plus_verify_and_give_up()
         "lookup_account_by_phone",
         "lookup_account_by_number",
         "verify_identity",
+        "confirm_identity",  # registered always; refuses at runtime when KBA is on
         "cannot_identify",
     }
 
