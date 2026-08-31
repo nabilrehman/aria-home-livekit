@@ -1444,10 +1444,20 @@ async def my_agent(ctx: JobContext):
                 AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING, volume=0.6), loop=True
             )
 
+    # Typing means "she's looking something up for you" — it must never play
+    # before the caller has actually said anything (the state machine passes
+    # through "thinking" while she prepares the greeting).
+    _heard = {"user": False}
+
+    @session.on("conversation_item_added")
+    def _on_item_bg(ev) -> None:
+        if getattr(ev.item, "role", "") == "user":
+            _heard["user"] = True
+
     @session.on("agent_state_changed")
     def _on_state(ev) -> None:
         try:
-            if ev.new_state == "thinking":
+            if ev.new_state == "thinking" and _heard["user"]:
                 _play_typing()
             else:
                 _play_ambient()
