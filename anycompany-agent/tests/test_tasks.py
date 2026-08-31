@@ -230,9 +230,22 @@ async def test_lookup_alone_no_longer_completes_identification(monkeypatch):
     a = Assistant()
     a._identify_task = t
     a._identified("AH-4821")
-    assert a.known_account == "AH-4821"  # agent state still captures it
-    assert "r" not in got  # but the task is NOT complete
-    assert t._account == "AH-4821"
+    assert a.known_account == ""  # NOT adopted until verification passes
+    assert "r" not in got  # and the task is not complete
+    assert t._account == "AH-4821"  # held as a candidate inside the task only
+
+
+@pytest.mark.asyncio
+async def test_without_kba_lookup_still_identifies(monkeypatch):
+    t = IdentifyCallerTask([])  # verify=None: the assignment's minimal beat
+    got = {}
+    monkeypatch.setattr(t, "complete", lambda r: got.setdefault("r", r))
+    monkeypatch.setattr(t, "done", lambda: "r" in got)
+    a = Assistant()
+    a._identify_task = t
+    a._identified("AH-4821")
+    assert a.known_account == "AH-4821"
+    assert got["r"].account == "AH-4821"
 
 
 @pytest.mark.asyncio

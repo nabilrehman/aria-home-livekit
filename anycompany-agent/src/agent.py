@@ -415,13 +415,20 @@ class Assistant(Agent):
         return _mcp_result(ctx, on_identified=self._identified)
 
     def _identified(self, account: str) -> None:
+        task = self._identify_task
+        if task is not None and task._verify is not None:
+            # KBA is on: a located account is a CANDIDATE, nothing more. The
+            # account is adopted and the tools un-gated only when the task
+            # completes with a verified Identity (see on_enter). Capturing it
+            # here armed the scoped tools at lookup time — the bug a failed
+            # verification walked straight through.
+            task.identified(account)
+            return
         if not self.known_account:
             self.known_account = account
             logger.info(f"identity captured from verified lookup: {account}")
-        # Backstop: the verified row completes the identification task even if
-        # the model forgets to call confirm_identity.
-        if self._identify_task is not None:
-            self._identify_task.identified(account)
+        if task is not None:
+            task.identified(account)
         self._ungate_soon()
 
     # ------------------------------------------------ tool gating
@@ -517,6 +524,7 @@ class Assistant(Agent):
         finally:
             self._identify_task = None
         if who is None:
+            self.known_account = ""  # nothing from the lookup survives a failed check
             logger.info("caller not identified/verified — general help only")
             await self.session.generate_reply(
                 instructions=(
